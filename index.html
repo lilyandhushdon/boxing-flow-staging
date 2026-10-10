@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Boxing round timer and coach. Pick your skills and rounds, then follow a new drill every 30 seconds.">
+<meta name="theme-color" content="#0f161d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Boxing Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: sticky slim nav; hero = headline left, live timer demo right (stacks on phones);
+   then how-it-works (a real 3-step sequence), corner features, skills, round options, closing call to action.
+   Same dark navy + gold world as the app, by choice a single dark look. */
+:root{
+  --bg:#0f161d; --bg-2:#131c25; --surface:#1b2631; --surface-2:#243240; --line:#2f3e4e;
+  --fg:#eef2f6; --muted:#93a3b4; --gold:#f5c95a; --gold-ink:#1d1606;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:.005em}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--gold)}
+.icon{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.02em}
+.logo svg{width:28px;height:28px}
+.nav-links{display:flex;align-items:center;gap:22px}
+.nav-links a:not(.btn){text-decoration:none;color:var(--muted);font-weight:500;font-size:15px}
+.nav-links a:not(.btn):hover{color:var(--fg)}
+@media (max-width:640px){.nav-links a:not(.btn){display:none}}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:13px 26px;font-weight:700;font-size:16px;text-decoration:none;background:var(--gold);color:var(--gold-ink);border:0;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px color-mix(in srgb,var(--gold) 30%,transparent)}
+.btn.small{padding:9px 18px;font-size:14px}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--muted);box-shadow:none}
+.btn .icon{stroke:currentColor;width:18px;height:18px}
+
+/* hero */
+.hero{padding-block:56px 72px;display:grid;gap:48px;align-items:center}
+@media (min-width:900px){.hero{grid-template-columns:1.1fr .9fr;padding-block:80px 96px}}
+.hero h1{font-size:clamp(52px,9vw,96px);line-height:.92;text-transform:uppercase;margin:14px 0 20px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.lede{font-size:clamp(17px,2vw,19px);color:var(--muted);max-width:48ch;margin:0 0 30px}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:34px;color:var(--muted);font-size:14px}
+.facts b{display:block;font-family:var(--display);font-size:28px;color:var(--fg);line-height:1.1;font-variant-numeric:tabular-nums}
+
+/* live timer demo */
+.demo{background:linear-gradient(160deg,var(--surface) 0%,var(--bg-2) 100%);border:1px solid var(--line);border-radius:24px;padding:22px;display:grid;gap:16px;max-width:440px;width:100%;justify-self:center;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.demo-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--gold)}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.ring{position:relative;width:min(100%,280px);aspect-ratio:1;margin:0 auto;--c:var(--gold)}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .track{stroke:var(--surface-2)}
+.ring .prog{stroke:var(--c);transition:stroke .5s,stroke-dashoffset .3s linear}
+.ring-in{position:absolute;inset:13%;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.r-lab{font-family:var(--display);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.r-time{font-family:var(--display);font-weight:700;font-size:clamp(52px,14vw,68px);line-height:1;font-variant-numeric:tabular-nums;margin:2px 0}
+.r-cap{font-family:var(--display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600;transition:color .5s}
+.now{background:var(--surface-2);border-radius:14px;padding:12px 14px;text-align:center;position:relative;overflow:hidden}
+.now small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.now strong{font-family:var(--display);font-size:24px;display:block;line-height:1.2}
+.now .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--c,var(--gold));width:0;transition:background .5s}
+.mini-next{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mini-next div{border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;border:1.5px solid color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 12%,var(--surface));min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .5s,border-color .5s}
+.mini-next div:first-child{border-color:var(--c)}
+.mini-next span{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--c);font-weight:700}
+
+/* sections */
+section{padding-block:72px}
+.sec-head{max-width:640px;margin-bottom:36px}
+.sec-head h2{font-size:clamp(34px,5vw,52px);line-height:1;text-transform:uppercase;margin-top:10px}
+.sec-head p{color:var(--muted);margin:12px 0 0}
+.band{background:var(--bg-2);border-block:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+
+.steps{display:grid;gap:16px;list-style:none;margin:0;padding:0;counter-reset:step}
+@media (min-width:760px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{background:var(--surface);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.steps .n{font-family:var(--display);font-size:44px;font-weight:700;color:var(--gold);line-height:1}
+.steps h3{font-size:24px}
+.steps p{margin:0;color:var(--muted)}
+
+.features{display:grid;gap:28px 32px}
+@media (min-width:640px){.features{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:960px){.features{grid-template-columns:repeat(3,1fr)}}
+.feature{display:flex;gap:14px;align-items:flex-start}
+.feature .badge{width:44px;height:44px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;flex:none}
+.feature h3{font-family:var(--body);font-size:17px;font-weight:700;margin-bottom:4px;letter-spacing:0}
+.feature p{margin:0;color:var(--muted);font-size:15px}
+
+.skills{display:flex;flex-wrap:wrap;gap:10px}
+.skills span{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px}
+.skills span:nth-child(-n+6){border-color:color-mix(in srgb,var(--gold) 50%,var(--line))}
+
+.rounds{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:760px){.rounds{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.round{background:var(--surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px}
+.round b{font-family:var(--display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.round span{color:var(--muted);font-size:14px}
+.round small{color:var(--gold);font-weight:600;font-size:13px;margin-top:6px}
+.note{color:var(--muted);font-size:14px;margin:16px 0 0}
+
+.final{text-align:center;padding-block:96px}
+.final h2{font-size:clamp(56px,10vw,110px);line-height:.9;text-transform:uppercase}
+.final p{color:var(--muted);margin:16px auto 30px;max-width:44ch}
+
+footer{border-top:1px solid var(--line);padding-block:28px 40px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px}
+footer p{margin:0;max-width:70ch}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Boxing Flow home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="#2f3e4e" stroke-width="4"/><path d="M16 3a13 13 0 1 1-12.4 9" fill="none" stroke="#f5c95a" stroke-width="4" stroke-linecap="round"/></svg>
+      Boxing Flow
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#skills">Skills</a>
+      <a class="btn small" href="app.html">Start training</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow">Boxing round timer and coach</div>
+      <h1>Every round,<br><em>called for you.</em></h1>
+      <p class="lede">Pick what you want to work on and how many rounds. Boxing Flow builds the workout and talks you through a new drill every 30 seconds, with bells, a countdown, music and a crowd behind you.</p>
+      <div class="cta-row">
+        <a class="btn" href="app.html">Start a workout
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn ghost" href="#how">How it works</a>
+      </div>
+      <div class="facts">
+        <div><b>19</b>skills to train</div>
+        <div><b>30 s</b>per drill</div>
+        <div><b>9–25</b>minutes a session</div>
+      </div>
+    </div>
+
+    <div class="demo" aria-label="Preview of the workout timer">
+      <div class="demo-top"><span>Boxing Flow</span><span class="live">Live preview</span></div>
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 260 260" aria-hidden="true">
+          <circle class="track" cx="130" cy="130" r="120" fill="none" stroke-width="12"/>
+          <circle class="prog" id="prog" cx="130" cy="130" r="120" fill="none" stroke-width="12" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-in">
+          <div class="r-lab">Round 2</div>
+          <div class="r-time" id="dTime">01:24</div>
+          <div class="r-cap">Round remaining</div>
+        </div>
+      </div>
+      <div class="now"><small>Now</small><strong id="dNow">Jab, Jab, Cross</strong><div class="bar" id="dBar"></div></div>
+      <div class="mini-next" id="dNext"></div>
+    </div>
+  </div>
+
+  <section id="how" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">How it works</div>
+        <h2>Three taps to the first bell</h2>
+      </div>
+      <ol class="steps">
+        <li><span class="n">01</span><h3>Pick your focus</h3><p>Choose from 19 skill areas, from jab technique and footwork to body shots, feints and conditioning. Pick one or mix several.</p></li>
+        <li><span class="n">02</span><h3>Choose your rounds</h3><p>Three or five rounds of three or five minutes, with a minute of rest between each.</p></li>
+        <li><span class="n">03</span><h3>Follow the coach</h3><p>A five-second countdown, the bell, then a new drill every 30 seconds. The voice tells you what to throw and how to throw it.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">In your corner</div>
+        <h2>Built for the bag, the floor and the garage</h2>
+        <p>Set your phone down, gloves on, and let the app run the clock.</p>
+      </div>
+      <div class="features">
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>
+          <div><h3>Voice coach</h3><p>Calls out every drill with a coaching cue, pushes you through the last ten seconds, and keeps quiet the rest of the time.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
+          <div><h3>Bells and countdown</h3><p>A spinning five-second countdown and a "Fight!" burst before every round, bells at the start and end.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
+          <div><h3>Music, mixed like a set</h3><p>Workout tracks blend into each other with DJ-style crossfades, and dip whenever the coach speaks.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.1a5 5 0 0 1 5 4.9"/></svg></span>
+          <div><h3>Crowd on your side</h3><p>An arena crowd that roars on the bell and lifts in the final ten seconds, and never loops the same way twice.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></span>
+          <div><h3>Change it mid-round</h3><p>Scroll everything that's coming up and drag drills into a new order without stopping the clock.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
+          <div><h3>Nothing to install</h3><p>Runs in the browser on your phone or laptop. No account and no sign-up. Open it and train.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">What you can work on</div>
+        <h2>19 skills, 77 drills</h2>
+        <p>Every skill comes with its own drills and coaching cues. Pick a few and the workout mixes them so no two rounds feel the same.</p>
+      </div>
+      <div class="skills">
+        <span>Jab technique</span><span>Speed</span><span>Punching power</span><span>Combinations</span><span>Footwork</span><span>Defence</span>
+        <span>Head movement</span><span>Counter-punching</span><span>Body shots</span><span>Hooks</span><span>Inside fighting</span><span>Cross technique</span>
+        <span>Angles</span><span>Feints</span><span>Switch stance</span><span>Pressure fighting</span><span>Out-boxing</span><span>Conditioning</span><span>Shadow flow</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Pick your rounds</div>
+        <h2>From a quick nine to a full twenty-five</h2>
+      </div>
+      <div class="rounds">
+        <div class="round"><b>3 × 3</b><span>three-minute rounds</span><small>9 min of boxing</small></div>
+        <div class="round"><b>5 × 3</b><span>three-minute rounds</span><small>15 min of boxing</small></div>
+        <div class="round"><b>3 × 5</b><span>five-minute rounds</span><small>15 min of boxing</small></div>
+        <div class="round"><b>5 × 5</b><span>five-minute rounds</span><small>25 min of boxing</small></div>
+      </div>
+      <p class="note">Every round has one minute of rest after it, and the drill changes every 30 seconds.</p>
+    </div>
+  </section>
+
+  <section class="final band">
+    <div class="wrap">
+      <h2>Gloves on.</h2>
+      <p>Your first round is three taps away.</p>
+      <a class="btn" href="app.html">Start a workout
+        <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Boxing Flow</span>
+    <p>Music: “No Turning Back” by BearStockMusic, “Not My First Rodeo” by 331music, “Gym Music” by Gr0za. Crowd sound by u_xg7ssi08yr.</p>
+  </div>
+</footer>
+
+<script>
+// live preview: a small version of the real timer, running four times faster than real time
+(function(){
+  const D=[['Jab, Jab, Cross','#f5c95a'],['Hooks','#ff7f6e'],['Slip and counter','#4fd1b5'],['Uppercuts','#a58bff'],
+           ['Speed punches','#9fdc5b'],['Liver shot','#f68fc6'],['Pivot and jab','#f5c95a'],['1-2-3-2','#ff7f6e']];
+  const prog=document.getElementById('prog'), C=2*Math.PI*120, ring=document.getElementById('ring');
+  prog.style.strokeDasharray=C;
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let left=84, i=0;
+  const fmt=s=>String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  function draw(){
+    const into=(180-left)%30, c=D[i%D.length][1];
+    ring.style.setProperty('--c',c); document.querySelector('.demo').style.setProperty('--c',c);
+    document.getElementById('dTime').textContent=fmt(left);
+    prog.style.strokeDashoffset=C*(1-left/180);
+    document.getElementById('dNow').textContent=D[i%D.length][0];
+    document.getElementById('dBar').style.width=(into/30*100)+'%';
+    document.getElementById('dNext').innerHTML=[1,2,3].map(k=>{const d=D[(i+k)%D.length];
+      return `<div style="--c:${d[1]}"><span>${k===1?'Next':'0'+k}</span>${d[0]}</div>`}).join('');
+  }
+  draw();
+  if(reduce) return;
+  setInterval(()=>{
+    left--; if(left<=0) left=180;
+    if((180-left)%30===0) i++;
+    draw();
+  },250);
+})();
+</script>
+
+</body>
+</html>
