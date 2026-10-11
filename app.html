@@ -221,6 +221,15 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 @media (prefers-reduced-motion:reduce){.ring-inner{transition:none}.coach.talking .back-tag i b{animation:none;height:9px}}
 
 /* gym mode: double-tap the coach and the timer opens out into the 3D gym */
+.ia-prompt{position:absolute;left:50%;top:3%;z-index:4;padding:3px 9px;border-radius:7px;white-space:nowrap;pointer-events:none;
+  background:rgba(10,12,16,.78);color:#e9e2d2;font-size:10.5px;font-weight:600;letter-spacing:.02em;box-shadow:0 4px 12px rgba(0,0,0,.35);
+  opacity:0;transform:translate(-50%,-4px);transition:opacity .4s,transform .4s}
+.ia-prompt::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border:4px solid transparent;border-top-color:rgba(10,12,16,.78)}
+.ia-prompt svg{display:none}
+.ia-prompt.show{opacity:1;transform:translate(-50%,0);animation:iaBreathe 2.4s ease-in-out .4s infinite}
+@keyframes iaBreathe{0%,100%{opacity:1}50%{opacity:.55}}
+#gymView .ia-prompt{display:none}
+@media (prefers-reduced-motion:reduce){.ia-prompt.show{animation:none}}
 .gym-hint{position:absolute;left:50%;top:9%;transform:translateX(-50%);z-index:2;padding:4px 10px;border-radius:999px;background:rgba(10,12,16,.72);color:#f1ece2;
   font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .4s}
 .gym-hint.show{opacity:1}
@@ -234,7 +243,26 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 #gymView.hud-on .g-hud{opacity:1}
 .g-hud>*{pointer-events:auto}
 .g-panel{background:rgba(12,15,20,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);border-radius:16px}
-.g-exit{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:0;
+.g-toast{position:absolute;top:calc(max(14px,env(safe-area-inset-top)) + 54px);right:14px;max-width:min(290px,calc(100% - 28px));padding:9px 12px;border-radius:12px;
+  background:rgba(12,15,20,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);
+  color:#efe8d8;font-size:12.5px;line-height:1.4;box-shadow:0 8px 22px rgba(0,0,0,.4);opacity:0;transform:translateY(-6px);transition:opacity .45s,transform .45s;pointer-events:none;z-index:3}
+.g-toast::before{content:"";position:absolute;right:38px;bottom:100%;border:6px solid transparent;border-bottom-color:color-mix(in srgb,var(--gold) 55%,transparent)}
+.g-toast b{color:var(--gold)}
+.g-toast.show{opacity:1;transform:none}
+@media (max-width:760px){.g-toast{top:calc(max(14px,env(safe-area-inset-top)) + 196px);left:14px;right:14px;max-width:none}.g-toast::before{display:none}}
+.g-top{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;display:flex;gap:8px;align-items:center}
+.g-cam{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(12,15,20,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#f1ece2;font-weight:700;font-size:14px}
+.g-cam svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.g-swap[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.g-swap.loading{opacity:.6;pointer-events:none}
+.g-loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:10px 18px;border-radius:999px;background:rgba(12,15,20,.8);color:#efe8d8;
+  font-weight:600;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+.g-loading.show{opacity:1}
+.g-cam[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.g-exit .sm{display:none}
+@media (max-width:560px){.g-cam span{display:none}.g-cam{padding:9px}.g-top{gap:6px}.g-exit{padding:10px 13px}.g-exit .lg{display:none}.g-exit .sm{display:inline}}
+.g-exit{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:0;
   background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .g-exit svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .g-left{position:absolute;top:max(14px,env(safe-area-inset-top));left:14px;display:grid;gap:10px;justify-items:center;padding:12px;transform:translateX(-24px);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
@@ -339,7 +367,6 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
           </div>
           <div class="face back coach" id="coach" data-mood="idle">
             <canvas class="cfig c3d" id="coach3d" aria-hidden="true"></canvas>
-            <div class="gym-hint" id="gymHint">Double-tap to step into the gym</div>
             <svg class="cfig" id="coachSvg" viewBox="0 0 240 240" aria-hidden="true">
               <defs>
                 <radialGradient id="cgSpot" cx="50%" cy="38%" r="62%">
@@ -497,6 +524,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-4M8 17V7M12 20V4M16 16V8M20 13v-2"/></svg>
           </button>
         <div class="fight-text" id="fightText" aria-hidden="true">Fight!</div>
+        <div class="ia-prompt" id="iaPrompt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11M12 10V4.5a1.5 1.5 0 0 1 3 0V11M15 10.5V6a1.5 1.5 0 0 1 3 0v7.5a6.5 6.5 0 0 1-13 0V12a1.5 1.5 0 0 1 3 0"/></svg><span id="iaPromptText">Double-tap for interactive</span></div>
       </div>
 
       <div class="now" id="nowCard">
@@ -538,8 +566,16 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
     <div class="g-left g-panel"><div class="g-timer" id="gTimer"></div><div id="gControls"></div></div>
     <div class="g-now g-panel" id="gNow"></div>
     <div class="g-list g-panel" id="gList"></div>
-    <button class="g-exit" id="gymExit" type="button" aria-label="Back to the timer">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v6h6M20 10V4h-6M4 20l6.5-6.5M20 4l-6.5 6.5"/></svg>Back to timer</button>
+    <div class="g-toast" id="gymToast" role="status"><span id="gymToastText">You're in interactive mode. Tap <b>Back to timer</b> any time to return to the classic view.</span></div>
+    <div class="g-loading" id="gymLoading" role="status">Changing coach…</div>
+    <div class="g-top">
+      <button class="g-cam g-swap" id="gymSwap" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5h5l-2-2M21 10.5h-5l2 2"/></svg><span id="gymSwapLabel">Female coach</span></button>
+      <button class="g-cam" id="gymCam" type="button" aria-pressed="false" title="Face cam: follow his face" aria-label="Face cam">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/><path d="M2 6V3h3M22 6V3h-3M2 18v3h3M22 18v3h-3"/></svg><span id="gymCamLabel">Face cam</span></button>
+      <button class="g-exit" id="gymExit" type="button" aria-label="Back to the timer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v6h6M20 10V4h-6M4 20l6.5-6.5M20 4l-6.5 6.5"/></svg><span class="lg">Back to timer</span><span class="sm">Back</span></button>
+    </div>
   </div>
 </div>
 
@@ -1231,6 +1267,7 @@ const Coach=(()=>{
   function flip(on){
     if(on===flipped) return;
     flipped=on; inner.classList.toggle('flipped',on);
+    if(window.iaPrompt) window.iaPrompt(on);                                 // "double-click for interactive" while he demonstrates
     if(on){ flipAt=performance.now(); heard=false; }
   }
   function setMood(m){ if(m===mood) return; mood=m; root.dataset.mood=m; if(!queue.length) target=copy(BASE[m]); }
@@ -1305,7 +1342,10 @@ const Coach=(()=>{
       if(speaking){ heard=true; lastSpeak=now; }
       const held=now-flipAt;
       // 3D loop: keep demonstrating until the announcement ends, finish the current run, then turn back
-      if(phase==='loop3d' && ((heard && !speaking && now-lastSpeak>300 && held>2500) || (!heard && held>4000) || held>12000)){ Coach3D.finish(); phase='finishing3d'; }
+      if(phase==='loop3d' && ((heard && !speaking && now-lastSpeak>300 && held>2500) || (!heard && held>4000) || held>12000)){
+        if(window.bfAutoGym && Coach3D.enterGym && Coach3D.enterGym({auto:true})) window.bfAutoGym=false;   // first drill announced: into the gym
+        else { Coach3D.finish(); phase='finishing3d'; }
+      }
       if(phase==='finishing3d' && (!Coach3D.busy() || held>15000)){ phase='done'; phaseAt=now; }
       if(phase==='talk' && ((heard && !speaking && now-lastSpeak>250) || (!heard && held>2600) || held>9000)){
         phase=demo(curStep)?'demo':'done'; phaseAt=now;
@@ -1396,7 +1436,8 @@ const Coach=(()=>{
     onStep(step, prev){
       curStep=step; clearTimeout(demoT); clearTimeout(flipT); queue=[]; frameEnd=0;
       setMood(step.type==='ready'?'ready':step.type==='rest'?'rest':'guard');
-      if(step.type!=='work'){ flip(false); phase=''; if(window.Coach3D && Coach3D.ready) Coach3D.finish(); return; }
+      window.bfWork=step.type==='work';
+      if(step.type!=='work'){ flip(false); phase=''; if(window.Coach3D && Coach3D.ready){ Coach3D.finish(); if(Coach3D.home) Coach3D.home(); } return; }   // round over: back to the centre
       tag.textContent=step.name;
       const first=!prev || prev.type!=='work';
       // on a round start, wait for the "Fight!" burst to finish before turning over
@@ -1632,7 +1673,12 @@ function setPlaying(p){
 }
 async function keepAwake(){ try{ wake = await navigator.wakeLock?.request('screen'); }catch(e){} }
 function show(id){ if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['setup','timer','done'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'; window.scrollTo(0,0); }
+// the interactive-mode prompt: a small tooltip while the coach is demonstrating (the timer turned over to him)
+function iaPrompt(on){ const el=$('iaPrompt'); if(!el) return; el.classList.toggle('show',!!on && !window.gymMode); }
+window.iaPrompt=iaPrompt;
+if($('iaPromptText') && matchMedia('(hover:hover) and (pointer:fine)').matches) $('iaPromptText').textContent='Double-click for interactive';
 function start(){
+  window.bfAutoGym=true;                                          // the first drill of each workout opens interactive mode
   build(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
@@ -1652,7 +1698,7 @@ function finish(){
 $('buildBtn').onclick=start;
 $('againBtn').onclick=start;
 $('changeBtn').onclick=()=>{show('setup');};
-$('exitBtn').onclick=()=>{ hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} show('setup'); };
+$('exitBtn').onclick=()=>{ window.bfAutoGym=false; iaPrompt(false); hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} show('setup'); };
 $('playBtn').onclick=()=>setPlaying(!running);
 $('nextBtn').onclick=()=>{ if(idx<steps.length-1){ enter(idx+1); render(); } else { idx=steps.length; finish(); } };
 $('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; } else enter(idx-1); render(); };
@@ -1683,9 +1729,20 @@ const root=document.getElementById('coach'), inner=document.getElementById('ring
 let canvas=document.getElementById('coach3d');
 // the coach: model file and glove colours
 const AVATARS={
-  coach:{name:'Coach', file:'coach.glb', glove:0x0b0b0b, band:0xd4a548},
+  coach:{name:'Male coach',   file:'coach.glb',     glove:0x0b0b0b, band:0xd4a548},   // black and gold
+  her:  {name:'Female coach', file:'coach-her.glb', glove:0x0b0b0b, band:0xd4a548},   // model 11: black and gold, same as him
 };
 let avatarKey='coach';
+try{ const k=localStorage.getItem('bf-coach'); if(AVATARS[k]) avatarKey=k; }catch(e){}
+// the interactive-mode screen is shared by both coaches, so swapping coaches never disturbs it
+const view=document.getElementById('gymView');
+const HUD=[['#ringWrap','gTimer'],['#timer .controls','gControls'],['#nowCard','gNow'],['#timer .upnext','gList']];
+const homes=[];
+function moveHud(into){
+  if(into){ if(homes.length) return; for(const [sel,dest] of HUD){ const el=document.querySelector(sel); if(!el) continue;
+      const ph=document.createComment('gym'); el.before(ph); homes.push([el,ph]); document.getElementById(dest).appendChild(el); } }
+  else { while(homes.length){ const [el,ph]=homes.pop(); ph.replaceWith(el); } }
+}
 let bootGen=0, live=null;            // live: the running renderer, so it can be shut down on a switch
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const api={ready:false, phase:'', setPhase(p){ api.phase=p; }, demo(){}, busy(){ return false; }};
@@ -1693,7 +1750,7 @@ window.Coach3D=api;
 
 // model files: the real file where the host serves it (GitHub Pages), otherwise a packaged copy in models/<name>.js
 const assetCache=new Map();
-function asset(name){ if(!assetCache.has(name)) assetCache.set(name,loadAsset(name)); return assetCache.get(name); }
+function asset(name){ if(!assetCache.has(name)) assetCache.set(name,loadAsset(name).catch(e=>{ assetCache.delete(name); throw e; })); return assetCache.get(name); }
 async function loadAsset(name){
   try{ const r=await fetch('models/'+name); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>1024) return b; } }catch(e){}
   await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='models/'+name+'.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
@@ -1704,7 +1761,10 @@ async function loadAsset(name){
   return out.buffer;
 }
 let fbxParsed=null;                 // move files are parsed once and shared by every coach
-async function boot(avKey){
+// footwork for interactive mode: real travel and turns, taken from each clip and applied to where he stands
+const LOCO_FILES={'step-back':'step-back.fbx','pivot-left':'pivot-left.fbx','pivot-right':'pivot-right.fbx',
+  'short-step':'short-step-forward.fbx','side-left':'side-step-left.fbx','walk':'walk-forward.fbx','walk-back':'walk-back.fbx'};
+async function boot(avKey,opts={}){
   if(!canvas) return;
   const gen=++bootGen, AV=AVATARS[avKey]||AVATARS.coach;
   const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -1958,14 +2018,29 @@ async function boot(avKey){
     feint:                 {file:'jab.fbx',                    hand:'lead'},
   };
   const MOVE_FILE_LIST=[...new Set(Object.values(MOVE_LIBRARY).filter(e=>e.file).map(e=>e.file))];
+  const FBX_FILES=[...new Set([...MOVE_FILE_LIST,...Object.values(LOCO_FILES)])];
   const fbxLoader=new FBXLoader();
-  if(!fbxParsed) fbxParsed=Promise.all(MOVE_FILE_LIST.map(f=>asset(f).then(buf=>fbxLoader.parse(buf,'')).catch(()=>null)));
+  if(!fbxParsed) fbxParsed=Promise.all(FBX_FILES.map(f=>asset(f).then(buf=>fbxLoader.parse(buf,'')).catch(()=>null)));
   const [gltf,moveFbx]=await Promise.all([asset(AV.file).then(buf=>gl.parseAsync(buf,'')), fbxParsed]);
   if(gen!==bootGen){ renderer.dispose(); return; }             // switched again while loading
   const model=gltf.scene; scene.add(model);
   model.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; if(o.material){ o.material.envMapIntensity=.55; } } });
   const bones={}; model.traverse(o=>{ if(o.isBone) bones[o.name]=o; });
   const restHips=bones.Hips ? bones.Hips.position.clone() : new THREE.Vector3(0,1,0);
+  // feet on the floor: how high his lowest foot joint sits when he stands normally, so every move can be set down on the canvas
+  const FEET=['LeftToeBase','RightToeBase','LeftFoot','RightFoot'].map(n=>bones[n]).filter(Boolean);
+  const footV=new THREE.Vector3();
+  const lowestFoot=()=>{ let lo=Infinity; for(const b of FEET){ b.getWorldPosition(footV); if(footV.y<lo) lo=footV.y; } return lo; };
+  model.updateMatrixWorld(true);
+  const TOE_REST=FEET.length ? lowestFoot()-model.position.y : 0;
+  function groundFeet(dt){                     // every frame: lift or lower him so his lowest foot rests on the canvas (no floating, no sinking)
+    if(!FEET.length) return;
+    model.updateMatrixWorld(true);
+    const lo=lowestFoot(); if(!isFinite(lo)) return;
+    const want=model.position.y+(TOE_REST-lo);
+    model.position.y+=(want-model.position.y)*Math.min(1,dt*16);
+    model.updateMatrixWorld(true);
+  }
 
   // black leather gloves with gold bands, fixed to each hand
   const leather=new THREE.MeshPhysicalMaterial({color:AV.glove,roughness:.34,metalness:0,clearcoat:.7,clearcoatRoughness:.22});
@@ -2039,7 +2114,7 @@ async function boot(avKey){
   function retarget(clip,name){
     const tracks=[];
     for(const t of clip.tracks){
-      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig[:_]?/,''), prop=t.name.slice(dot+1);
+      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig\d*[:_]?/,''), prop=t.name.slice(dot+1);
       if(!bones[node]) continue;
       if(prop==='quaternion') tracks.push(new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,t.values));
       else if(prop==='position' && node==='Hips'){
@@ -2065,7 +2140,8 @@ async function boot(avKey){
     return new THREE.AnimationClip(name,clip.duration,tracks);
   }
   const CLIPS={};
-  MOVE_FILE_LIST.forEach((f,i)=>{ const o=moveFbx[i]; if(o && o.animations && o.animations[0]) CLIPS[f]=retarget(o.animations[0],f); });
+  const FBX={}; FBX_FILES.forEach((f,i)=>{ FBX[f]=moveFbx[i]; });
+  MOVE_FILE_LIST.forEach(f=>{ const o=FBX[f]; if(o && o.animations && o.animations[0]) CLIPS[f]=retarget(o.animations[0],f); });
   // no mirroring: every clip is orthodox, and a mirrored clip would turn him southpaw
   const stanceClip=CLIPS[MOVE_LIBRARY.stance.file];
   if(stanceClip){ if(idle) idle.stop(); idle=mixer.clipAction(stanceClip); idle.play(); }
@@ -2163,7 +2239,7 @@ async function boot(avKey){
   function lean(ang){ rotateWorld(bones.Spine,AX_F,ang*.3); rotateWorld(bones.Spine1,AX_F,ang*.35); rotateWorld(bones.Spine2,AX_F,ang*.35); }
   function bend(ang){ rotateWorld(bones.Spine,AX_X,ang*.35); rotateWorld(bones.Spine1,AX_X,ang*.35); rotateWorld(bones.Spine2,AX_X,ang*.3); }
   function applyProc(now){
-    model.position.x=0;
+    model.position.x=base.x; model.position.z=base.y;                 // where he stands (base.y holds z) in the ring (moves in interactive mode)
     if(!proc && curMod==='low' && cur){                   // body shot from a head punch: bend the knees and lean in
       const c=cur.getClip(), t=Math.min(1,Math.max(0,cur.time/(c.duration||1))), s=Math.sin(Math.PI*t);
       model.updateMatrixWorld(true);
@@ -2195,7 +2271,7 @@ async function boot(avKey){
         bend(.3*s); reach('Left',guardTarget('Left'),e*.6); reach('Right',guardTarget('Right'),e*.6); break;
       case 'shuffle': {                                   // lateral shuffle: out to the side, settle, back across
         const seg=p<.32?ease(p/.32):p<.5?1:p<.82?1-ease((p-.5)/.32):0;
-        model.position.x=-.2*seg;
+        { const yw=model.rotation.y; model.position.x=base.x-.2*seg*Math.cos(yw); model.position.z=base.y+.2*seg*Math.sin(yw); }
         const pushing=(p<.32||(p>.5&&p<.82));
         if(H) H.position.y-=pushing?.03*Math.abs(Math.sin(p*Math.PI*6)):0;
         model.updateMatrixWorld(true);
@@ -2205,13 +2281,21 @@ async function boot(avKey){
 
   // ---- sequencer: clips and built-in moves, looped until the announcement ends ----
   let seq=[], si=0, cur=null, looping=false, playing=false, pace=1, curMod=null;
+  let moveQ=[], lastMove='', rootAct=null, home=null;
   function toStance(fade){ if(cur){ cur.fadeOut(fade); cur=null; } if(idle){ idle.reset().fadeIn(fade).play(); } }
   function playNext(){
-    proc=null;
+    if(home) return;                                                        // walking back to the centre: the drill resumes after
+    proc=null; rootAct=null;
+    if(moveQ.length){ playLoco(moveQ.shift()); return; }
     if(!seq.length){ playing=false; return; }
     if(si>=seq.length){
       if(!looping){ playing=false; toStance(.3); return; }
       si=0;
+      if(gymMode && LOCO_OK){                                              // combination done: move (or hold his ground), then go again
+        const plan=planMove();
+        if(plan==='home'){ startHome(null); return; }
+        moveQ=plan; if(moveQ.length){ playLoco(moveQ.shift()); return; }
+      }
     }
     const it=seq[si++];
     if(it.clip){
@@ -2226,12 +2310,232 @@ async function boot(avKey){
     }
     playing=true;
   }
-  mixer.addEventListener('finished',e=>{ if(e.action===cur) playNext(); });
+  mixer.addEventListener('finished',e=>{ if(rootAct && e.action===rootAct.act) updateRoot(true); if(e.action===cur) playNext(); });
+
+  // ---- footwork with real travel (interactive mode) ----
+  // Each clip is made to play on the spot; the travel and turn it contained are measured and applied to the whole model,
+  // so he really moves across the canvas. base = where he stands (x, z); model.rotation.y = which way he faces.
+  const base=new THREE.Vector2(model.position.x,model.position.z);
+  const LOCO={};
+  const yawQ=(a,out)=>out.setFromAxisAngle(new THREE.Vector3(0,1,0),a);
+  function retargetLoco(clip,name){
+    const tracks=[], qa=new THREE.Quaternion(), q0=new THREE.Quaternion(), qr=new THREE.Quaternion(), qy=new THREE.Quaternion();
+    let root=null, turn=null;
+    const hq=clip.tracks.find(t=>t.name.endsWith('Hips.quaternion'));
+    if(hq){                                   // the turn: twist of the hips about the vertical, relative to the first frame
+      const v=hq.values, n=hq.times.length, yaw=new Float32Array(n); q0.fromArray(v,0); const q0i=q0.clone().invert(); let prev=0, add=0;
+      for(let i=0;i<n;i++){ qa.fromArray(v,i*4); qr.copy(qa).multiply(q0i);
+        let a=2*Math.atan2(qr.y,qr.w); a=Math.atan2(Math.sin(a),Math.cos(a)); if(i){ const d=a-prev; if(d>Math.PI) add-=2*Math.PI; else if(d<-Math.PI) add+=2*Math.PI; } prev=a; yaw[i]=a+add; }
+      turn={times:hq.times,yaw};
+    }
+    for(const t of clip.tracks){
+      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig\d*[:_]?/,''), prop=t.name.slice(dot+1);
+      if(!bones[node]) continue;
+      if(prop==='quaternion'){
+        if(node==='Hips' && turn){            // remove the turn from the hips; the model turns instead
+          const v=Float32Array.from(t.values);
+          for(let i=0;i<turn.times.length;i++){ qa.fromArray(v,i*4); yawQ(-turn.yaw[i],qy); qa.premultiply(qy); qa.toArray(v,i*4); }
+          tracks.push(new THREE.QuaternionKeyframeTrack('Hips.quaternion',t.times,v));
+        } else tracks.push(new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,t.values));
+      } else if(prop==='position' && node==='Hips'){
+        const n=t.times.length, v=Float32Array.from(t.values), s=rest.y/(t.values[1]||1), x=new Float32Array(n), z=new Float32Array(n);
+        for(let i=0;i<n;i++){ x[i]=(t.values[i*3]-t.values[0])*s; z[i]=(t.values[i*3+2]-t.values[2])*s; v[i*3]=rest.x; v[i*3+1]=t.values[i*3+1]*s; v[i*3+2]=rest.z; }
+        root={times:t.times,x,z};
+        tracks.push(new THREE.VectorKeyframeTrack('Hips.position',t.times,v));
+      }
+    }
+    if(!root) return null;
+    const clipOut=new THREE.AnimationClip('loco:'+name,clip.duration,tracks);
+    const last=root.times.length-1, ty=turn?turn.yaw[turn.yaw.length-1]:0;
+    return {clip:clipOut,root,turn,dur:clip.duration,total:{x:root.x[last],z:root.z[last],yaw:ty}};
+  }
+  const rest=restHips;
+  for(const [k,f] of Object.entries(LOCO_FILES)){ const o=FBX[f]; if(o && o.animations && o.animations[0]){ const L=retargetLoco(o.animations[0],k); if(L) LOCO[k]=L; } }
+  const LOCO_OK=Object.keys(LOCO).length>=4;
+  const sampleAt=(times,arr,t)=>{ const n=times.length; if(t<=times[0]) return arr[0]; if(t>=times[n-1]) return arr[n-1];
+    let lo=0,hi=n-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(times[m]<=t) lo=m; else hi=m; } const f=(t-times[lo])/(times[hi]-times[lo]); return arr[lo]+(arr[hi]-arr[lo])*f; };
+  function playLoco(item){
+    const L=LOCO[item.k]; if(!L){ playNext(); return; }
+    const act=mixer.clipAction(L.clip);
+    act.reset(); act.setLoop(item.n>1?THREE.LoopRepeat:THREE.LoopOnce,item.n); act.clampWhenFinished=true; act.timeScale=FOOT_SPEED;
+    if(cur && cur!==act) act.crossFadeFrom(cur,.13,false); else if(idle && idle.isRunning()) act.crossFadeFrom(idle,.13,false);
+    act.play(); cur=act; curMod=null; playing=true;
+    rootAct={act,L,n:item.n,loop:0,lastT:0,x0:base.x,z0:base.y,yaw0:model.rotation.y};
+  }
+  function updateRoot(done){                  // place the model along the clip's own path
+    const r=rootAct; if(!r) return;
+    let t=r.act.time; if(t<r.lastT-.05) r.loop++; r.lastT=t;
+    const L=r.L, T=L.total;
+    let lx, lz, yw;
+    if(done){ lx=T.x*r.n; lz=T.z*r.n; yw=T.yaw*r.n; }
+    else { const k=r.loop; lx=T.x*k+sampleAt(L.root.times,L.root.x,t); lz=T.z*k+sampleAt(L.root.times,L.root.z,t); yw=T.yaw*k+(L.turn?sampleAt(L.turn.times,L.turn.yaw,t):0); }
+    const c=Math.cos(r.yaw0), sn=Math.sin(r.yaw0);
+    base.set(r.x0+lx*c+lz*sn, r.z0-lx*sn+lz*c);
+    model.rotation.y=r.yaw0+yw;
+    model.position.x=base.x; model.position.z=base.y;
+    if(done) rootAct=null;
+  }
+  // choose the next bit of footwork: varied, sensible for where he is, and never through the ropes
+  const FOOT_SPEED=1.75;                       // footwork plays this much faster than the clips (steps, pivots, walks)
+  const SAFE=2.3;                              // he can get this close to the ropes (they are at 3.0 from the middle)
+  const EDGE=1.85;                             // past this, he heads back to the centre (unless he is pinning someone)
+  const MOVES=[
+    {id:'back-pivot-left', seq:[['step-back',1],['pivot-left',1]], w:1},
+    {id:'back-pivot-right',seq:[['step-back',1],['pivot-right',1]],w:1},
+    {id:'short-steps',     seq:[['short-step',1],['short-step',1]],w:1.1},
+    {id:'side-left',       seq:[['side-left',1]],                  w:.9},
+    {id:'walk',            seq:[['walk',2]],                       w:.7},
+    {id:'walk-back',       seq:[['walk-back',2]],                  w:.7},
+    {id:'pivot-left',      seq:[['pivot-left',1]],                 w:.6},   // turn to square up again
+    {id:'pivot-right',     seq:[['pivot-right',1]],                w:.6},
+    {id:'side-pivot-left', seq:[['side-left',1],['pivot-left',1]], w:.6},   // step round him, then re-square
+    {id:'side-pivot-right',seq:[['side-left',1],['pivot-right',1]],w:.6},
+  ];
+  function simulate(m){
+    let x=base.x, z=base.y, yw=model.rotation.y, worst=0;              // furthest out the move itself goes
+    for(const [k,n] of m.seq){ const L=LOCO[k]; if(!L) return null;
+      for(let i=0;i<n;i++){ const c=Math.cos(yw), sn=Math.sin(yw), T=L.total;
+        const dx=T.x*c+T.z*sn, dz=-T.x*sn+T.z*c;
+        worst=Math.max(worst,Math.abs(x+dx/2),Math.abs(z+dz/2),Math.abs(x+dx),Math.abs(z+dz));
+        x+=dx; z+=dz; yw+=T.yaw; } }
+    return {x,z,yw,worst};
+  }
+  // ---- back to the centre: turn to face it, walk there in a straight line, then (at the end of a round) face the front ----
+  function startHome(endYaw){
+    const d=Math.hypot(base.x,base.y);
+    moveQ=[]; rootAct=null; proc=null;
+    if(!gymMode || !LOCO.walk){                                             // not on screen: just put him there
+      base.set(0,0); model.position.x=0; model.position.z=0; if(endYaw!=null) model.rotation.y=endYaw;
+      if(looping) playNext(); else if(restAfter) startRestMix(); return;
+    }
+    if(d<.12 && endYaw==null){ playNext(); return; }
+    home={stage:d<.12?'face':'turn', t:0, yaw0:model.rotation.y, want:Math.atan2(-base.x,-base.y), endYaw, walk:null};
+    toStance(.15); playing=true;
+  }
+  function stepHome(dt){
+    const h=home; if(!h) return;
+    h.t+=dt;
+    if(h.stage==='turn'){                                                   // turn on the spot to face the centre
+      const k=Math.min(1,h.t/.25), e=k*k*(3-2*k);
+      model.rotation.y=h.yaw0+ang(h.want-h.yaw0)*e;
+      if(k>=1){ h.stage='walk'; h.t=0;
+        const a=mixer.clipAction(LOCO.walk.clip); a.reset(); a.setLoop(THREE.LoopRepeat,Infinity); a.clampWhenFinished=false; a.timeScale=FOOT_SPEED;
+        if(idle && idle.isRunning()) a.crossFadeFrom(idle,.15,false); a.play(); h.walk=a; }
+    } else if(h.stage==='walk'){                                            // straight back to the middle at walking pace
+      const d=Math.hypot(base.x,base.y), v=Math.abs(LOCO.walk.total.z)/LOCO.walk.dur*FOOT_SPEED, stepLen=Math.min(d,v*dt);
+      if(d>1e-4){ base.x-=base.x/d*stepLen; base.y-=base.y/d*stepLen; }
+      model.rotation.y+=ang(Math.atan2(-base.x,-base.y)-model.rotation.y)*Math.min(1,dt*7)*(d>.2?1:0);
+      if(d<=.02){ base.set(0,0); h.walk.fadeOut(.18); if(idle){ idle.reset().fadeIn(.18).play(); }
+        if(h.endYaw!=null){ h.stage='face'; h.t=0; h.yaw0=model.rotation.y; } else h.stage='done'; }
+    } else if(h.stage==='face'){                                            // end of the round: face the front
+      const k=Math.min(1,h.t/.35), e=k*k*(3-2*k);
+      model.rotation.y=h.yaw0+ang(h.endYaw-h.yaw0)*e;
+      if(k>=1) h.stage='done';
+    }
+    model.position.x=base.x; model.position.z=base.y;
+    if(h.stage==='done'){ home=null; playing=false; cur=null; if(looping && seq.length){ si=0; playNext(); } else if(restAfter) startRestMix(); }
+  }
+  api.home=()=>{ restAfter=true; startHome(0); };
+
+  // ---- the one-minute rest: he stays in the centre and flows between his stance and a few relaxed moves ----
+  const REST_FILES={'happy':'rest-happy-idle.fbx','ready':'rest-breakdance-ready.fbx','angry':'rest-angry.fbx','bboy':'rest-bboy-hiphop.fbx',
+    'stretch':'rest-arm-stretch.fbx','hiphop':'rest-hiphop-dance.fbx','uprock':'rest-uprock.fbx'};
+  const REST={};                              // filled in the background once he is ready (see below)
+  let restMix=null, restAfter=false;
+  function startRestMix(){ if(looping || restMix) return; restMix={act:null,key:'stance',until:performance.now()+2500+Math.random()*2000}; }
+  function stepRest(now){
+    const r=restMix; if(!r || now<r.until) return;
+    const keys=['stance',...Object.keys(REST)].filter(k=>k!==r.key);
+    const key=keys[Math.floor(Math.random()*keys.length)];
+    const next=key==='stance' ? idle : mixer.clipAction(REST[key].clip);
+    const prev=r.act || idle;
+    if(next && next!==prev){
+      next.reset(); next.setLoop(THREE.LoopRepeat,Infinity); next.clampWhenFinished=false; next.timeScale=1; next.enabled=true;
+      next.play(); next.crossFadeFrom(prev,.8,false);                      // a slow, soft blend from one to the next
+    }
+    r.act=key==='stance'?null:next; r.key=key;
+    const len=key==='stance'?3+Math.random()*2.5 : REST[key].dur>5 ? Math.min(REST[key].dur,6+Math.random()*2.5) : Math.max(3.5,REST[key].dur*(1+Math.floor(Math.random()*2)));
+    r.until=now+len*1000;
+  }
+  function stopRestMix(){ if(!restMix) return; if(restMix.act){ cur=restMix.act; } restMix=null; restAfter=false; }
+  function snapHome(){                         // leaving interactive mode mid-walk: finish it at once
+    if(!home) return; const h=home; home=null;
+    if(h.walk) h.walk.stop();
+    base.set(0,0); model.position.x=0; model.position.z=0; if(h.endYaw!=null) model.rotation.y=h.endYaw;
+    playing=false; toStance(.1); if(looping && seq.length){ si=0; playNext(); }
+  }
+
+  // ---- ring craft: he works against an imaginary opponent, with three tactics he cycles through ----
+  //  circle:   the opponent is in the middle; he stays about 1.4 m out and works round them, always turning back to face in
+  //  pressure: the opponent is backed onto the ropes; he cuts them off, walks them down, then plants and punches
+  //  centre:   after the pressure he takes the middle of the ring back, then picks the next tactic
+  let tactic='circle', tacticLeft=5, opp={x:0,z:0}, holds=0;
+  const ang=a=>Math.atan2(Math.sin(a),Math.cos(a)), bell=(v,w)=>Math.exp(-(v/w)*(v/w));
+  const faceErr=(x,z,yw,tx,tz)=>{ const want=Math.atan2(tx-x,tz-z); return Math.abs(ang(want-yw)); };   // 0 = looking straight at the target
+  function nextTactic(){
+    if(Math.random()<.5){ tactic='circle'; tacticLeft=4+Math.floor(Math.random()*3); opp={x:0,z:0}; }
+    else {                                                                  // pick a side of the ring to trap them on
+      tactic='pressure'; tacticLeft=7; holds=0;
+      const fa=model.rotation.y+(Math.random()-.5)*1.6;                     // roughly the way he is already facing
+      opp={x:Math.sin(fa)*2.75, z:Math.cos(fa)*2.75};
+    }
+  }
+  let lastQuad=-1, quadMoves=0;
+  function planMove(){
+    const x0=base.x, z0=base.y, opts=[];
+    const near=tactic==='pressure' && Math.hypot(opp.x-x0,opp.z-z0)<1.35 && faceErr(x0,z0,model.rotation.y,opp.x,opp.z)<.6;
+    // which quarter of the ring he is in (none while he is near the middle)
+    const quad=Math.hypot(x0,z0)>.7 ? (x0>0?1:0)+(z0>0?2:0) : -1;
+    quadMoves=(quad>=0 && quad===lastQuad) ? quadMoves+1 : 0; lastQuad=quad;
+    const pinning=near && holds<2;
+    if((Math.max(Math.abs(x0),Math.abs(z0))>EDGE && !pinning) || quadMoves>=4 || (tactic==='pressure' && holds>=3)){
+      lastQuad=-1; quadMoves=0; tacticLeft=0; holds=0; lastMove='home';
+      return 'home';                                                        // near the ropes, or stuck in one corner of the ring: back to the centre
+    }
+    if(tacticLeft<=0) nextTactic();
+    tacticLeft--;
+    const cands=MOVES.concat(near ? [{id:'hold',seq:[],w:1}] : []);
+    for(const m of cands){
+      const r=m.seq.length ? simulate(m) : {x:x0,z:z0,yw:model.rotation.y,worst:0};
+      if(!r) continue;
+      const out0=Math.max(Math.abs(x0),Math.abs(z0));
+      if(r.worst>SAFE && !(Math.max(Math.abs(r.x),Math.abs(r.z))<out0-.05 && r.worst<SAFE+.25)) continue;   // never towards the ropes
+      let sc=m.w*(.7+Math.random()*.6);
+      if(m.id===lastMove && m.id!=='hold') sc*=.25;                         // keep the footwork varied
+      const dc=Math.hypot(r.x,r.z);
+      if(tactic==='circle'){
+        sc*=bell(dc-1.4,.5);                                    // stay at circling distance
+        sc*=bell(faceErr(r.x,r.z,r.yw,0,0),.75);                  // keep facing the man in the middle
+        const da=Math.abs(ang(Math.atan2(r.x,r.z)-Math.atan2(x0,z0)));
+        if(Math.hypot(x0,z0)>.6) sc*=1+da*2.2;                              // and actually move round him
+      } else if(tactic==='pressure'){
+        const d0=Math.hypot(opp.x-x0,opp.z-z0), d1=Math.hypot(opp.x-r.x,opp.z-r.z);
+        sc*=bell(faceErr(r.x,r.z,r.yw,opp.x,opp.z),.6);           // square up to him
+        sc*=d1<1.15 ? .7 : Math.max(.1,1+(d0-d1)*2.2);                      // walk him down
+        if(m.id==='walk-back') sc*=.15;                                     // pressure fighters don't back off
+        if(m.id==='hold') sc*=holds<2 ? 3 : .2;                             // pinned: plant the feet and punch
+      }
+      opts.push({m,r,sc,dc});
+    }
+    let pick=null; const tot=opts.reduce((a,o)=>a+o.sc,0);
+    if(tot>0){ let u=Math.random()*tot; for(const o of opts){ u-=o.sc; if(u<=0){ pick=o; break; } } pick=pick||opts[opts.length-1]; }
+    else if(opts.length) pick=opts.sort((a,b)=>a.dc-b.dc)[0];
+    else {                                                                  // boxed in: whatever brings him closest to the middle
+      let best=null; for(const m of MOVES){ const r=simulate(m); if(r){ const d=Math.hypot(r.x,r.z); if(!best||d<best.dc) best={m,r,dc:d}; } }
+      pick=best;
+    }
+    if(!pick) return [];
+    if(pick.m.id==='hold') holds++;
+    lastMove=pick.m.id;
+    return pick.m.seq.map(([k,n])=>({k,n}));
+  }
   // play a drill's moves as a combo, over and over, until finish() is called
   api.play=p=>{
     api._last=p;
     if(reduce || !p) return;
-    pace=Math.min(1.45,Math.max(.6,p.pace));
+    if(home && home.endYaw!=null){ home.endYaw=null; }                     // the next drill has started: no need to face the front
+    restAfter=false; stopRestMix();
+    pace=Math.min(2.2,Math.max(.6,p.pace));
     seq=[];
     if(p.keys){ seq=p.keys.map(resolve).filter(Boolean); if(!seq.length) seq=[resolve('jab,cross')].filter(Boolean); si=0; looping=true; playNext(); return; }
     const mv=p.moves, k=m=>m.m+(m.low?'_low':''), key=(i,n)=>mv.slice(i,i+n).map(k).join(',');
@@ -2245,7 +2549,7 @@ async function boot(avKey){
     if(!seq.length){ const it=resolve('jab,cross')||resolve('jab'); if(it) seq.push(it); }
     si=0; looping=true; playNext();
   };
-  api.finish=()=>{ looping=false; if(!playing) toStance(.3); };
+  api.finish=()=>{ looping=false; moveQ=[]; if(!playing && !home) toStance(.3); };
   api.busy=()=>playing;
   api.demo=()=>{};
 
@@ -2276,7 +2580,7 @@ async function boot(avKey){
   let camAz=.05, camH=1.2, camR=5.6, camLookH=.02;
   // where he stands (always the middle of the ring; kept as a setting so other spots can be tried later)
   let spot={x:0,y:0,z:0,yaw:0}, pendingRound=null;
-  const baseY=()=>model.position.y+restHips.y;
+  const baseY=()=>restHips.y;                  // the camera works from the floor, so it never bobs with him
   function applyPlace(){
     if(pendingRound==null || !gym) return;
     const r=pendingRound; pendingRound=null;
@@ -2295,14 +2599,13 @@ async function boot(avKey){
   }
   // each flip: about a third stay on one straight view; the rest roam randomly
   function planFlip(now){
-    applyPlace();                                                          // move between rounds while he is turned away
     roam=Math.random()>.33;
     const n=roam ? (Math.random()<.5 ? 'front' : SHOT_NAMES[Math.floor(Math.random()*SHOT_NAMES.length)]) : (Math.random()<.6 ? 'front' : 'frontWide');
     const S=SHOTS[n]; camAz=S.az; camH=S.h; camR=S.r; camLookH=S.look;
     setShot(n,now,true);                                                  // open on the first shot straight away
     bodyCentre(centre);
     centre.copy(bodyCentre(hipNow.clone()));
-    camPos.set(centre.x+Math.sin(camAz+spot.yaw)*camR,baseY()+camH,centre.z+Math.cos(camAz+spot.yaw)*camR);
+    camPos.set(centre.x+Math.sin(camAz+model.rotation.y)*camR,baseY()+camH,centre.z+Math.cos(camAz+model.rotation.y)*camR);
     camLook.set(centre.x,baseY()+camLookH-LIFT,centre.z);
   }
   api.punch=()=>{ punchAt=performance.now(); };
@@ -2326,9 +2629,13 @@ async function boot(avKey){
     }
     restoreBase();              // undo last frame's built-in move so nothing accumulates
     mixer.update(dt);
+    if(rootAct) updateRoot(false);
+    if(home) stepHome(dt);
+    if(restMix && !home) stepRest(now);
     saveBase();
     if(proc && now-proc.t0>=proc.ms) playNext();
     applyProc(now);
+    groundFeet(dt);
     if(faceMeshes.length) updateFace(now,dt);
     if(head) head.getWorldPosition(tmp); else tmp.set(0,1.6,0);
     // camera: eased moves between random shots, a slow drift within each shot, a gentle sway, and a small push on each punch
@@ -2343,18 +2650,19 @@ async function boot(avKey){
     const t=now/1000, sway=reduce?0:1;
     const swayAz=sway*(.012*Math.sin(t*.53)+.006*Math.sin(t*1.31)), swayH=sway*(.018*Math.sin(t*.71)+.008*Math.sin(t*1.7));
     const pk=Math.max(0,1-(now-punchAt)/450), push=reduce?0:.28*Math.sin(Math.PI*Math.min(1,(now-punchAt)/450))*(pk>0?1:0);
-    const az=camAz+swayAz+spot.yaw, rr=camR-push;          // shots are relative to the way he faces
+    const az=camAz+swayAz+model.rotation.y, rr=camR-push;  // shots are relative to the way he faces
     const c=bodyCentre(hipNow.clone()); centre.lerp(c,1-Math.exp(-dt*6));
     camPos.set(centre.x+Math.sin(az)*rr,baseY()+camH+swayH,centre.z+Math.cos(az)*rr);
     camLook.set(centre.x,baseY()+camLookH-LIFT,centre.z);
     if(gymCam){                                    // gym mode: glide on a smooth path; on the way out, glide back to the timer's shot
       if(gymMode) gymTarget(now,tgtP,tgtL); else { tgtP.copy(camPos); tgtL.copy(camLook); }
-      const k=1-Math.exp(-dt*(gymMode?2.1:5)); gPos.lerp(tgtP,k); gLook.lerp(tgtL,k);
+      const k=1-Math.exp(-dt*(gymMode?(faceCam?4:2.1):5)), kl=1-Math.exp(-dt*(gymMode&&faceCam?14:(gymMode?2.1:5)));
+      gPos.lerp(tgtP,k); gLook.lerp(tgtL,kl);                               // face cam: the aim follows his face tightly, the camera glides after
       camera.position.copy(gPos); camera.lookAt(gLook);
     } else { camera.position.copy(camPos); camera.lookAt(camLook); }
-    const fovT=gymMode?50:28;
+    const fovT=gymMode?(faceCam?34:50):28;
     if(Math.abs(fovNow-fovT)>.05){ fovNow+=(fovT-fovNow)*(1-Math.exp(-dt*3)); camera.fov=fovNow; camera.updateProjectionMatrix(); }
-    if(gym) gym.update(now,dt,camera.position,{x:centre.x,z:centre.z,feet:model.position.y,head:model.position.y+1.85});
+    if(gym) gym.update(now,dt,camera.position,{x:centre.x,z:centre.z,feet:0,head:1.85});   // his shadow always sits on the canvas under him
     renderer.render(scene,camera);
   }
 
@@ -2363,7 +2671,17 @@ async function boot(avKey){
      to ringside and circles him while he works. The timer, the drill and the list come in over the top. */
   let gymMode=false, gymAt=0, gymOutAt=-1e9, fovNow=28;
   const gPos=new THREE.Vector3(), gLook=new THREE.Vector3(), tgtP=new THREE.Vector3(), tgtL=new THREE.Vector3();
+  // face cam: in front of him and a little to his lead side, at head height, always aimed at his face wherever he goes
+  let faceCam=false; const headP=new THREE.Vector3();
+  function faceTarget(P,L){
+    if(bones.Head) bones.Head.getWorldPosition(headP); else headP.set(centre.x,1.65,centre.z);
+    headP.y+=.07;                                                          // eyes rather than the base of the skull
+    const a=model.rotation.y+.38, r=5.45;                                 // about 5.5 m out, still aimed at his face
+    P.set(headP.x+Math.sin(a)*r, headP.y+.06, headP.z+Math.cos(a)*r);
+    L.set(headP.x, headP.y-(camera.aspect<.8?.16:.02), headP.z);           // on a phone, keep his face above the panels
+  }
   function gymTarget(now,P,L){
+    if(faceCam && now-gymAt>1200){ faceTarget(P,L); return; }
     const t=(now-gymAt)/1000, c=centre;
     if(t<2.6){                                   // high up: the whole gym, turning slowly
       const a=.4+t*.12; P.set(c.x+Math.sin(a)*6.4,7.0,c.z+Math.cos(a)*6.4); L.set(c.x,-.5,c.z);
@@ -2372,23 +2690,31 @@ async function boot(avKey){
       P.set(c.x+Math.sin(a)*r,2.75+Math.sin(u*.17)*.35,c.z+Math.cos(a)*r); L.set(c.x,camera.aspect<.8?.2:.85,c.z);   // on a phone, frame him higher, above the panels
     }
   }
-  const view=document.getElementById('gymView');
-  const HUD=[['#ringWrap','gTimer'],['#timer .controls','gControls'],['#nowCard','gNow'],['#timer .upnext','gList']];
-  const homes=[];
-  function moveHud(into){
-    if(into){ for(const [sel,dest] of HUD){ const el=document.querySelector(sel); if(!el) continue;
-        const ph=document.createComment('gym'); el.before(ph); homes.push([el,ph]); document.getElementById(dest).appendChild(el); } }
-    else { while(homes.length){ const [el,ph]=homes.pop(); ph.replaceWith(el); } }
-  }
   const circleAt=el=>{ const r=el.getBoundingClientRect(); view.style.setProperty('--gx',(r.left+r.width/2)+'px'); view.style.setProperty('--gy',(r.top+r.height/2)+'px'); view.style.setProperty('--gr',(r.width/2)+'px'); };
   let gymTimers=[];
   const later=(fn,ms)=>gymTimers.push(setTimeout(fn,ms));
-  api.enterGym=()=>{
-    if(gymMode || !api.ready || !view) return;
+  function setCamUI(){
+    const b=document.getElementById('gymCam'), l=document.getElementById('gymCamLabel'); if(!b) return;
+    b.setAttribute('aria-pressed',faceCam); if(l) l.textContent=faceCam?'Ring cam':'Face cam';
+    b.setAttribute('aria-label',faceCam?'Ring cam':'Face cam'); b.title=faceCam?'Ring cam: circle the ring':'Face cam: follow the face';
+  }
+  api.gymState=()=>({on:gymMode, faceCam});
+  api.enterGym=(opts={})=>{
+    if(gymMode || !api.ready || !view) return false;
     gymTimers.forEach(clearTimeout); gymTimers=[];
+    if(opts.resume){                                                        // back in after a coach swap: no zoom, carry straight on
+      gymMode=true; window.gymMode=true; gymAt=performance.now()-3000; faceCam=!!opts.faceCam; setCamUI();
+      view.hidden=false; view.style.setProperty('--gr',Math.hypot(innerWidth,innerHeight)+'px'); view.prepend(canvas);
+      renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
+      moveHud(true); view.classList.add('hud-on'); document.documentElement.style.overflow='hidden';
+      if(faceCam) faceTarget(gPos,gLook); else gymTarget(performance.now(),gPos,gLook);
+      if(window.bfWork){ if(api._last) api.play(api._last); } else { restAfter=true; startRestMix(); }
+      return true;
+    }
     gymMode=true; window.gymMode=true; gymAt=performance.now();
+    if(window.iaPrompt) window.iaPrompt(false);                             // they found it: no more prompt
     gPos.copy(camera.position); gLook.copy(camLook);
-    if(!looping && api._last) api.play(api._last);                     // keep him going for the whole drill
+    if(!looping && api._last && window.bfWork) api.play(api._last);    // mid-drill: keep him going for the whole drill
     view.style.transition='none'; circleAt(inner); view.hidden=false;
     view.prepend(canvas);
     renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
@@ -2397,13 +2723,19 @@ async function boot(avKey){
     requestAnimationFrame(()=>view.style.setProperty('--gr',Math.hypot(innerWidth,innerHeight)+'px'));
     document.documentElement.style.overflow='hidden';
     later(()=>{ moveHud(true); requestAnimationFrame(()=>view.classList.add('hud-on')); },900);
+    if(opts.auto){                                                          // opened for them: say how to get back to the classic timer
+      const t=document.getElementById('gymToast'), tt=document.getElementById('gymToastText');
+      if(tt && matchMedia('(hover:hover) and (pointer:fine)').matches) tt.innerHTML="You're in interactive mode. Click <b>Back to timer</b> any time to return to the classic view.";
+      if(t){ later(()=>t.classList.add('show'),1500); later(()=>t.classList.remove('show'),9500); }
+    }
     document.getElementById('gymExit')?.focus({preventScroll:true});
+    return true;
   };
   api.exitGym=instant=>{
     if(!gymMode || !view) return;
     gymTimers.forEach(clearTimeout); gymTimers=[];
-    gymMode=false; window.gymMode=false; gymOutAt=performance.now(); wasFlipped=false;
-    view.classList.remove('hud-on');
+    gymMode=false; window.gymMode=false; gymOutAt=performance.now(); wasFlipped=false; moveQ=[]; snapHome();
+    view.classList.remove('hud-on'); document.getElementById('gymToast')?.classList.remove('show');
     const close=()=>{
       root.prepend(canvas); view.hidden=true; document.documentElement.style.overflow='';
       renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
@@ -2414,16 +2746,22 @@ async function boot(avKey){
       requestAnimationFrame(()=>{ circleAt(inner); later(close,980); });
     },instant?0:320);
   };
-  document.getElementById('gymExit')?.addEventListener('click',()=>api.exitGym());
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && gymMode) api.exitGym(); });
-  // double-tap (or double-click) the coach while he is showing
+  document.getElementById('gymExit')?.addEventListener('click',()=>{ if(gen===bootGen) api.exitGym(); });
+  const camBtn=document.getElementById('gymCam'), camLbl=document.getElementById('gymCamLabel');
+  camBtn?.addEventListener('click',()=>{
+    if(gen!==bootGen) return;
+    faceCam=!faceCam; setCamUI();
+    if(!faceCam) gymAt=performance.now()-3000;                             // back to circling the ring (skipping the overview)
+  });
+  document.addEventListener('keydown',e=>{ if(gen===bootGen && e.key==='Escape' && gymMode) api.exitGym(); });
+  // double-tap (or double-click) the timer at any time
   let lastTap=0;
-  root.addEventListener('pointerup',e=>{
-    if(gymMode || !inner.classList.contains('flipped')) return;
+  inner.addEventListener('pointerup',e=>{
+    if(gen!==bootGen || gymMode || e.target.closest('button')) return;
     const t=performance.now();
     if(t-lastTap<380){ lastTap=0; api.enterGym(); } else lastTap=t;
   });
-  root.addEventListener('dblclick',e=>e.preventDefault());
+  inner.addEventListener('dblclick',e=>e.preventDefault());
   // a small hint, the first few times he appears
   function gymHint(){
     const h=document.getElementById('gymHint'); if(!h) return;
@@ -2442,10 +2780,51 @@ async function boot(avKey){
   root.classList.add('has3d');
   api.avatar=avKey;
   api.ready=true;
-  // switched mid-drill: pick the drill straight back up
-  if(api._last && inner.classList.contains('flipped')) api.play(api._last);
+  // fetch the other coach quietly in the background, so a swap later on doesn't wait for the download
+  setTimeout(()=>{ for(const k of Object.keys(AVATARS)) if(k!==avKey) asset(AVATARS[k].file).catch(()=>{}); },4000);
+  // the rest-period moves load quietly in the background so they never slow the start
+  Promise.all(Object.entries(REST_FILES).map(([k,f])=>asset(f).then(b=>fbxLoader.parse(b,'')).then(o=>{
+    if(gen!==bootGen || !o || !o.animations[0]) return;
+    const c=retarget(o.animations[0],'rest:'+k), d=Math.min(c.duration,k==='angry'?10:c.duration);
+    if(c.tracks.length<20) return;                                         // didn't fit his skeleton: leave it out rather than freeze him
+    const hp=c.tracks.find(t=>t.name==='Hips.position');                   // keep him in the centre: take out any steady drift across the floor
+    if(hp){ const v=hp.values, n=hp.times.length, T=hp.times[n-1]||1, dx=v[(n-1)*3]-v[0], dz=v[(n-1)*3+2]-v[2];
+      for(let i=0;i<n;i++){ const f=hp.times[i]/T; v[i*3]-=dx*f; v[i*3+2]-=dz*f; } }
+    REST[k]={clip:d<c.duration?THREE.AnimationUtils.subclip(c,'rest:'+k,0,Math.floor(d*30),30):c, dur:d};
+  }).catch(()=>{})));
+  // swapped coach while in interactive mode: carry straight on in the gym; otherwise pick the drill back up if he is showing
+  if(opts.resumeGym) api.enterGym({resume:true, faceCam:opts.faceCam});
+  else if(api._last && inner.classList.contains('flipped')) api.play(api._last);
 }
 const start=()=>boot(avatarKey).catch(err=>{ console.warn('3D coach unavailable, using the illustrated coach.',err); root.classList.remove('has3d'); });
+
+// swap coach: shut the running scene down, give it a fresh canvas in the same place, load the other coach, carry on
+let swapping=false;
+const swapBtn=document.getElementById('gymSwap'), swapLbl=document.getElementById('gymSwapLabel'), swapMsg=document.getElementById('gymLoading');
+function showSwap(){
+  if(!swapBtn) return;
+  const other=avatarKey==='her'?'coach':'her';
+  swapBtn.setAttribute('aria-pressed',avatarKey==='her');
+  if(swapLbl) swapLbl.textContent=AVATARS[other].name;
+  swapBtn.setAttribute('aria-label','Switch to the '+AVATARS[other].name.toLowerCase()); swapBtn.title='Switch to the '+AVATARS[other].name.toLowerCase();
+}
+api.setAvatar=async key=>{
+  if(!AVATARS[key] || key===avatarKey || swapping) return;
+  swapping=true;
+  const st=api.gymState ? api.gymState() : {on:false};
+  avatarKey=key; try{ localStorage.setItem('bf-coach',key); }catch(e){}
+  showSwap(); swapBtn?.classList.add('loading'); swapMsg?.classList.add('show');
+  api.ready=false; bootGen++;
+  if(live){ try{ live.renderer.dispose(); live.renderer.forceContextLoss(); }catch(e){} live=null; }
+  const fresh=canvas.cloneNode(false); canvas.replaceWith(fresh); canvas=fresh;
+  try{ await boot(key, st.on ? {resumeGym:true, faceCam:st.faceCam} : {}); }
+  catch(err){                                                              // could not load: put everything back the way it was
+    console.warn('Could not load that coach.',err);
+    if(st.on){ moveHud(false); root.prepend(canvas); view.hidden=true; view.classList.remove('hud-on'); window.gymMode=false; document.documentElement.style.overflow=''; }
+  }
+  swapping=false; swapBtn?.classList.remove('loading'); swapMsg?.classList.remove('show');
+};
+if(swapBtn){ showSwap(); swapBtn.addEventListener('click',()=>api.setAvatar(avatarKey==='her'?'coach':'her')); }
 
 if(document.readyState==='complete') setTimeout(start,300); else window.addEventListener('load',()=>setTimeout(start,300));
 </script>

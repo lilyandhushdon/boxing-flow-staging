@@ -580,6 +580,11 @@ async function boot(){
   model.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; if(o.material) o.material.envMapIntensity=.55; } });
   const bones={}; model.traverse(o=>{ if(o.isBone) bones[o.name]=o; });
   const rest=bones.Hips ? bones.Hips.position.clone() : new THREE.Vector3(0,1,0);
+  // feet on the floor in every move (same as the app)
+  const FEET=['LeftToeBase','RightToeBase','LeftFoot','RightFoot'].map(n=>bones[n]).filter(Boolean), fv=new THREE.Vector3();
+  const lowest=()=>{ let lo=Infinity; for(const b of FEET){ b.getWorldPosition(fv); if(fv.y<lo) lo=fv.y; } return lo; };
+  model.updateMatrixWorld(true);
+  const TOE_REST=FEET.length ? lowest()-model.position.y : 0;
 
   // black leather gloves with gold bands
   const leather=new THREE.MeshPhysicalMaterial({color:0x0b0b0b,roughness:.34,clearcoat:.7,clearcoatRoughness:.22});
@@ -597,7 +602,7 @@ async function boot(){
   function retarget(clip,name){
     const tracks=[];
     for(const t of clip.tracks){
-      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig[:_]?/,''), prop=t.name.slice(dot+1);
+      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig\d*[:_]?/,''), prop=t.name.slice(dot+1);
       if(!bones[node]) continue;
       if(prop==='quaternion') tracks.push(new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,t.values));
       else if(prop==='position' && node==='Hips'){
@@ -651,6 +656,7 @@ async function boot(){
     if(document.hidden || now-shownAt>900){ last=now; return; }          // only draw while he is showing
     const dt=Math.min(.05,(now-last)/1000); last=now;
     size(); mixer.update(dt);
+    if(FEET.length){ model.updateMatrixWorld(true); const lo=lowest(); if(isFinite(lo)) model.position.y+=(model.position.y+TOE_REST-lo-model.position.y)*Math.min(1,dt*16); }
     if(bones.Hips) bones.Hips.getWorldPosition(hip); else hip.set(0,1,0);
     const a=az+Math.sin(now/2600)*.12;                                    // a slow, gentle drift round him
     camera.position.set(hip.x+Math.sin(a)*5.4,rest.y+1.15,hip.z+Math.cos(a)*5.4);
