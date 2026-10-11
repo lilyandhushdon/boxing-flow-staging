@@ -219,6 +219,52 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .ring-wrap.beat .ring-track{stroke:color-mix(in srgb,var(--beatc,var(--c)) calc(10% + var(--flash,0) * 18%),var(--surface-2))}
 @media (prefers-reduced-motion:reduce){.beat-btn{display:none}}
 @media (prefers-reduced-motion:reduce){.ring-inner{transition:none}.coach.talking .back-tag i b{animation:none;height:9px}}
+
+/* gym mode: double-tap the coach and the timer opens out into the 3D gym */
+.gym-hint{position:absolute;left:50%;top:9%;transform:translateX(-50%);z-index:2;padding:4px 10px;border-radius:999px;background:rgba(10,12,16,.72);color:#f1ece2;
+  font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .4s}
+.gym-hint.show{opacity:1}
+#coach{cursor:zoom-in;touch-action:manipulation}
+.ring-inner.flipped .face.front{pointer-events:none}
+#gymView{position:fixed;inset:0;z-index:50;background:#0c0e12;clip-path:circle(var(--gr,0px) at var(--gx,50%) var(--gy,50%));
+  transition:clip-path .95s cubic-bezier(.65,0,.25,1)}
+#gymView[hidden]{display:none}
+#gymView>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.g-hud{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .45s}
+#gymView.hud-on .g-hud{opacity:1}
+.g-hud>*{pointer-events:auto}
+.g-panel{background:rgba(12,15,20,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);border-radius:16px}
+.g-exit{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:0;
+  background:var(--gold);color:var(--gold-ink);font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.g-exit svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.g-left{position:absolute;top:max(14px,env(safe-area-inset-top));left:14px;display:grid;gap:10px;justify-items:center;padding:12px;transform:translateX(-24px);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.g-timer{width:150px;height:150px;position:relative}
+.g-timer .ring-wrap{width:340px!important;max-width:none;position:absolute;left:0;top:0;transform:scale(calc(150/340));transform-origin:top left;margin:0}
+.g-left .controls{margin-top:0;gap:14px}
+.g-left .controls .ctrl{width:38px;height:38px}
+.g-left .controls .play{width:48px;height:48px}
+.g-now{position:absolute;left:50%;bottom:max(16px,env(safe-area-inset-bottom));width:min(460px,calc(100% - 28px));transform:translate(-50%,24px);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.g-now .now{margin-top:0;background:transparent}
+.g-list{position:absolute;top:76px;right:14px;bottom:max(16px,env(safe-area-inset-bottom));width:300px;padding:14px;display:flex;flex-direction:column;transform:translateX(40px);transition:transform .6s cubic-bezier(.2,.8,.2,1) .08s}
+.g-list .upnext{display:flex;flex-direction:column;min-height:0;flex:1}
+.g-list .list{max-height:none;flex:1;min-height:0}
+#gymView.hud-on .g-left,#gymView.hud-on .g-list{transform:none}
+#gymView.hud-on .g-now{transform:translate(-50%,0)}
+/* in the gym the timer stays face up: the coach is all around you */
+#gymView .ring-inner.flipped{transform:none}
+#gymView .gym-hint{display:none}
+@media (max-width:760px){
+  .g-timer{width:112px;height:112px}
+  .g-timer .ring-wrap{transform:scale(calc(112/340))}
+  .g-left{padding:8px;gap:8px}
+  .g-list{top:auto;left:14px;right:14px;width:auto;height:min(24vh,200px);bottom:max(14px,env(safe-area-inset-bottom));transform:translateY(40px);padding:10px 12px}
+  .g-list .list-note{display:none}
+  .g-list h2{margin-bottom:8px}
+  .g-now{bottom:calc(min(24vh,200px) + max(14px,env(safe-area-inset-bottom)) + 8px);width:calc(100% - 28px)}
+  .g-now .now{padding:10px 12px}
+  .g-now .now-line{display:none}
+}
+@media (prefers-reduced-motion:reduce){#gymView{transition:none}.g-hud,.g-left,.g-now,.g-list{transition:none}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
@@ -293,6 +339,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
           </div>
           <div class="face back coach" id="coach" data-mood="idle">
             <canvas class="cfig c3d" id="coach3d" aria-hidden="true"></canvas>
+            <div class="gym-hint" id="gymHint">Double-tap to step into the gym</div>
             <svg class="cfig" id="coachSvg" viewBox="0 0 240 240" aria-hidden="true">
               <defs>
                 <radialGradient id="cgSpot" cx="50%" cy="38%" r="62%">
@@ -485,6 +532,17 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 </section>
 
 <!-- ============ DONE ============ -->
+<!-- gym mode: the 3D gym full screen, with a small timer, the drill and the list over it -->
+<div id="gymView" hidden aria-label="Gym view">
+  <div class="g-hud">
+    <div class="g-left g-panel"><div class="g-timer" id="gTimer"></div><div id="gControls"></div></div>
+    <div class="g-now g-panel" id="gNow"></div>
+    <div class="g-list g-panel" id="gList"></div>
+    <button class="g-exit" id="gymExit" type="button" aria-label="Back to the timer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v6h6M20 10V4h-6M4 20l6.5-6.5M20 4l-6.5 6.5"/></svg>Back to timer</button>
+  </div>
+</div>
+
 <section id="done" class="wrap" hidden>
   <div class="done">
     <div class="eyebrow">Final bell</div>
@@ -621,7 +679,6 @@ const FOCUS = [
     ['Rhythm and bounce','Find a rhythm, punch on the beat.',['jab,cross']],
     ['Visualise','Picture an opponent. React to what they throw.',['jab,cross']]]}
 ];
-// round formats, and who coaches each: Ali takes 5 x 3 min and 3 x 5 min, Coach the others
 // a second tip for every drill, spoken halfway through it (keyed by drill name; each one is about that drill only)
 const TIPS = {
   'Jab, Jab, Cross':'Turn the back foot as the cross goes out.',
@@ -702,7 +759,7 @@ const TIPS = {
   'Rhythm and bounce':'Light on your feet. Bounce with the beat.',
   'Visualise':'Slip what they throw, then counter.'
 };
-const OPTIONS = [{r:3,m:3,coach:'coach'},{r:5,m:3,coach:'ali'},{r:3,m:5,coach:'ali'},{r:5,m:5,coach:'coach'}];
+const OPTIONS = [{r:3,m:3},{r:5,m:3},{r:3,m:5},{r:5,m:5}];
 const SEG = 30, REST = 60, READY = 5;
 // one colour per drill, cycled so neighbours never match; the ring takes the colour of the current drill
 const PALETTE = ['#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
@@ -731,10 +788,6 @@ const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
 const state = {focus:new Set(['jab','speed','power']), opt:0};
-// which coach the chosen format needs; the 3D coach loads him on the setup screen, never during the countdown
-window.coachFor=()=>OPTIONS[state.opt].coach||'coach';
-let coachSwitchT=0;
-function prepCoach(){ clearTimeout(coachSwitchT); coachSwitchT=setTimeout(()=>{ if(window.Coach3D && Coach3D.setAvatar) Coach3D.setAvatar(coachFor()); },350); }
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
 
@@ -775,7 +828,7 @@ $('focusGrid').addEventListener('click',e=>{
   const id=b.dataset.id; state.focus.has(id)?state.focus.delete(id):state.focus.add(id); renderSetup();
 });
 $('roundList').addEventListener('click',e=>{
-  const b=e.target.closest('.round-opt'); if(!b) return; state.opt=+b.dataset.i; renderSetup(); prepCoach();
+  const b=e.target.closest('.round-opt'); if(!b) return; state.opt=+b.dataset.i; renderSetup();
 });
 
 /* ---------- workout generation ---------- */
@@ -1248,7 +1301,7 @@ const Coach=(()=>{
     const speaking=!!(voice && synth && synth.speaking);
 
     // ---- sequence while the timer is turned over: talk (close-up), then show the combo, then turn back ----
-    if(flipped){
+    if(flipped && !window.gymMode){              // in the gym he keeps demonstrating the drill the whole time
       if(speaking){ heard=true; lastSpeak=now; }
       const held=now-flipAt;
       // 3D loop: keep demonstrating until the announcement ends, finish the current run, then turn back
@@ -1343,7 +1396,7 @@ const Coach=(()=>{
     onStep(step, prev){
       curStep=step; clearTimeout(demoT); clearTimeout(flipT); queue=[]; frameEnd=0;
       setMood(step.type==='ready'?'ready':step.type==='rest'?'rest':'guard');
-      if(step.type!=='work'){ flip(false); phase=''; return; }
+      if(step.type!=='work'){ flip(false); phase=''; if(window.Coach3D && Coach3D.ready) Coach3D.finish(); return; }
       tag.textContent=step.name;
       const first=!prev || prev.type!=='work';
       // on a round start, wait for the "Fight!" burst to finish before turning over
@@ -1578,10 +1631,9 @@ function setPlaying(p){
   $('playBtn').setAttribute('aria-label',p?'Pause':'Play');
 }
 async function keepAwake(){ try{ wake = await navigator.wakeLock?.request('screen'); }catch(e){} }
-function show(id){ ['setup','timer','done'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'; window.scrollTo(0,0); }
+function show(id){ if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['setup','timer','done'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'; window.scrollTo(0,0); }
 function start(){
-  build(); clearTimeout(coachSwitchT); if(window.Coach3D && Coach3D.setAvatar) Coach3D.setAvatar(coachFor());   // normally already loaded: does nothing
-  listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  build(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
@@ -1629,12 +1681,11 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 const root=document.getElementById('coach'), inner=document.getElementById('ringInner');
 let canvas=document.getElementById('coach3d');
-// the coaches: model file and glove colours. The round format picks which one coaches (see OPTIONS).
+// the coach: model file and glove colours
 const AVATARS={
-  coach:{name:'Coach', file:'coach.glb',     glove:0x0b0b0b, band:0xd4a548},
-  ali:  {name:'Ali',   file:'coach-ali.glb', glove:0xf4f1ea, band:0xd4a548},
+  coach:{name:'Coach', file:'coach.glb', glove:0x0b0b0b, band:0xd4a548},
 };
-let avatarKey=(window.coachFor && AVATARS[window.coachFor()]) ? window.coachFor() : 'coach';
+let avatarKey='coach';
 let bootGen=0, live=null;            // live: the running renderer, so it can be shut down on a switch
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const api={ready:false, phase:'', setPhase(p){ api.phase=p; }, demo(){}, busy(){ return false; }};
@@ -1916,7 +1967,7 @@ async function boot(avKey){
   const bones={}; model.traverse(o=>{ if(o.isBone) bones[o.name]=o; });
   const restHips=bones.Hips ? bones.Hips.position.clone() : new THREE.Vector3(0,1,0);
 
-  // leather gloves with gold bands, fixed to each hand (black for Coach, white for Ali)
+  // black leather gloves with gold bands, fixed to each hand
   const leather=new THREE.MeshPhysicalMaterial({color:AV.glove,roughness:.34,metalness:0,clearcoat:.7,clearcoatRoughness:.22});
   const gold=new THREE.MeshStandardMaterial({color:AV.band,metalness:1,roughness:.28});
   for(const side of ['Left','Right']){
@@ -2262,11 +2313,12 @@ async function boot(avKey){
   function frame(now){
     if(gen!==bootGen) return;                                              // this coach was switched out
     requestAnimationFrame(frame);
-    const flipped=inner.classList.contains('flipped');
-    if(flipped && !wasFlipped) planFlip(now);
+    const flipped=inner.classList.contains('flipped') && !gymMode;
+    if(flipped && !wasFlipped){ planFlip(now); gymHint(); }
     wasFlipped=flipped;
     if(flipped) shownAt=now;
-    if(document.hidden || now-shownAt>1000) { last=now; return; }    // only render while he's on screen
+    const gymCam=gymMode || now-gymOutAt<1400;
+    if(document.hidden || (!gymCam && now-shownAt>1000)) { last=now; return; }    // only render while he's on screen
     const dt=Math.min(.05,(now-last)/1000); last=now;
     const w=canvas.clientWidth, h=canvas.clientHeight;
     if(w && (canvas.width!==Math.round(w*renderer.getPixelRatio()) || canvas.height!==Math.round(h*renderer.getPixelRatio()))){
@@ -2295,9 +2347,90 @@ async function boot(avKey){
     const c=bodyCentre(hipNow.clone()); centre.lerp(c,1-Math.exp(-dt*6));
     camPos.set(centre.x+Math.sin(az)*rr,baseY()+camH+swayH,centre.z+Math.cos(az)*rr);
     camLook.set(centre.x,baseY()+camLookH-LIFT,centre.z);
-    camera.position.copy(camPos); camera.lookAt(camLook);
-    if(gym) gym.update(now,dt,camPos,{x:centre.x,z:centre.z,feet:model.position.y,head:model.position.y+1.85});
+    if(gymCam){                                    // gym mode: glide on a smooth path; on the way out, glide back to the timer's shot
+      if(gymMode) gymTarget(now,tgtP,tgtL); else { tgtP.copy(camPos); tgtL.copy(camLook); }
+      const k=1-Math.exp(-dt*(gymMode?2.1:5)); gPos.lerp(tgtP,k); gLook.lerp(tgtL,k);
+      camera.position.copy(gPos); camera.lookAt(gLook);
+    } else { camera.position.copy(camPos); camera.lookAt(camLook); }
+    const fovT=gymMode?50:28;
+    if(Math.abs(fovNow-fovT)>.05){ fovNow+=(fovT-fovNow)*(1-Math.exp(-dt*3)); camera.fov=fovNow; camera.updateProjectionMatrix(); }
+    if(gym) gym.update(now,dt,camera.position,{x:centre.x,z:centre.z,feet:model.position.y,head:model.position.y+1.85});
     renderer.render(scene,camera);
+  }
+
+  /* ---------- gym mode: double-tap the coach and the timer opens out into the gym ----------
+     The circle grows to fill the screen, the camera rises to show the whole gym from above, then comes down
+     to ringside and circles him while he works. The timer, the drill and the list come in over the top. */
+  let gymMode=false, gymAt=0, gymOutAt=-1e9, fovNow=28;
+  const gPos=new THREE.Vector3(), gLook=new THREE.Vector3(), tgtP=new THREE.Vector3(), tgtL=new THREE.Vector3();
+  function gymTarget(now,P,L){
+    const t=(now-gymAt)/1000, c=centre;
+    if(t<2.6){                                   // high up: the whole gym, turning slowly
+      const a=.4+t*.12; P.set(c.x+Math.sin(a)*6.4,7.0,c.z+Math.cos(a)*6.4); L.set(c.x,-.5,c.z);
+    } else {                                     // down to ringside, circling him
+      const u=t-2.6, a=.4+2.6*.12+u*.07, r=7.3+Math.sin(u*.21)*.6;
+      P.set(c.x+Math.sin(a)*r,2.75+Math.sin(u*.17)*.35,c.z+Math.cos(a)*r); L.set(c.x,camera.aspect<.8?.2:.85,c.z);   // on a phone, frame him higher, above the panels
+    }
+  }
+  const view=document.getElementById('gymView');
+  const HUD=[['#ringWrap','gTimer'],['#timer .controls','gControls'],['#nowCard','gNow'],['#timer .upnext','gList']];
+  const homes=[];
+  function moveHud(into){
+    if(into){ for(const [sel,dest] of HUD){ const el=document.querySelector(sel); if(!el) continue;
+        const ph=document.createComment('gym'); el.before(ph); homes.push([el,ph]); document.getElementById(dest).appendChild(el); } }
+    else { while(homes.length){ const [el,ph]=homes.pop(); ph.replaceWith(el); } }
+  }
+  const circleAt=el=>{ const r=el.getBoundingClientRect(); view.style.setProperty('--gx',(r.left+r.width/2)+'px'); view.style.setProperty('--gy',(r.top+r.height/2)+'px'); view.style.setProperty('--gr',(r.width/2)+'px'); };
+  let gymTimers=[];
+  const later=(fn,ms)=>gymTimers.push(setTimeout(fn,ms));
+  api.enterGym=()=>{
+    if(gymMode || !api.ready || !view) return;
+    gymTimers.forEach(clearTimeout); gymTimers=[];
+    gymMode=true; window.gymMode=true; gymAt=performance.now();
+    gPos.copy(camera.position); gLook.copy(camLook);
+    if(!looping && api._last) api.play(api._last);                     // keep him going for the whole drill
+    view.style.transition='none'; circleAt(inner); view.hidden=false;
+    view.prepend(canvas);
+    renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
+    view.getBoundingClientRect();
+    view.style.transition='';
+    requestAnimationFrame(()=>view.style.setProperty('--gr',Math.hypot(innerWidth,innerHeight)+'px'));
+    document.documentElement.style.overflow='hidden';
+    later(()=>{ moveHud(true); requestAnimationFrame(()=>view.classList.add('hud-on')); },900);
+    document.getElementById('gymExit')?.focus({preventScroll:true});
+  };
+  api.exitGym=instant=>{
+    if(!gymMode || !view) return;
+    gymTimers.forEach(clearTimeout); gymTimers=[];
+    gymMode=false; window.gymMode=false; gymOutAt=performance.now(); wasFlipped=false;
+    view.classList.remove('hud-on');
+    const close=()=>{
+      root.prepend(canvas); view.hidden=true; document.documentElement.style.overflow='';
+      renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    };
+    if(instant){ moveHud(false); close(); return; }
+    later(()=>{
+      moveHud(false);                                                      // everything back in its place, then shrink into the timer
+      requestAnimationFrame(()=>{ circleAt(inner); later(close,980); });
+    },instant?0:320);
+  };
+  document.getElementById('gymExit')?.addEventListener('click',()=>api.exitGym());
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && gymMode) api.exitGym(); });
+  // double-tap (or double-click) the coach while he is showing
+  let lastTap=0;
+  root.addEventListener('pointerup',e=>{
+    if(gymMode || !inner.classList.contains('flipped')) return;
+    const t=performance.now();
+    if(t-lastTap<380){ lastTap=0; api.enterGym(); } else lastTap=t;
+  });
+  root.addEventListener('dblclick',e=>e.preventDefault());
+  // a small hint, the first few times he appears
+  function gymHint(){
+    const h=document.getElementById('gymHint'); if(!h) return;
+    let n=0; try{ n=+localStorage.getItem('bf-gym-hint')||0; }catch(e){}
+    if(n>=3) return;
+    try{ localStorage.setItem('bf-gym-hint',n+1); }catch(e){}
+    setTimeout(()=>h.classList.add('show'),900); setTimeout(()=>h.classList.remove('show'),4200);
   }
   // warm up now, while he is hidden: compile every material and upload every texture, so the first flip does not stall the timer
   try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); else renderer.compile(scene,camera); }catch(e){}
@@ -2314,15 +2447,6 @@ async function boot(avKey){
 }
 const start=()=>boot(avatarKey).catch(err=>{ console.warn('3D coach unavailable, using the illustrated coach.',err); root.classList.remove('has3d'); });
 
-// switch coach: shut the running scene down, give it a fresh canvas and load the other coach
-api.setAvatar=async key=>{
-  if(!AVATARS[key] || key===avatarKey) return;
-  avatarKey=key;
-  api.ready=false; bootGen++;
-  if(live){ try{ live.renderer.dispose(); live.renderer.forceContextLoss(); }catch(e){} live=null; }
-  const fresh=canvas.cloneNode(false); canvas.replaceWith(fresh); canvas=fresh;
-  try{ await boot(key); }catch(err){ console.warn('Could not load that coach.',err); }
-};
 if(document.readyState==='complete') setTimeout(start,300); else window.addEventListener('load',()=>setTimeout(start,300));
 </script>
 

@@ -4,7 +4,7 @@ Boxing round timer and coach.
 
 - `index.html`: home page
 - `app.html`: the workout app
-- `models/`: the two 3D coaches (`coach.glb` for Coach, `coach-ali.glb` for Ali, Ali coaches the 5 × 3 min and 3 × 5 min formats, Coach the others) and their moves (Mixamo, all orthodox)
+- `models/`: the 3D coach (`coach.glb`, plus `coach-lite.glb`, a lighter copy for the landing page preview) and his moves (Mixamo, all orthodox)
 - `music/` and `crowd/`: audio the app plays
 
 ## What the coach shows (single source of truth)
