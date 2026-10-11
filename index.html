@@ -7,6 +7,30 @@
 <meta name="theme-color" content="#0f161d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
+<!-- the 3D coach preview: fetch three.js and the coach's files the moment the page opens, all at once -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/fflate.module.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/curves/NURBSCurve.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/curves/NURBSUtils.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js">
+<script>
+// start downloading the coach and his four moves straight away; the 3D script picks these up when it is ready
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const get=name=>fetch('models/'+name).then(r=>r.ok?r.arrayBuffer():null).catch(()=>null).then(b=>(b&&b.byteLength>1024)?b:new Promise((res,rej)=>{
+    // hosts that cannot serve these file types get the packaged copy (models/<name>.js)
+    const sc=document.createElement('script'); sc.src='models/'+name+'.js';
+    sc.onload=()=>{ const bin=atob(window.__assets[name]), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); delete window.__assets[name]; res(out.buffer); };
+    sc.onerror=rej; document.head.appendChild(sc);
+  }));
+  window.__coachFiles={};
+  for(const n of ['coach-lite.glb','stance.fbx','jab.fbx','cross-straight-right.fbx','hook-lead.fbx']) window.__coachFiles[n]=get(n);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>
@@ -66,7 +90,19 @@ h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;l
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .track{stroke:var(--surface-2)}
 .ring .prog{stroke:var(--c);transition:stroke .5s,stroke-dashoffset .3s linear}
-.ring-in{position:absolute;inset:13%;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring{perspective:900px}
+.ring-in{position:absolute;inset:13%;border-radius:50%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.ring-in.flipped{transform:rotateY(180deg)}
+.ring-in .face{position:absolute;inset:0;border-radius:50%;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.ring-in .front{background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring-in .back{transform:rotateY(180deg);overflow:hidden;
+  background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--c) 30%,var(--surface)) 0%,var(--surface) 58%,#0b1117 100%)}
+.ring-in .back::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 50% 45%,transparent 52%,rgba(0,0,0,.55) 100%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent)}
+.ring-in .back canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.back-tag{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:2;max-width:80%;padding:4px 12px;border-radius:999px;
+  background:var(--c);color:#14110a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+@media (prefers-reduced-motion:reduce){.ring-in{transition:none}}
 .r-lab{font-family:var(--display);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .r-time{font-family:var(--display);font-weight:700;font-size:clamp(52px,14vw,68px);line-height:1;font-variant-numeric:tabular-nums;margin:2px 0}
 .r-cap{font-family:var(--display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600;transition:color .5s}
@@ -167,10 +203,13 @@ footer p{margin:0;max-width:70ch}
           <circle class="track" cx="130" cy="130" r="120" fill="none" stroke-width="12"/>
           <circle class="prog" id="prog" cx="130" cy="130" r="120" fill="none" stroke-width="12" stroke-linecap="round"/>
         </svg>
-        <div class="ring-in">
-          <div class="r-lab">Round 2</div>
-          <div class="r-time" id="dTime">01:24</div>
-          <div class="r-cap">Round remaining</div>
+        <div class="ring-in" id="ringIn">
+          <div class="face front">
+            <div class="r-lab">Round 2</div>
+            <div class="r-time" id="dTime">01:24</div>
+            <div class="r-cap">Round remaining</div>
+          </div>
+          <div class="face back" aria-hidden="true"><canvas id="coach3d"></canvas><div class="back-tag" id="dTag"></div></div>
         </div>
       </div>
       <div class="now"><small>Now</small><strong id="dNow">Jab, Jab, Cross</strong><div class="bar" id="dBar"></div></div>
@@ -201,7 +240,7 @@ footer p{margin:0;max-width:70ch}
       </div>
       <div class="features">
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>
-          <div><h3>Voice coach</h3><p>Calls out every drill with a coaching cue, pushes you through the last ten seconds, and keeps quiet the rest of the time.</p></div></div>
+          <div><h3>3D coach</h3><p>The timer flips over to a 3D coach who shows you every drill: jabs, crosses, hooks, uppercuts, body shots and footwork.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
           <div><h3>Bells and countdown</h3><p>A spinning five-second countdown and a "Fight!" burst before every round, bells at the start and end.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
@@ -267,8 +306,8 @@ footer p{margin:0;max-width:70ch}
 <script>
 // live preview: a small version of the real timer, running four times faster than real time
 (function(){
-  const D=[['Jab, Jab, Cross','#f5c95a'],['Hooks','#ff7f6e'],['Slip and counter','#4fd1b5'],['Uppercuts','#a58bff'],
-           ['Speed punches','#9fdc5b'],['Liver shot','#f68fc6'],['Pivot and jab','#f5c95a'],['1-2-3-2','#ff7f6e']];
+  const D=[['Jab, Jab, Cross','#f5c95a'],['Hook off the jab','#ff7f6e'],['Power cross','#4fd1b5'],['1-2-3','#a58bff'],
+           ['Range-finder jab','#9fdc5b'],['Check hook','#f68fc6'],['Double cross','#f5c95a'],['1-2-3-2','#ff7f6e']];
   const prog=document.getElementById('prog'), C=2*Math.PI*120, ring=document.getElementById('ring');
   prog.style.strokeDasharray=C;
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -285,13 +324,359 @@ footer p{margin:0;max-width:70ch}
       return `<div style="--c:${d[1]}"><span>${k===1?'Next':'0'+k}</span>${d[0]}</div>`}).join('');
   }
   draw();
+  window.demoDrill=()=>D[i%D.length][0];
   if(reduce) return;
   setInterval(()=>{
     left--; if(left<=0) left=180;
-    if((180-left)%30===0) i++;
+    if((180-left)%30===0){ i++; if(window.CoachPreview) window.CoachPreview.show(D[i%D.length][0]); }   // every drill change: turn over to the coach
     draw();
   },250);
 })();
+</script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+/* The preview timer turns over now and again to show the 3D coach throwing that drill, like the app.
+   It loads once the preview is on screen: a light copy of the coach (coach-lite.glb, no face shapes, small textures)
+   and four moves, about 4 MB in all. */
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const ringIn=document.getElementById('ringIn'), canvas=document.getElementById('coach3d'), tag=document.getElementById('dTag');
+if(!ringIn || !canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) throw 0;
+// each preview drill and the moves the coach throws for it (same files as the app, all orthodox)
+// each preview drill and the moves the coach throws for it (same files as the app, all orthodox).
+// Kept to four light files so the preview loads fast: stance, jab, cross and lead hook.
+const DRILLS={
+  'Jab, Jab, Cross':['jab.fbx','jab.fbx','cross-straight-right.fbx'],
+  'Hook off the jab':['jab.fbx','hook-lead.fbx'],
+  'Power cross':['cross-straight-right.fbx'],
+  '1-2-3':['jab.fbx','cross-straight-right.fbx','hook-lead.fbx'],
+  'Range-finder jab':['jab.fbx','jab.fbx'],
+  'Check hook':['hook-lead.fbx'],
+  'Double cross':['cross-straight-right.fbx','cross-straight-right.fbx'],
+  '1-2-3-2':['jab.fbx','cross-straight-right.fbx','hook-lead.fbx','cross-straight-right.fbx'],
+};
+const SIDE={'jab.fbx':'L','hook-lead.fbx':'L'};
+const SPEED={'1-2-3-2':1.8,'1-2-3':1.9};          // drills thrown faster than normal (same as the app)
+const FILES=['stance.fbx',...new Set(Object.values(DRILLS).flat())];
+async function asset(name){
+  if(window.__coachFiles && window.__coachFiles[name]) return window.__coachFiles[name];
+  try{ const r=await fetch('models/'+name); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>1024) return b; } }catch(e){}
+  await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='models/'+name+'.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+  const bin=atob(window.__assets[name]), out=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i);
+  delete window.__assets[name]; return out.buffer;
+}
+const api={ready:false, show(){}};
+window.CoachPreview=api;
+
+async function boot(){
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+  renderer.setPixelRatio(Math.min(1.5,devicePixelRatio||1));          // a small circle: no need for full retina cost
+  const scene=new THREE.Scene(), pm=new THREE.PMREMGenerator(renderer);
+  scene.environment=pm.fromScene(new RoomEnvironment(),0.04).texture;
+  const key=new THREE.DirectionalLight(0xffe1c2,2.4); key.position.set(-1.4,2.4,2.6); scene.add(key);
+  const rimGold=new THREE.DirectionalLight(0xffb357,3.2); rimGold.position.set(2.2,2.0,-2.4); scene.add(rimGold);
+  const rimCool=new THREE.DirectionalLight(0x8fb2ff,1.4); rimCool.position.set(-2.4,1.6,-2.0); scene.add(rimCool);
+  scene.add(new THREE.HemisphereLight(0xa9bccf,0x2a1a10,0.45));
+  const camera=new THREE.PerspectiveCamera(28,1,.05,30);
+  let gym=null;
+  try{ gym=buildGym(); }catch(err){ console.warn('Gym scene skipped.',err); }
+
+  /* ---------- the boxing gym around him: ring, ropes, heavy bags, lamps and haze. Everything is drawn in code, no files. ----------
+     He stands in the middle of the ring with his feet at y = 0 and faces +z. Units are metres. */
+  function buildGym(){
+    const G=new THREE.Group(); scene.add(G);
+    const FLOOR=-1.0, H=3.0, ED=H+.4, ROOM=13, CEIL=FLOOR+9;
+    const HAZE=0x0c0e12;
+    scene.background=new THREE.Color(HAZE); scene.fog=new THREE.Fog(HAZE,9.5,25);
+    const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    const FONT='"Arial Black","Helvetica Neue",Impact,Arial,sans-serif';
+    function tex(w,h,draw,rep){
+      const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); draw(x,w,h);
+      const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=aniso;
+      if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep[0],rep[1]); }
+      return t;
+    }
+    const speckle=(x,w,h,n,a)=>{ for(let i=0;i<n;i++){ x.fillStyle=`rgba(${Math.random()<.5?'255,255,255':'0,0,0'},${Math.random()*a})`; x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1+Math.random()*2); } };
+    const lettering=(x,txt,cx,cy,px,track,fill)=>{
+      x.font=`900 ${px}px ${FONT}`; x.textBaseline='middle'; x.fillStyle=fill;
+      const ws=[...txt].map(ch=>x.measureText(ch).width), tw=ws.reduce((a,b)=>a+b,0)+track*(txt.length-1); let px0=cx-tw/2;
+      [...txt].forEach((ch,i)=>{ x.fillText(ch,px0,cy); px0+=ws[i]+track; });
+    };
+    const GOLD='#d4a548';
+
+    // ring canvas: deep navy with a gold centre circle and the logo under his feet
+    const canvasTex=tex(1024,1024,(x,w,h)=>{
+      x.fillStyle='#1b2533'; x.fillRect(0,0,w,h); speckle(x,w,h,9000,.05);
+      x.strokeStyle='rgba(255,255,255,.55)'; x.lineWidth=10; x.strokeRect(46,46,w-92,h-92);
+      x.strokeStyle='rgba(212,165,72,.55)'; x.lineWidth=12; x.beginPath(); x.arc(w/2,h/2,250,0,Math.PI*2); x.stroke();
+      x.globalAlpha=.42; lettering(x,'BOXING',w/2,h/2-50,74,8,GOLD); lettering(x,'FLOW',w/2,h/2+44,100,18,GOLD); x.globalAlpha=1;
+    });
+    const canvasMat=new THREE.MeshStandardMaterial({map:canvasTex,roughness:.88,metalness:0});
+    const mat=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,ED*2),canvasMat); mat.rotation.x=-Math.PI/2; mat.position.y=.004; G.add(mat);
+
+    // apron skirt round the ring, branded
+    const skirtTex=tex(2048,256,(x,w,h)=>{
+      x.fillStyle='#0d0d0f'; x.fillRect(0,0,w,h); speckle(x,w,h,4000,.04);
+      x.fillStyle=GOLD; x.fillRect(0,10,w,6); x.fillRect(0,h-16,w,6);
+      lettering(x,'BOXING FLOW',w*.25,h/2+4,84,12,GOLD); lettering(x,'BOXING FLOW',w*.75,h/2+4,84,12,GOLD);
+      x.fillStyle=GOLD; for(const cx of [0,w*.5,w]){ x.beginPath(); x.arc(cx,h/2,9,0,Math.PI*2); x.fill(); }
+    });
+    const skirtMat=new THREE.MeshStandardMaterial({map:skirtTex,roughness:.8});
+    for(let k=0;k<4;k++){
+      const s=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,-FLOOR),skirtMat), a=k*Math.PI/2;
+      s.position.set(Math.sin(a)*ED,FLOOR/2,Math.cos(a)*ED); s.rotation.y=a; G.add(s);
+    }
+
+    // posts, corner pads, ropes. Anything between the camera and him fades out so he is never blocked.
+    // anything that would come between the camera and him fades out: ropes are segments, posts, pads and bags are points
+    const fade=[];
+    const fadeable=(mesh,shape)=>{ mesh.material=mesh.material.clone(); mesh.material.transparent=true; fade.push({mesh,o:1,min:.12,...shape}); return mesh; };
+    const segShape=(ax,az_,bx,bz,y0,y1)=>({seg:[ax,az_,bx,bz],y0,y1});
+    const ptShape=(x,z,r,y0,y1)=>({pt:[x,z],r,y0,y1});
+    const chrome=new THREE.MeshStandardMaterial({color:0xc9ccd2,metalness:1,roughness:.22});
+    const padMat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.55});
+    for(const [sx,sz,col] of [[1,1,0xc8102e],[-1,-1,0x1f4fd1],[1,-1,0xe9e6df],[-1,1,0xe9e6df]]){
+      const post=fadeable(new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.55,16),chrome),ptShape(sx*(H+.08),sz*(H+.08),.3,0,1.55)); post.position.set(sx*(H+.08),.775,sz*(H+.08)); G.add(post);
+      const pad=fadeable(new THREE.Mesh(new THREE.BoxGeometry(.17,1.08,.17),padMat(col)),ptShape(sx*H,sz*H,.3,.26,1.34)); pad.position.set(sx*H,.8,sz*H); pad.rotation.y=Math.PI/4; G.add(pad);
+    }
+    const ropeMat=new THREE.MeshStandardMaterial({color:0xf1ece2,roughness:.5});
+    const ropeGeo=new THREE.CylinderGeometry(.022,.022,H*2,12);
+    for(let k=0;k<4;k++){
+      const a=k*Math.PI/2;
+      for(const y of [.42,.82,1.22]){
+        const cx=Math.sin(a)*H, cz=Math.cos(a)*H, tx=Math.cos(a)*H, tz=-Math.sin(a)*H;
+        const r=fadeable(new THREE.Mesh(ropeGeo,ropeMat),segShape(cx-tx,cz-tz,cx+tx,cz+tz,y-.03,y+.03));
+        r.position.set(Math.sin(a)*H,y,Math.cos(a)*H); r.rotation.set(0,a,Math.PI/2); G.add(r);
+      }
+      for(const t of [-.5,.5]){            // rope ties
+        const px=Math.sin(a)*H+Math.cos(a)*t*H, pz=Math.cos(a)*H-Math.sin(a)*t*H;
+        const tie=fadeable(new THREE.Mesh(new THREE.BoxGeometry(.05,.84,.05),ropeMat),ptShape(px,pz,.15,.4,1.24));
+        tie.position.set(px,.82,pz); G.add(tie);
+      }
+    }
+
+    // gym floor and brick walls
+    const floorTex=tex(512,512,(x,w,h)=>{ x.fillStyle='#17191c'; x.fillRect(0,0,w,h); speckle(x,w,h,6000,.07);
+      x.strokeStyle='rgba(0,0,0,.55)'; x.lineWidth=3; for(let i=0;i<=4;i++){ x.beginPath(); x.moveTo(i*w/4,0); x.lineTo(i*w/4,h); x.moveTo(0,i*h/4); x.lineTo(w,i*h/4); x.stroke(); } },[10,10]);
+    const floorMat=new THREE.MeshStandardMaterial({map:floorTex,roughness:.95});
+    const floor=new THREE.Mesh(new THREE.PlaneGeometry(ROOM*2,ROOM*2),floorMat); floor.rotation.x=-Math.PI/2; floor.position.y=FLOOR; G.add(floor);
+    const brickTex=tex(512,512,(x,w,h)=>{
+      x.fillStyle='#16110e'; x.fillRect(0,0,w,h);
+      const bw=64,bh=28;
+      for(let r=0;r*bh<h;r++) for(let c=-1;c*bw<w;c++){
+        const off=(r%2)*bw/2, l=28+Math.random()*16;
+        x.fillStyle=`hsl(${14+Math.random()*10},${30+Math.random()*12}%,${l*.55}%)`; x.fillRect(c*bw+off+2,r*bh+2,bw-4,bh-4);
+      }
+      speckle(x,w,h,5000,.08);
+    },[7,3]);
+    const wallMat=new THREE.MeshStandardMaterial({map:brickTex,roughness:.92,side:THREE.BackSide});
+    const ceilMat=new THREE.MeshStandardMaterial({color:0x0b0c0e,roughness:1,side:THREE.BackSide});
+    const room=new THREE.Mesh(new THREE.BoxGeometry(ROOM*2,CEIL-FLOOR,ROOM*2),[wallMat,wallMat,ceilMat,floorMat,wallMat,wallMat]);
+    room.position.y=(CEIL+FLOOR)/2; G.add(room);
+
+    // banners on every wall, so the brand shows whichever way the camera looks
+    const banner=(txt,sub)=>tex(1024,256,(x,w,h)=>{
+      x.fillStyle='#0a0a0b'; x.fillRect(0,0,w,h); x.strokeStyle=GOLD; x.lineWidth=8; x.strokeRect(14,14,w-28,h-28);
+      lettering(x,txt,w/2,h/2-(sub?18:0),104,16,GOLD);
+      if(sub) lettering(x,sub,w/2,h/2+70,34,12,'rgba(241,236,226,.85)');
+    });
+    [['BOXING FLOW','TRAIN  ·  FIGHT  ·  FLOW'],['BOXING FLOW','ROUND AFTER ROUND'],['STAY HUNGRY',null],['TRAIN HARD',null]].forEach(([t,s],k)=>{
+      const a=k===0?Math.PI:k===1?0:k===2?Math.PI/2:-Math.PI/2;
+      const m=new THREE.MeshStandardMaterial({map:banner(t,s),emissive:0xffffff,emissiveMap:null,roughness:.7});
+      m.emissiveMap=m.map; m.emissiveIntensity=.35;
+      const b=new THREE.Mesh(new THREE.PlaneGeometry(7,1.75),m);
+      b.position.set(Math.sin(a)*(ROOM-.05),FLOOR+4.6,Math.cos(a)*(ROOM-.05)); b.rotation.y=a+Math.PI; G.add(b);
+    });
+
+    // heavy bags hanging on chains, swaying a little
+    const bags=[];
+    const leather=[0x0d0d0e,0x7d1013,0x0d0d0e,0x3a2418];
+    const chainMat=new THREE.MeshStandardMaterial({color:0x777a80,metalness:1,roughness:.4});
+    const bandMat=new THREE.MeshStandardMaterial({color:0xd4a548,metalness:.6,roughness:.35});
+    [[-5.4,-5.8],[-1.9,-7.4],[2.5,-7.2],[5.8,-5.0],[6.6,2.0],[-6.5,2.8],[-3.6,7.2],[3.9,7.0]].forEach(([x,z],i)=>{
+      const pivot=new THREE.Group(); pivot.position.set(x,CEIL,z); G.add(pivot);
+      const top=FLOOR+1.85, len=CEIL-top;
+      const chain=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,len,6),chainMat); chain.position.y=-len/2; pivot.add(chain);
+      const bm=new THREE.MeshPhysicalMaterial({color:leather[i%leather.length],roughness:.42,clearcoat:.5,clearcoatRoughness:.35});
+      const body=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,1.12,28),bm); body.position.y=-len-.56; pivot.add(body);
+      fadeable(body,ptShape(x,z,.32,FLOOR+.62,FLOOR+1.88)); fade[fade.length-1].min=.22;
+      const bodyMat=body.material;
+      for(const yy of [-len-.02,-len-1.1]){ const cap=new THREE.Mesh(new THREE.SphereGeometry(.2,24,10,0,Math.PI*2,0,Math.PI/2),bodyMat); cap.scale.y=.25; cap.position.y=yy; if(yy<-len-.5) cap.rotation.x=Math.PI; pivot.add(cap); }
+      const band=new THREE.Mesh(new THREE.CylinderGeometry(.203,.203,.07,28,1,true),bandMat.clone()); band.material.transparent=true; band.position.y=-len-.18; pivot.add(band);
+      fade[fade.length-1].extra=[band.material];
+      bags.push({pivot,ph:Math.random()*6.3,amp:.006+Math.random()*.01});
+    });
+
+    // lamps over the ring: shades, glowing bulbs, a soft beam in the haze and one warm light from above
+    const shadeMat=new THREE.MeshStandardMaterial({color:0x1c1d20,metalness:.7,roughness:.4,side:THREE.DoubleSide});
+    const bulbMat=new THREE.MeshStandardMaterial({color:0x000000,emissive:0xffd9a0,emissiveIntensity:.9,roughness:1});
+    const beamTex=tex(4,256,(x,w,h)=>{ const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,'rgba(255,236,200,.9)'); g.addColorStop(1,'rgba(255,236,200,0)'); x.fillStyle=g; x.fillRect(0,0,w,h); });
+    const beamMat=new THREE.MeshBasicMaterial({map:beamTex,transparent:true,opacity:.022,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
+    const LAMP=6.4;                                     // high in the rafters
+    for(const [x,z] of [[-1.5,-1.5],[1.5,-1.5],[-1.5,1.5],[1.5,1.5]]){
+      const cord=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,CEIL-LAMP,4),chainMat); cord.position.set(x,(CEIL+LAMP)/2,z); G.add(cord);
+      const shade=new THREE.Mesh(new THREE.ConeGeometry(.42,.32,28,1,true),shadeMat); shade.position.set(x,LAMP,z); G.add(shade);
+      const bulb=new THREE.Mesh(new THREE.CircleGeometry(.3,28),bulbMat); bulb.rotation.x=Math.PI/2; bulb.position.set(x,LAMP-.1,z); G.add(bulb);   // a diffuser disc inside the shade, facing down
+      const beam=new THREE.Mesh(new THREE.CylinderGeometry(.36,2.1,LAMP-.15,32,1,true),beamMat); beam.position.set(x*.85,(LAMP-.15)/2,z*.85); G.add(beam);
+    }
+    const spot=new THREE.SpotLight(0xffe4bd,30,0,.5,.85,2); spot.position.set(0,7.2,0); spot.target.position.set(0,0,0); G.add(spot,spot.target);
+
+    // a soft contact shadow under his feet
+    const shadowTex=tex(256,256,(x,w,h)=>{ const g=x.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2); g.addColorStop(0,'rgba(0,0,0,.62)'); g.addColorStop(.55,'rgba(0,0,0,.28)'); g.addColorStop(1,'rgba(0,0,0,0)'); x.fillStyle=g; x.fillRect(0,0,w,h); });
+    shadowTex.colorSpace=THREE.NoColorSpace;
+    const shadow=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.0),new THREE.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false}));
+    shadow.rotation.x=-Math.PI/2; shadow.position.y=.008; G.add(shadow);
+
+    // where he trains: the middle of the ring, or on the gym floor squared up to a heavy bag
+    const atBag=(bx,bz,ox,oz)=>{ const x=bx+ox, z=bz+oz; return {x,y:FLOOR,z,yaw:Math.atan2(bx-x,bz-z)}; };
+    const places={ ring:{x:0,y:0,z:0,yaw:0}, bagA:atBag(5.8,-5.0,-.5,.66), bagB:atBag(-6.5,2.8,.72,-.36) };
+
+    // 2D helpers for the line-of-sight test
+    const segHit=(p,q,a,b)=>{            // where segment p->q crosses segment a->b: returns t along p->q, or -1
+      const rx=q[0]-p[0], rz=q[1]-p[1], sx=b[0]-a[0], sz=b[1]-a[1], den=rx*sz-rz*sx;
+      if(Math.abs(den)<1e-9) return -1;
+      const t=((a[0]-p[0])*sz-(a[1]-p[1])*sx)/den, u=((a[0]-p[0])*rz-(a[1]-p[1])*rx)/den;
+      return (t>0&&t<1&&u>=-.03&&u<=1.03)?t:-1;
+    };
+    const ptHit=(p,q,c,r)=>{             // closest approach of p->q to point c within r: returns t, or -1
+      const rx=q[0]-p[0], rz=q[1]-p[1], L=rx*rx+rz*rz; if(L<1e-9) return -1;
+      const t=Math.max(0,Math.min(1,((c[0]-p[0])*rx+(c[1]-p[1])*rz)/L));
+      const dx=p[0]+rx*t-c[0], dz=p[1]+rz*t-c[1];
+      return (t<.97 && dx*dx+dz*dz<r*r)?t:-1;
+    };
+    return {
+      places,
+      update(now,dt,cam,him){            // cam: camera position; him: {x,z,feet,head}
+        const t=now/1000;
+        for(const b of bags){ b.pivot.rotation.x=Math.sin(t*.9+b.ph)*b.amp; b.pivot.rotation.z=Math.cos(t*.7+b.ph*1.3)*b.amp*.8; }
+        const P=[cam.x,cam.z], Q=[him.x,him.z], k=1-Math.exp(-dt*10);
+        for(const f of fade){
+          const tt=f.seg ? segHit(P,Q,[f.seg[0],f.seg[1]],[f.seg[2],f.seg[3]]) : ptHit(P,Q,f.pt,f.r);
+          let block=false;
+          if(tt>=0){                        // it is in the way only if it overlaps the band from his feet to his head as seen from the camera
+            const lo=cam.y+(him.feet-cam.y)*tt, hi=cam.y+(him.head-cam.y)*tt;
+            block=f.y1>Math.min(lo,hi)-.05 && f.y0<Math.max(lo,hi)+.05;
+          }
+          f.o+=((block?f.min:1)-f.o)*k;
+          f.mesh.material.opacity=f.o; f.mesh.material.depthWrite=f.o>.97;
+          if(f.extra) for(const m of f.extra){ m.opacity=f.o; m.depthWrite=f.o>.97; }
+        }
+        shadow.position.set(him.x,him.feet+.008,him.z);
+      }
+    };
+  }
+
+  const gl=new GLTFLoader(); gl.register(p=>{ p.textureLoader=new THREE.TextureLoader(p.options.manager); return {name:'image-textures'}; });
+  const fbx=new FBXLoader();
+  const [gltf,...moves]=await Promise.all([asset('coach-lite.glb').then(b=>gl.parseAsync(b,'')), ...FILES.map(f=>asset(f).then(b=>fbx.parse(b,'')).catch(()=>null))]);
+  const model=gltf.scene; scene.add(model);
+  model.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; if(o.material) o.material.envMapIntensity=.55; } });
+  const bones={}; model.traverse(o=>{ if(o.isBone) bones[o.name]=o; });
+  const rest=bones.Hips ? bones.Hips.position.clone() : new THREE.Vector3(0,1,0);
+
+  // black leather gloves with gold bands
+  const leather=new THREE.MeshPhysicalMaterial({color:0x0b0b0b,roughness:.34,clearcoat:.7,clearcoatRoughness:.22});
+  const gold=new THREE.MeshStandardMaterial({color:0xd4a548,metalness:1,roughness:.28});
+  for(const side of ['Left','Right']){
+    const hand=bones[side+'Hand']; if(!hand) continue; const g=new THREE.Group();
+    const fist=new THREE.Mesh(new THREE.SphereGeometry(1,32,22),leather); fist.scale.set(.064,.088,.072); fist.position.set(0,.085,.012); g.add(fist);
+    const thumb=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),leather); thumb.scale.set(.026,.05,.03); thumb.position.set(side==='Left'?.05:-.05,.06,.035); g.add(thumb);
+    const cuff=new THREE.Mesh(new THREE.CylinderGeometry(.047,.05,.08,28),leather); cuff.position.y=-.005; g.add(cuff);
+    for(const y of [-.03,.022]){ const b=new THREE.Mesh(new THREE.TorusGeometry(.05,.0055,8,32),gold); b.rotation.x=Math.PI/2; b.position.y=y; g.add(b); }
+    hand.add(g);
+  }
+
+  // Mixamo clips matched to this skeleton, then trimmed to the part that moves (same method as the app)
+  function retarget(clip,name){
+    const tracks=[];
+    for(const t of clip.tracks){
+      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig[:_]?/,''), prop=t.name.slice(dot+1);
+      if(!bones[node]) continue;
+      if(prop==='quaternion') tracks.push(new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,t.values));
+      else if(prop==='position' && node==='Hips'){
+        const v=Float32Array.from(t.values), s=rest.y/(t.values[1]||1);
+        for(let i=0;i<v.length;i+=3){ v[i]=rest.x+(t.values[i]-t.values[0])*s*.4; v[i+1]=t.values[i+1]*s; v[i+2]=rest.z+(t.values[i+2]-t.values[2])*s*.4; }
+        tracks.push(new THREE.VectorKeyframeTrack('Hips.position',t.times,v));
+      }
+    }
+    let c=new THREE.AnimationClip(name,clip.duration,tracks);
+    if(c.duration>8) c=THREE.AnimationUtils.subclip(c,name,0,240,30);
+    return c;
+  }
+  const FPS=30;
+  function trimmed(c,arm){
+    let times=null, vals=null;
+    for(const bn of arm){
+      const t=c.tracks.find(t=>t.name===bn+'.quaternion'); if(!t) continue;
+      const v=t.values, n=t.times.length; times=times||t.times; vals=vals||new Float32Array(n);
+      for(let i=0;i<Math.min(n,vals.length);i++){ const d=Math.abs(v[i*4]*v[0]+v[i*4+1]*v[1]+v[i*4+2]*v[2]+v[i*4+3]*v[3]); vals[i]+=2*Math.acos(Math.min(1,d)); }
+    }
+    if(!times) return c;
+    let mx=0,pk=0; for(let i=0;i<vals.length;i++) if(vals[i]>mx){ mx=vals[i]; pk=i; }
+    let a=0,b=vals.length-1; while(a<pk && vals[a]<mx*.05) a++; while(b>pk && vals[b]<mx*.05) b--;
+    const t0=Math.max(0,times[a]-.15), t1=Math.min(c.duration,times[b]+.3);
+    return THREE.AnimationUtils.subclip(c,c.name,Math.floor(t0*FPS),Math.max(Math.floor(t0*FPS)+2,Math.ceil(t1*FPS)),FPS);
+  }
+  const CLIPS={};
+  FILES.forEach((f,i)=>{ const o=moves[i]; if(!o||!o.animations[0]) return; const c=retarget(o.animations[0],f);
+    CLIPS[f]= f==='stance.fbx' ? c : trimmed(c, SIDE[f]==='L' ? ['LeftArm','LeftForeArm'] : ['RightArm','RightForeArm']); });
+
+  const mixer=new THREE.AnimationMixer(model);
+  const stance=CLIPS['stance.fbx'] ? mixer.clipAction(CLIPS['stance.fbx']) : (gltf.animations[0] ? mixer.clipAction(gltf.animations[0]) : null);
+  if(stance) stance.play();
+  let seq=[], si=0, cur=stance, showing=false, pace=1;
+  function playNext(){
+    if(!showing || !seq.length){ if(cur!==stance && stance){ stance.reset().play(); stance.crossFadeFrom(cur,.25,false); cur=stance; } return; }
+    const act=mixer.clipAction(seq[si++%seq.length]);
+    act.reset(); act.setLoop(THREE.LoopOnce,1); act.clampWhenFinished=true; act.timeScale=pace; act.play();
+    if(cur && cur!==act) act.crossFadeFrom(cur,.12/pace,false);
+    cur=act;
+  }
+  mixer.addEventListener('finished',e=>{ if(e.action===cur) playNext(); });
+
+
+  let last=performance.now(), shownAt=-1e9, az=.3;
+  const hip=new THREE.Vector3();
+  function size(){ const w=canvas.clientWidth||240, h=canvas.clientHeight||240; if(canvas.width!==Math.round(w*renderer.getPixelRatio())){ renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); } }
+  function frame(now){
+    requestAnimationFrame(frame);
+    if(ringIn.classList.contains('flipped')) shownAt=now;
+    if(document.hidden || now-shownAt>900){ last=now; return; }          // only draw while he is showing
+    const dt=Math.min(.05,(now-last)/1000); last=now;
+    size(); mixer.update(dt);
+    if(bones.Hips) bones.Hips.getWorldPosition(hip); else hip.set(0,1,0);
+    const a=az+Math.sin(now/2600)*.12;                                    // a slow, gentle drift round him
+    camera.position.set(hip.x+Math.sin(a)*5.4,rest.y+1.15,hip.z+Math.cos(a)*5.4);
+    camera.lookAt(hip.x,rest.y-.2,hip.z);
+    if(gym) gym.update(now,dt,camera.position,{x:hip.x,z:hip.z,feet:0,head:1.85});
+    renderer.render(scene,camera);
+  }
+  // warm up while hidden so the first turn-over is smooth
+  try{ size(); camera.position.set(0,2.2,5.4); camera.lookAt(0,.8,0); if(renderer.compileAsync) await renderer.compileAsync(scene,camera); renderer.render(scene,camera); }catch(e){}
+  requestAnimationFrame(frame);
+
+  let hideT=0;
+  api.show=name=>{
+    const list=DRILLS[name]; if(!list) return;
+    seq=list.map(f=>CLIPS[f]).filter(Boolean); if(!seq.length) return;
+    si=0; showing=true; pace=SPEED[name]||1; az=(Math.random()<.5?-1:1)*(.15+Math.random()*.45);
+    tag.textContent=name; ringIn.classList.add('flipped');
+    setTimeout(playNext,350);
+    clearTimeout(hideT);
+    hideT=setTimeout(()=>{ showing=false; ringIn.classList.remove('flipped'); },4600);
+  };
+  api.ready=true;
+}
+// start straight away (the files began downloading in the page head) and turn over to him as soon as he is ready
+boot().then(()=>{ if(window.demoDrill && !ringIn.classList.contains('flipped')) api.show(window.demoDrill()); })
+      .catch(err=>console.warn('Coach preview unavailable.',err));
 </script>
 
 </body>

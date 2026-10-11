@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Build and run a boxing workout: drills every 30 seconds, voice coach, bells, music and crowd.">
+<meta name="description" content="Build and run a boxing workout: a 3D coach, drills every 30 seconds, bells, music and crowd.">
 <meta name="theme-color" content="#0f161d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
@@ -178,6 +178,47 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .done .stats span{display:block;font-family:var(--body);font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 .done .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- two-sided timer: the front is the clock, the back is the coach ---------- */
+.ring-inner{background:none;display:block;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.ring-inner.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:50%;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.front{background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.face.back{transform:rotateY(180deg);overflow:hidden;
+  background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--c,var(--gold)) 30%,var(--surface)) 0%,var(--surface) 58%,#0b1117 100%)}
+.ring-wrap .cfig{position:absolute;inset:0;width:100%;height:100%;display:block;transform:none;filter:none;pointer-events:none}
+#coach:not(.has3d) .c3d{display:none}
+#coach.has3d #coachSvg{display:none}
+.face.back::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 50% 45%,transparent 52%,rgba(0,0,0,.55) 100%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c,var(--gold)) 55%,transparent)}
+.back-tag{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:8px;max-width:80%;
+  padding:5px 14px;border-radius:999px;background:var(--c,var(--gold));color:var(--gold-ink);white-space:nowrap;
+  font-family:var(--display);font-weight:700;font-size:clamp(13px,4.2vw,17px);letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.back-tag span{overflow:hidden;text-overflow:ellipsis}
+.back-tag i{display:inline-flex;gap:2px;align-items:center;height:12px;flex:none}
+.back-tag i b{width:2.5px;height:3px;border-radius:1px;background:currentColor;opacity:.4}
+.coach.talking .back-tag i b{opacity:1;animation:eq .45s ease-in-out infinite alternate}
+.coach.talking .back-tag i b:nth-child(2){animation-delay:.15s}
+.coach.talking .back-tag i b:nth-child(3){animation-delay:.3s}
+@keyframes eq{to{height:12px}}
+/* the coach only appears when the timer is turned over, never during the countdown spins */
+.face.back .cfig,.face.back .back-tag{visibility:hidden;transition:visibility 0s .7s}
+.ring-inner.flipped .face.back .cfig,.ring-inner.flipped .face.back .back-tag{visibility:visible;transition-delay:0s}
+/* beat mode: the progress ring pulses and changes colour with the music */
+.beat-btn{position:absolute;z-index:3;bottom:calc(13% - 14px);left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 70%,transparent);display:grid;place-items:center;padding:0;cursor:pointer;transition:background .2s,border-color .2s}
+.ring-wrap .beat-btn svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;transform:none;filter:none}
+.ring-inner.flipped ~ .beat-btn{opacity:0;pointer-events:none}
+.beat-btn{transition:opacity .3s,background .2s}
+.ring-wrap .beat-btn:hover svg{stroke:var(--fg)}
+.beat-btn[aria-pressed="true"]{background:var(--beatc,var(--gold));border-color:transparent}
+.ring-wrap .beat-btn[aria-pressed="true"] svg{stroke:var(--gold-ink)}
+.countdown .beat-btn,.fighting .beat-btn{opacity:0;pointer-events:none}
+.ring-wrap.beat .ring-prog{stroke:var(--beatc,var(--c));stroke-width:calc(12px + var(--flash,0) * 6px);transition:stroke .25s}
+.ring-wrap.beat svg{filter:drop-shadow(0 0 calc(2px + var(--flash,0) * 16px) var(--beatc,var(--c)))}
+.ring-wrap.beat .ring-track{stroke:color-mix(in srgb,var(--beatc,var(--c)) calc(10% + var(--flash,0) * 18%),var(--surface-2))}
+@media (prefers-reduced-motion:reduce){.beat-btn{display:none}}
+@media (prefers-reduced-motion:reduce){.ring-inner{transition:none}.coach.talking .back-tag i b{animation:none;height:9px}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
@@ -242,15 +283,175 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
         <div class="shock" id="shock"></div>
         <div class="shock two" id="shock2"></div>
         <div class="ring-inner" id="ringInner">
+          <div class="face front">
           <div class="r-label" id="rLabel">Round 1</div>
           <div class="r-time" id="rTime">03:00</div>
           <div class="r-caption" id="rCaption">Round remaining</div>
           <div class="r-div"></div>
           <div class="r-next" id="rNextLabel">Next in</div>
           <div class="r-next-val" id="rNextVal">30 seconds</div>
+          </div>
+          <div class="face back coach" id="coach" data-mood="idle">
+            <canvas class="cfig c3d" id="coach3d" aria-hidden="true"></canvas>
+            <svg class="cfig" id="coachSvg" viewBox="0 0 240 240" aria-hidden="true">
+              <defs>
+                <radialGradient id="cgSpot" cx="50%" cy="38%" r="62%">
+                  <stop offset="0" stop-color="#ffcf8f" stop-opacity=".38"/><stop offset=".55" stop-color="#c47a3c" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="cgFace" cx="42%" cy="34%" r="72%">
+                  <stop offset="0" stop-color="#d9a273"/><stop offset=".55" stop-color="#b77a4c"/><stop offset="1" stop-color="#7f4a2b"/>
+                </radialGradient>
+                <radialGradient id="cgTorso" cx="50%" cy="22%" r="85%">
+                  <stop offset="0" stop-color="#cf9264"/><stop offset=".5" stop-color="#a7683f"/><stop offset="1" stop-color="#6b3c22"/>
+                </radialGradient>
+                <linearGradient id="cgNeck" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#7c4729"/><stop offset="1" stop-color="#a5693f"/>
+                </linearGradient>
+                <radialGradient id="cgDelt" cx="40%" cy="30%" r="75%">
+                  <stop offset="0" stop-color="#d39869"/><stop offset=".6" stop-color="#a5663d"/><stop offset="1" stop-color="#6d3d22"/>
+                </radialGradient>
+                <radialGradient id="cgGlove" cx="34%" cy="24%" r="85%">
+                  <stop offset="0" stop-color="#5a5a5a"/><stop offset=".3" stop-color="#1f1f1f"/><stop offset="1" stop-color="#030303"/>
+                </radialGradient>
+                <linearGradient id="cgGold" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f6d58a"/><stop offset=".5" stop-color="#d4a548"/><stop offset="1" stop-color="#9c7326"/>
+                </linearGradient>
+                <linearGradient id="cgTrunk" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#050505"/><stop offset=".45" stop-color="#2a2a2a"/><stop offset=".55" stop-color="#1a1a1a"/><stop offset="1" stop-color="#050505"/>
+                </linearGradient>
+                <pattern id="cgCurl" width="4.6" height="4.2" patternUnits="userSpaceOnUse">
+                  <circle cx="1.4" cy="1.4" r="1.25" fill="#3a2b22"/><circle cx="3.7" cy="3.3" r="1.1" fill="#2c2019"/>
+                </pattern>
+                <pattern id="cgStub" width="1.8" height="1.8" patternUnits="userSpaceOnUse"><circle cx=".6" cy=".6" r=".42" fill="#120a06"/><circle cx="1.5" cy="1.4" r=".35" fill="#1c110b"/></pattern>
+                <linearGradient id="cgFadeL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#17110d" stop-opacity=".2"/><stop offset="1" stop-color="#17110d" stop-opacity=".7"/></linearGradient>
+                <linearGradient id="cgFadeR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#17110d" stop-opacity=".2"/><stop offset="1" stop-color="#17110d" stop-opacity=".7"/></linearGradient>
+                <clipPath id="cgMouthClip"><path id="cMouthClip"/></clipPath>
+                <clipPath id="cgEyeClipL"><path d="M-6.4 0 C-3.2 -3.6 3.2 -3.6 6.4 0 C3.2 2.5 -3.2 2.5 -6.4 0 Z"/></clipPath>
+                <clipPath id="cgEyeClipR"><path d="M-6.4 0 C-3.2 -3.6 3.2 -3.6 6.4 0 C3.2 2.5 -3.2 2.5 -6.4 0 Z"/></clipPath>
+                <g id="cgGloveShape">
+                  <rect x="-12.5" y="7" width="25" height="15" rx="4" fill="#0b0b0b"/>
+                  <path d="M-12.5 10.5 H12.5 M-12.5 18.5 H12.5" stroke="url(#cgGold)" stroke-width="1.6"/>
+                  <path d="M-6 14.5 L6 14.5" stroke="url(#cgGold)" stroke-width="1" stroke-dasharray="1.5 1.2" opacity=".85"/>
+                  <path d="M-15.5 6 C-17.5 -9 -14.5 -25 0 -27 C14.5 -27 17.5 -12 15.5 2 C14.5 8.5 9.5 10.5 0 10.5 C-9.5 10.5 -14.5 9.5 -15.5 6 Z" fill="url(#cgGlove)"/>
+                  <path d="M-15.5 6 C-17.5 -9 -14.5 -25 0 -27 C14.5 -27 17.5 -12 15.5 2" fill="none" stroke="#c99a45" stroke-width=".9" opacity=".55"/>
+                  <path d="M-11.5 -15.5 C-4 -20 4 -20 11.5 -15.5" fill="none" stroke="#3b3b3b" stroke-width="1.2"/>
+                  <path d="M-6 -13.5 L-6 -8.5 L6 -8.5 L6 -13.5 L3.2 -10.8 L0 -14.8 L-3.2 -10.8 Z" fill="url(#cgGold)"/>
+                  <path d="M-3.6 -6.4 V1.6 M3.6 -6.4 V1.6 M-3.6 -2.4 H3.6" fill="none" stroke="url(#cgGold)" stroke-width="2" stroke-linecap="square"/>
+                  <ellipse cx="-6.5" cy="-18" rx="3.8" ry="6" fill="#fff" opacity=".15"/>
+                  <ellipse cx="0" cy="9.5" rx="9" ry="1.6" fill="#7a1418" opacity=".7"/>
+                </g>
+              </defs>
+              <rect width="240" height="240" fill="url(#cgSpot)"/>
+              <g id="cCam">
+                <g id="cBody">
+                  <!-- torso -->
+                  <path d="M104 96 C96 106 78 108 62 118 C48 127 42 144 42 164 L42 240 L198 240 L198 164 C198 144 192 127 178 118 C162 108 144 106 136 96 Z" fill="url(#cgTorso)"/>
+                  <path d="M104 96 C96 106 78 108 62 118 C48 127 42 144 42 164 M198 164 C198 144 192 127 178 118 C162 108 144 106 136 96" fill="none" stroke="#f3bf8c" stroke-width="1.6" opacity=".35"/>
+                  <path d="M106 86 L105 108 Q120 116 135 108 L134 86 Z" fill="url(#cgNeck)"/>
+                  <ellipse cx="120" cy="104" rx="15" ry="5" fill="#4a2817" opacity=".28"/>
+                  <path d="M84 117 C97 119 109 117 118 121 M156 117 C143 119 131 117 122 121" fill="none" stroke="#5e3420" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
+                  <ellipse cx="95" cy="137" rx="21" ry="12" fill="#e3ab7c" opacity=".16"/>
+                  <ellipse cx="145" cy="137" rx="21" ry="12" fill="#e3ab7c" opacity=".16"/>
+                  <path d="M72 151 C86 164 107 162 117 149 M168 151 C154 164 133 162 123 149" fill="none" stroke="#4e2a17" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>
+                  <path d="M120 122 L120 156" stroke="#4e2a17" stroke-width="1.4" opacity=".35"/>
+                  <g fill="none" stroke="#4e2a17" stroke-width="1.6" opacity=".38" stroke-linecap="round">
+                    <path d="M104 168 C110 165 115 166 117 169 M123 169 C125 166 130 165 136 168"/>
+                    <path d="M105 186 C110 183 115 184 117 187 M123 187 C125 184 130 183 135 186"/>
+                    <path d="M106 203 C110 201 115 201 117 204 M123 204 C125 201 130 201 134 203"/>
+                    <path d="M120 160 L120 208"/>
+                    <path d="M66 168 C71 188 83 202 96 212 M174 168 C169 188 157 202 144 212"/>
+                  </g>
+                  <g fill="#e6b285" opacity=".13"><ellipse cx="110" cy="177" rx="6" ry="5"/><ellipse cx="130" cy="177" rx="6" ry="5"/><ellipse cx="110" cy="195" rx="6" ry="5"/><ellipse cx="130" cy="195" rx="6" ry="5"/></g>
+                  <!-- trunks -->
+                  <path d="M40 210 C80 205 160 205 200 210 L200 240 L40 240 Z" fill="url(#cgTrunk)"/>
+                  <path d="M40 213 C80 208 160 208 200 213" fill="none" stroke="url(#cgGold)" stroke-width="1.6"/>
+                  <path d="M40 236 C80 231 160 231 200 236" fill="none" stroke="url(#cgGold)" stroke-width="1.3" opacity=".8"/>
+                  <g stroke="#3a3a3a" stroke-width=".7" opacity=".7"><path d="M44 218 C80 214 160 214 196 218"/><path d="M44 223 C80 219 160 219 196 223"/><path d="M44 228 C80 224 160 224 196 228"/></g>
+                  <text x="120" y="230" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-weight="700" font-size="17" letter-spacing="3.5" fill="url(#cgGold)" stroke="#000" stroke-width=".5" paint-order="stroke">FLOW</text>
+                  <!-- head -->
+                  <g id="cHead">
+                    <ellipse cx="92.5" cy="62" rx="4.6" ry="8.2" fill="#a5683f"/><path d="M92 57 C90.5 60 90.5 64 92 67" stroke="#6d3d22" stroke-width="1.2" fill="none"/>
+                    <ellipse cx="147.5" cy="62" rx="4.6" ry="8.2" fill="#a5683f"/><path d="M148 57 C149.5 60 149.5 64 148 67" stroke="#6d3d22" stroke-width="1.2" fill="none"/>
+                    <path id="cFace" fill="url(#cgFace)"/>
+                    <path d="M95 64 C96 80 102 92 110 97 M145 64 C144 80 138 92 130 97" fill="none" stroke="#6a3a20" stroke-width="2.4" opacity=".35" stroke-linecap="round"/>
+                    <ellipse cx="104" cy="70" rx="7" ry="4" fill="#e6b081" opacity=".18"/><ellipse cx="136" cy="70" rx="7" ry="4" fill="#e6b081" opacity=".18"/>
+                    <path id="cBeard" fill="#2a1b12" opacity=".22"/>
+                    <path id="cBeardT" fill="url(#cgStub)" opacity=".7"/>
+                    <!-- hair -->
+                    <path d="M92 58 C88 34 100 14 121 14 C142 14 153 32 148 58 C147 48 144 41 139 36 C129 29 111 29 101 36 C96 41 93 48 92 58 Z" fill="#17110d"/>
+                    <path d="M92 58 C88 34 100 14 121 14 C142 14 153 32 148 58 C147 48 144 41 139 36 C129 29 111 29 101 36 C96 41 93 48 92 58 Z" fill="url(#cgCurl)" opacity=".75"/>
+                    <path d="M101 36 C111 31 129 31 139 36" fill="none" stroke="#0d0907" stroke-width="2.2" opacity=".6"/>
+                    <path d="M92 58 C91.5 50 93 44 97 39 L100 46 C97 50 95 54 94.5 60 Z" fill="url(#cgFadeL)"/>
+                    <path d="M148 58 C148.5 50 147 44 143 39 L140 46 C143 50 145 54 145.5 60 Z" fill="url(#cgFadeR)"/>
+                    <!-- brows -->
+                    <path id="cBrowL" d="M99.5 52.6 C104 49.6 110 49.2 115.2 51 L115 53.2 C110 52 104.5 52.5 100 55 Z" fill="#140e0a"/>
+                    <path id="cBrowR" d="M140.5 52.6 C136 49.6 130 49.2 124.8 51 L125 53.2 C130 52 135.5 52.5 140 55 Z" fill="#140e0a"/>
+                    <!-- eyes -->
+                    <g id="cEyeL" transform="translate(108 59.5)">
+                      <path d="M-7 1.6 C-3 4.4 3 4.4 7 1.6" fill="none" stroke="#6a3a20" stroke-width="1.2" opacity=".45"/>
+                      <path d="M-6.4 0 C-3.2 -3.6 3.2 -3.6 6.4 0 C3.2 2.5 -3.2 2.5 -6.4 0 Z" fill="#efe4d8"/>
+                      <g clip-path="url(#cgEyeClipL)"><g class="iris"><circle r="2.8" fill="#3d2414"/><circle r="1.3" fill="#080403"/><circle cx="-.9" cy="-1" r=".75" fill="#fff"/></g></g>
+                      <path d="M-6.8 .1 C-3.2 -4.1 3.2 -4.1 6.8 .1" fill="none" stroke="#120b07" stroke-width="1.5" stroke-linecap="round"/>
+                      <path class="lid" d="M-7.2 -4.6 L7.2 -4.6 L7.2 .4 C3.4 2.9 -3.4 2.9 -7.2 .4 Z" fill="#b5784a" transform="scale(1 0)"/>
+                    </g>
+                    <g id="cEyeR" transform="translate(132 59.5)">
+                      <path d="M-7 1.6 C-3 4.4 3 4.4 7 1.6" fill="none" stroke="#6a3a20" stroke-width="1.2" opacity=".45"/>
+                      <path d="M-6.4 0 C-3.2 -3.6 3.2 -3.6 6.4 0 C3.2 2.5 -3.2 2.5 -6.4 0 Z" fill="#efe4d8"/>
+                      <g clip-path="url(#cgEyeClipR)"><g class="iris"><circle r="2.8" fill="#3d2414"/><circle r="1.3" fill="#080403"/><circle cx="-.9" cy="-1" r=".75" fill="#fff"/></g></g>
+                      <path d="M-6.8 .1 C-3.2 -4.1 3.2 -4.1 6.8 .1" fill="none" stroke="#120b07" stroke-width="1.5" stroke-linecap="round"/>
+                      <path class="lid" d="M-7.2 -4.6 L7.2 -4.6 L7.2 .4 C3.4 2.9 -3.4 2.9 -7.2 .4 Z" fill="#b5784a" transform="scale(1 0)"/>
+                    </g>
+                    <!-- nose -->
+                    <path d="M120 57 C119.5 63 119.4 68 119.8 71" fill="none" stroke="#e8b183" stroke-width="2" opacity=".35" stroke-linecap="round"/>
+                    <path d="M114 72.5 C114.5 75.8 117.5 77 120 76.4 C122.5 77 125.5 75.8 126 72.5" fill="none" stroke="#5e331d" stroke-width="1.5" stroke-linecap="round"/>
+                    <ellipse cx="116.8" cy="74.6" rx="1.7" ry="1" fill="#3b1e10" opacity=".6"/><ellipse cx="123.2" cy="74.6" rx="1.7" ry="1" fill="#3b1e10" opacity=".6"/>
+                    <path d="M113.6 64 C112 68 112.4 71 114 72.6 M126.4 64 C128 68 127.6 71 126 72.6" fill="none" stroke="#6a3a20" stroke-width="1" opacity=".35"/>
+                    <!-- mouth -->
+                    <path id="cMouthIn" fill="#2b0d0a"/>
+                    <g clip-path="url(#cgMouthClip)">
+                      <rect id="cTeeth" x="110" y="80" width="20" height="3" rx="1" fill="#f2ece4"/>
+                      <ellipse id="cTongue" cx="120" cy="90" rx="6" ry="2.5" fill="#9b4a43"/>
+                    </g>
+                    <path id="cLipU" fill="#6e3a2a"/>
+                    <path id="cLipL" fill="#83483a"/>
+                    <path id="cLipShine" fill="none" stroke="#c98774" stroke-width=".8" stroke-linecap="round" opacity=".55"/>
+                    <path id="cMous" d="M107.5 80 C112.5 77.6 117 78.2 120 79 C123 78.2 127.5 77.6 132.5 80 C127.5 79.8 123 80.4 120 80.8 C117 80.4 112.5 79.8 107.5 80 Z" fill="#1f140e" opacity=".75"/>
+                  </g>
+                  <!-- arms: rear then lead; reordered in script so the nearer glove is on top -->
+                  <g id="cSideR">
+                    <path class="uo" fill="#9a5a30" stroke="#3a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path class="ut" fill="none" stroke="#1a0e07" stroke-dasharray="1.2 2.6 1.2 8" opacity=".34"/>
+                    <path class="ut2" fill="none" stroke="#1a0e07" stroke-width="5" stroke-dasharray="4 4" opacity=".3"/>
+                    <path d="M51.3 121.4 L52.7 118.6 L56.0 122.0 Z M52.7 118.6 L54.7 116.2 L57.1 120.2 Z M54.7 116.2 L57.2 114.3 L58.6 118.8 Z M57.2 114.3 L60.1 113.1 L60.4 117.7 Z M60.1 113.1 L63.2 112.5 L62.4 117.1 Z M63.2 112.5 L66.3 112.7 L64.5 117.0 Z M66.3 112.7 L69.3 113.6 L66.6 117.4 Z M69.3 113.6 L72.1 115.2 L68.5 118.2 Z M72.1 115.2 L74.3 117.3 L70.2 119.5 Z M82.0 119.0 L85.0 121.3 L81.4 122.9 Z M85.0 121.3 L88.0 123.7 L84.4 125.2 Z M88.0 123.7 L91.0 126.0 L87.4 127.5 Z M91.0 126.0 L94.0 128.3 L90.4 129.9 Z M94.0 128.3 L97.0 130.7 L93.4 132.2 Z M97.0 130.7 L100.0 133.0 L96.4 134.5 Z" fill="#1a0e07" opacity=".62"/><path d="M48.5 120.4 A16.5 16.5 0 0 1 76.6 115.4 M57.9 122.5 A7.0 7.0 0 0 1 68.5 120.6" fill="none" stroke="#1a0e07" stroke-width="1.3" opacity=".6"/>
+                    <path class="fo" fill="#a66a40" stroke="#3a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path class="ft" fill="none" stroke="#1a0e07" stroke-dasharray="1.1 2.4 1.1 7" opacity=".34"/>
+                    <path class="ft2" fill="none" stroke="#1a0e07" stroke-width="4" stroke-dasharray="3.5 3.5" opacity=".3"/>
+                    <path class="fh" fill="none" stroke="#e3aa7c" stroke-width="2.6" stroke-linecap="round" opacity=".32"/>
+                    <g class="glove"><use href="#cgGloveShape" transform="scale(-1 1)"/></g>
+                  </g>
+                  <g id="cSideL">
+                    <path class="uo" fill="#9a5a30" stroke="#3a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path class="ut" fill="none" stroke="#1a0e07" stroke-dasharray="1.2 2.6 1.2 8" opacity=".34"/>
+                    <path class="ut2" fill="none" stroke="#1a0e07" stroke-width="5" stroke-dasharray="4 4" opacity=".3"/>
+                    <path d="M165.7 117.3 L167.9 115.2 L169.8 119.5 Z M167.9 115.2 L170.7 113.6 L171.5 118.2 Z M170.7 113.6 L173.7 112.7 L173.4 117.4 Z M173.7 112.7 L176.8 112.5 L175.5 117.0 Z M176.8 112.5 L179.9 113.1 L177.6 117.1 Z M179.9 113.1 L182.8 114.3 L179.6 117.7 Z M182.8 114.3 L185.3 116.2 L181.4 118.8 Z M185.3 116.2 L187.3 118.6 L182.9 120.2 Z M187.3 118.6 L188.7 121.4 L184.0 122.0 Z M158.0 119.0 L155.0 121.3 L158.6 122.9 Z M155.0 121.3 L152.0 123.7 L155.6 125.2 Z M152.0 123.7 L149.0 126.0 L152.6 127.5 Z M149.0 126.0 L146.0 128.3 L149.6 129.9 Z M146.0 128.3 L143.0 130.7 L146.6 132.2 Z M143.0 130.7 L140.0 133.0 L143.6 134.5 Z" fill="#1a0e07" opacity=".62"/><path d="M163.4 115.4 A16.5 16.5 0 0 1 191.5 120.4 M171.5 120.6 A7.0 7.0 0 0 1 182.1 122.5" fill="none" stroke="#1a0e07" stroke-width="1.3" opacity=".6"/>
+                    <path class="fo" fill="#a66a40" stroke="#3a1f10" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path class="ft" fill="none" stroke="#1a0e07" stroke-dasharray="1.1 2.4 1.1 7" opacity=".34"/>
+                    <path class="ft2" fill="none" stroke="#1a0e07" stroke-width="4" stroke-dasharray="3.5 3.5" opacity=".3"/>
+                    <path class="fh" fill="none" stroke="#e3aa7c" stroke-width="2.6" stroke-linecap="round" opacity=".32"/>
+                    <g class="glove"><use href="#cgGloveShape"/></g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+            <div class="back-tag"><span id="coachTag">Coach</span><i aria-hidden="true"><b></b><b></b><b></b></i></div>
+          </div>
         </div>
+        <button class="beat-btn" id="beatBtn" aria-pressed="false" aria-label="Light the ring to the music" title="Light the ring to the music">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-4M8 17V7M12 20V4M16 16V8M20 13v-2"/></svg>
+          </button>
         <div class="fight-text" id="fightText" aria-hidden="true">Fight!</div>
       </div>
+
       <div class="now" id="nowCard">
         <div class="eyebrow">Now</div>
         <div class="now-name" id="nowName">Jab, Jab, Cross</div>
@@ -319,105 +520,189 @@ const ICONS = {
   forward:'<path d="M5 6l6 6-6 6M13 6l6 6-6 6"/>',
   move:'<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>'
 };
+// Each drill: [name, coaching cue, the coach's moves, speed (optional, 1 = normal)].
+// The moves are keys in the 3D coach's MOVE_LIBRARY, which names the one file for each move.
+// This list is the single source of truth for what the coach shows in every drill.
 const FOCUS = [
   {id:'jab',name:'Jab technique',desc:'Accuracy and form',icon:'target',drills:[
-    ['Jab, Jab, Cross','Snap each jab back to your chin before the cross.'],
-    ['Double jab, step in','Close the distance on the second jab.'],
-    ['Jab to the body','Bend at the knees, keep your eyes up.'],
-    ['Jab, slip, jab','Slip outside after the first jab, then fire again.'],
-    ['Range-finder jab','Long, light jabs. Measure the distance.']]},
+    ['Jab, Jab, Cross','Snap each jab back to your chin before the cross.',['jab','jab','cross']],
+    ['Double jab, step in','Close the distance on the second jab.',['jab','jab','step']],
+    ['Jab to the body','Bend at the knees, keep your eyes up.',['jab_low']],
+    ['Jab, slip, jab','Slip outside after the first jab, then fire again.',['jab','slip','jab']],
+    ['Range-finder jab','Long, light jabs. Measure the distance.',['jab']]]},
   {id:'speed',name:'Speed',desc:'Quick, sharp punches',icon:'bolt',drills:[
-    ['Speed punches','Light, fast 1-2s. Don’t load up.'],
-    ['Triple jab','Three quick jabs, then reset your guard.'],
-    ['Fast straights','Non-stop 1-2s for the full 30 seconds.'],
-    ['Flurry and out','Four fast punches, then step out.']]},
+    ['Speed punches','Light, fast 1-2s. Don’t load up.',['jab,cross,jab,cross'],1.45],
+    ['Triple jab','Three quick jabs, then reset your guard.',['jab','jab','jab'],1.45],
+    ['Fast straights','Non-stop 1-2s for the full 30 seconds.',['jab,cross,jab,cross'],1.45],
+    ['Flurry and out','Four fast punches, then step out.',['jab,cross,jab,cross','hook','step'],1.45]]},
   {id:'power',name:'Punching power',desc:'Strong, controlled shots',icon:'power',drills:[
-    ['Power cross','Rotate the back foot all the way through.'],
-    ['Hook to body, hook to head','Drop your level, then come up top.'],
-    ['Sit down on it','Bend the knees and drive every shot from the floor.'],
-    ['Power 1-2','Full commitment on both. Reset between each.']]},
+    ['Power cross','Rotate the back foot all the way through.',['cross']],
+    ['Hook to body, hook to head','Drop your level, then come up top.',['hook_low','hook'],1.35],
+    ['Sit down on it','Bend the knees and drive every shot from the floor.',['rhook_low']],
+    ['Power 1-2','Full commitment on both. Reset between each.',['jab,cross']]]},
   {id:'combo',name:'Combinations',desc:'Linking punches together',icon:'combo',drills:[
-    ['1-2-3','Jab, cross, lead hook.'],
-    ['1-2-3-2','Finish with a hard cross.'],
-    ['Jab, cross, hook, uppercut','Flow through it and stay balanced.'],
-    ['1-1-2','Double jab, then cross.']]},
+    ['1-2-3','Jab, cross, lead hook.',['jab,cross','hook'],1.9],
+    ['1-2-3-2','Finish with a hard cross.',['jab,cross','hook','cross'],1.8],
+    ['Jab, cross, hook, uppercut','Flow through it and stay balanced.',['jab,cross','hook','upper']],
+    ['1-1-2','Double jab, then cross.',['jab','jab,cross']]]},
   {id:'foot',name:'Footwork',desc:'Movement and balance',icon:'feet',drills:[
-    ['In and out','Step in with the jab, step out with the cross.'],
-    ['Circle left','Move around the bag, jab every two steps.'],
-    ['Lateral shuffle','Side to side on the balls of your feet.'],
-    ['Step drag','Lead foot moves first, back foot follows. Never cross your feet.']]},
+    ['In and out','Step in with the jab, step out with the cross.',['step','jab,cross']],
+    ['Circle left','Move around the bag, jab every two steps.',['shuffle','jab']],
+    ['Lateral shuffle','Side to side on the balls of your feet.',['shuffle']],
+    ['Step drag','Lead foot moves first, back foot follows. Never cross your feet.',['step','cross']]]},
   {id:'def',name:'Defence',desc:'Blocks, parries and guard',icon:'shield',drills:[
-    ['Parry the jab','Small slap with the back hand. Don’t reach for it.'],
-    ['Block and return','Catch with the glove, return a 1-2.'],
-    ['High guard','Gloves on the temples, elbows tight. Absorb and return.'],
-    ['Shoulder roll','Roll the lead shoulder up, counter with the cross.']]},
+    ['Parry the jab','Small slap with the back hand. Don’t reach for it.',['parry']],
+    ['Block and return','Catch with the glove, return a 1-2.',['block','jab,cross']],
+    ['High guard','Gloves on the temples, elbows tight. Absorb and return.',['block','jab,cross']],
+    ['Shoulder roll','Roll the lead shoulder up, counter with the cross.',['slipR','cross']]]},
   {id:'headmove',name:'Head movement',desc:'Slips, bobs and weaves',icon:'head',drills:[
-    ['Slip, slip, roll','Slip outside, slip inside, roll under the hook.'],
-    ['Bob and weave','Bend from the knees, not the waist. Trace a U.'],
-    ['Pull back','Lean back just out of range, then return a cross.'],
-    ['Defence','Slips, rolls and blocks. Hands stay up.']]},
+    ['Slip, slip, roll','Slip outside, slip inside, roll under the hook.',['slip','slipR','roll']],
+    ['Bob and weave','Bend from the knees, not the waist. Trace a U.',['roll']],
+    ['Pull back','Lean back just out of range, then return a cross.',['pull','cross']],
+    ['Defence','Slips, rolls and blocks. Hands stay up.',['slip','roll','block']]]},
   {id:'counter',name:'Counter-punching',desc:'Make them pay',icon:'counter',drills:[
-    ['Slip and counter','Slip the jab, return a cross.'],
-    ['Roll under','Roll under the hook, come up with a hook.'],
-    ['Check hook','Pivot off the lead foot as you throw the hook.'],
-    ['Catch and fire','Block the jab, answer straight away with a 1-2.']]},
+    ['Slip and counter','Slip the jab, return a cross.',['slip','cross']],
+    ['Roll under','Roll under the hook, come up with a hook.',['roll','hook']],
+    ['Check hook','Pivot off the lead foot as you throw the hook.',['hook']],
+    ['Catch and fire','Block the jab, answer straight away with a 1-2.',['catch','jab,cross']]]},
   {id:'body',name:'Body shots',desc:'Attacking the body',icon:'body',drills:[
-    ['Liver shot','Lead hook to the body. Drop the level, turn the hip.'],
-    ['Body jab, head cross','Go low to bring the guard down, then go high.'],
-    ['Up and down','Body hook, then head hook off the same hand.'],
-    ['Digging uppercuts','Short uppercuts to the stomach. Stay close.']]},
+    ['Liver shot','Lead hook to the body. Drop the level, turn the hip.',['hook_low']],
+    ['Body jab, head cross','Go low to bring the guard down, then go high.',['jab_low','cross']],
+    ['Up and down','Body hook, then head hook off the same hand.',['hook_low','hook']],
+    ['Digging uppercuts','Short uppercuts to the stomach. Stay close.',['upper','rupper']]]},
   {id:'hooks',name:'Hooks',desc:'Tight, compact hooks',icon:'hook',drills:[
-    ['Hooks','Turn the hip. Elbow at shoulder height.'],
-    ['Double lead hook','Body then head, same hand, no reset.'],
-    ['Rear hook','Shorter turn than the cross. Stay compact.'],
-    ['Hook off the jab','Jab, then hook from the same position. No wind-up.']]},
+    ['Hooks','Turn the hip. Elbow at shoulder height.',['hook','rhook']],
+    ['Double lead hook','Body then head, same hand, no reset.',['hook_low','hook']],
+    ['Rear hook','Shorter turn than the cross. Stay compact.',['rhook']],
+    ['Hook off the jab','Jab, then hook from the same position. No wind-up.',['jab','hook']]]},
   {id:'inside',name:'Inside fighting',desc:'Close-range work',icon:'inside',drills:[
-    ['Uppercuts','Dip slightly and drive up through the legs.'],
-    ['Short hooks','Forehead on the bag. Short, tight hooks both sides.'],
-    ['Inside combos','Uppercut, hook, uppercut. Keep your head off centre.'],
-    ['Lean and work','Lean on the bag, rip shots to the body.']]},
+    ['Uppercuts','Dip slightly and drive up through the legs.',['upper','rupper']],
+    ['Short hooks','Forehead on the bag. Short, tight hooks both sides.',['hook','rhook']],
+    ['Inside combos','Uppercut, hook, uppercut. Keep your head off centre.',['upper','hook','upper']],
+    ['Lean and work','Lean on the bag, rip shots to the body.',['hook_low']]]},
   {id:'cross',name:'Cross technique',desc:'Power from the back hand',icon:'arrow',drills:[
-    ['Long cross','Full extension, chin behind the shoulder.'],
-    ['Jab, cross, step out','Throw the 1-2 then step out on an angle.'],
-    ['Cross to the body','Bend the knees, drive the cross low.'],
-    ['Double cross','Two crosses, reset your feet between them.']]},
+    ['Long cross','Full extension, chin behind the shoulder.',['cross']],
+    ['Jab, cross, step out','Throw the 1-2 then step out on an angle.',['jab,cross','step']],
+    ['Cross to the body','Bend the knees, drive the cross low.',['cross_low']],
+    ['Double cross','Two crosses, reset your feet between them.',['cross','cross']]]},
   {id:'angles',name:'Angles',desc:'Pivots and cutting off',icon:'angle',drills:[
-    ['Pivot and jab','Pivot off the lead foot, then jab.'],
-    ['Step off and hook','Step to the side, land the hook from the new angle.'],
-    ['L-step','Step back and across, then fire a cross.'],
-    ['Cut the ring','Walk the bag down, step across to cut off its path.']]},
+    ['Pivot and jab','Pivot off the lead foot, then jab.',['pivot','jab']],
+    ['Step off and hook','Step to the side, land the hook from the new angle.',['step','hook']],
+    ['L-step','Step back and across, then fire a cross.',['step','cross']],
+    ['Cut the ring','Walk the bag down, step across to cut off its path.',['step']]]},
   {id:'feints',name:'Feints',desc:'Set traps',icon:'eye',drills:[
-    ['Feint jab, cross','Twitch the jab, land the real cross.'],
-    ['Shoulder feint','Dip the shoulder, throw something else.'],
-    ['Level change','Fake low, go high.'],
-    ['Feint and step','Feint, then step in behind it with a 1-2.']]},
+    ['Feint jab, cross','Twitch the jab, land the real cross.',['feint','jab,cross']],
+    ['Shoulder feint','Dip the shoulder, throw something else.',['feint']],
+    ['Level change','Fake low, go high.',['jab,cross']],
+    ['Feint and step','Feint, then step in behind it with a 1-2.',['feint','step','jab,cross']]]},
   {id:'switch',name:'Switch stance',desc:'Work from both sides',icon:'swap',drills:[
-    ['Switch and jab','Switch stance, jab straight away from the new side.'],
-    ['Southpaw 1-2','Jab, cross from southpaw. Lead foot outside.'],
-    ['Switch hit','Throw a combo, switch, throw it again.'],
-    ['Mirror drills','Same combo orthodox then southpaw, every 5 seconds.']]},
+    ['Switch and jab','Switch stance, jab straight away from the new side.',['switch','jab']],
+    ['Southpaw 1-2','Jab, cross from southpaw. Lead foot outside.',['jab,cross']],
+    ['Switch hit','Throw a combo, switch, throw it again.',['switch']],
+    ['Mirror drills','Same combo orthodox then southpaw, every 5 seconds.',['switch']]]},
   {id:'pressure',name:'Pressure fighting',desc:'Walk them down',icon:'forward',drills:[
-    ['Walk forward','Small steps forward behind a high guard. Never stop working.'],
-    ['Pin and punish','Imagine them on the ropes. Body, head, body.'],
-    ['Bob and pressure','Bob in, land a hook, keep coming.'],
-    ['Constant jab','Jab to keep them busy as you close distance.']]},
+    ['Walk forward','Small steps forward behind a high guard. Never stop working.',['step','block']],
+    ['Pin and punish','Imagine them on the ropes. Body, head, body.',['hook_low']],
+    ['Bob and pressure','Bob in, land a hook, keep coming.',['roll','hook']],
+    ['Constant jab','Jab to keep them busy as you close distance.',['jab']]]},
   {id:'outbox',name:'Out-boxing',desc:'Stick and move',icon:'move',drills:[
-    ['Stick and move','Jab, then move. Never stay in one spot.'],
-    ['Jab and circle','Jab, circle away from the power hand.'],
-    ['Long range 1-2','Stay at the end of your reach. Land and get out.'],
-    ['Check and go','Stop them with the jab, then slide out.']]},
+    ['Stick and move','Jab, then move. Never stay in one spot.',['jab']],
+    ['Jab and circle','Jab, circle away from the power hand.',['jab','shuffle']],
+    ['Long range 1-2','Stay at the end of your reach. Land and get out.',['jab,cross']],
+    ['Check and go','Stop them with the jab, then slide out.',['jab']]]},
   {id:'engine',name:'Conditioning',desc:'Keep the work rate up',icon:'heart',drills:[
-    ['Non-stop punches','Never stop your hands for the full 30 seconds.'],
-    ['Burnout straights','Rapid 1-2s as fast as you can hold form.'],
-    ['Punch and squat','Four punches, one squat, repeat.'],
-    ['High knees and jab','Drive the knees while you jab.']]},
+    ['Non-stop punches','Never stop your hands for the full 30 seconds.',['jab,cross,jab,cross'],1.45],
+    ['Burnout straights','Rapid 1-2s as fast as you can hold form.',['jab,cross,jab,cross'],1.45],
+    ['Punch and squat','Four punches, one squat, repeat.',['jab,cross','squat']],
+    ['High knees and jab','Drive the knees while you jab.',['squat','jab']]]},
   {id:'flow',name:'Shadow flow',desc:'Relaxed, creative movement',icon:'wave',drills:[
-    ['Free flow','Mix it up. Loose shoulders, breathe out on each punch.'],
-    ['Slow motion','Every punch in slow motion. Perfect form.'],
-    ['Rhythm and bounce','Find a rhythm, punch on the beat.'],
-    ['Visualise','Picture an opponent. React to what they throw.']]}
+    ['Free flow','Mix it up. Loose shoulders, breathe out on each punch.',['jab,cross']],
+    ['Slow motion','Every punch in slow motion. Perfect form.',['jab,cross'],0.6],
+    ['Rhythm and bounce','Find a rhythm, punch on the beat.',['jab,cross']],
+    ['Visualise','Picture an opponent. React to what they throw.',['jab,cross']]]}
 ];
-const OPTIONS = [{r:3,m:3},{r:5,m:3},{r:3,m:5},{r:5,m:5}];
+// round formats, and who coaches each: Ali takes 5 x 3 min and 3 x 5 min, Coach the others
+// a second tip for every drill, spoken halfway through it (keyed by drill name; each one is about that drill only)
+const TIPS = {
+  'Jab, Jab, Cross':'Turn the back foot as the cross goes out.',
+  'Double jab, step in':'Push off the back foot on that second jab.',
+  'Jab to the body':'Lead shoulder up to cover your chin.',
+  'Jab, slip, jab':'Slip just enough. Eyes stay on the target.',
+  'Range-finder jab':'Touch, then bring it back faster than it went out.',
+  'Speed punches':'Stay loose. Tension slows your hands.',
+  'Triple jab':'Short and snappy. Don’t reset between them.',
+  'Fast straights':'Breathe out on every punch. Hold the pace.',
+  'Flurry and out':'Step out on an angle, not straight back.',
+  'Power cross':'Turn your hips first, the arm follows.',
+  'Hook to body, hook to head':'Bend the knees for the body shot. Don’t lean.',
+  'Sit down on it':'Drop your weight as the punch lands.',
+  'Power 1-2':'Plant your feet. Power starts from the floor.',
+  '1-2-3':'Pivot the lead foot as the hook comes round.',
+  '1-2-3-2':'Hands back to your chin after the last cross.',
+  'Jab, cross, hook, uppercut':'Shift your weight with every punch.',
+  '1-1-2':'First jab light, second jab real.',
+  'In and out':'Small steps. Stay on the balls of your feet.',
+  'Circle left':'Lead foot steps first when you circle left.',
+  'Lateral shuffle':'Feet shoulder width apart. Don’t let them touch.',
+  'Step drag':'Keep your head over your hips as you move.',
+  'Parry the jab':'Parry close to your face, then fire back.',
+  'Block and return':'Return the 1-2 the moment their punch lands.',
+  'High guard':'Chin down, eyes up through the gloves.',
+  'Shoulder roll':'Tuck your chin behind the lead shoulder.',
+  'Slip, slip, roll':'Just off the centre line. Don’t over-slip.',
+  'Bob and weave':'Hands stay up as you go under.',
+  'Pull back':'Weight onto the back foot, then fire off it.',
+  'Defence':'Keep your head moving. Don’t be a still target.',
+  'Slip and counter':'Throw the cross while you’re still on the slip.',
+  'Roll under':'Come up on the outside with the hook ready.',
+  'Check hook':'Pivot away so they punch into empty space.',
+  'Catch and fire':'Catch it close to your face, fire straight back.',
+  'Liver shot':'Aim just under the ribs on their right side.',
+  'Body jab, head cross':'Bend for the jab, then rise into the cross.',
+  'Up and down':'Don’t drop the hand between the two hooks.',
+  'Digging uppercuts':'Turn your hips into each uppercut.',
+  'Hooks':'Pivot the front foot as you turn.',
+  'Double lead hook':'Stay on the lead hip for both hooks.',
+  'Rear hook':'Rear hand comes straight back to your chin.',
+  'Hook off the jab':'Don’t pull the jab all the way back before the hook.',
+  'Uppercuts':'Keep them short. No big wind-up.',
+  'Short hooks':'Elbows tight, turn from the hips.',
+  'Inside combos':'Head on the side of the bag, not the middle.',
+  'Lean and work':'Weight forward, hands never stop.',
+  'Long cross':'Turn the back heel out as you extend.',
+  'Jab, cross, step out':'Step out to the side, not straight back.',
+  'Cross to the body':'Head off the centre line as you dip.',
+  'Double cross':'Second cross as hard as the first.',
+  'Pivot and jab':'Turn on the ball of your lead foot.',
+  'Step off and hook':'Land the hook before they can turn to face you.',
+  'L-step':'Step back, then across. Two clean steps.',
+  'Cut the ring':'Step across their path. Don’t follow them.',
+  'Feint jab, cross':'Sell the feint with your shoulder.',
+  'Shoulder feint':'Small and sharp. Make them flinch.',
+  'Level change':'Bend the knees to sell the low fake.',
+  'Feint and step':'Step in while they react to the feint.',
+  'Switch and jab':'Guard stays up while you switch.',
+  'Southpaw 1-2':'Right hand jabs, left hand crosses.',
+  'Switch hit':'Quick switch, small hop, stay balanced.',
+  'Mirror drills':'Same clean form on both sides.',
+  'Walk forward':'Short steps. Never cross your feet.',
+  'Pin and punish':'Stay close, feet under you, keep punching.',
+  'Bob and pressure':'Come up throwing. Keep your head moving.',
+  'Constant jab':'Step with every jab. Keep closing in.',
+  'Stick and move':'Move after every jab, left or right.',
+  'Jab and circle':'Circle to your left, away from their right hand.',
+  'Long range 1-2':'Step out of range as soon as you land.',
+  'Check and go':'Jab as they step in, then slide out.',
+  'Non-stop punches':'Breathe out on every punch. Keep going.',
+  'Burnout straights':'Fast but clean. Don’t let the form slip.',
+  'Punch and squat':'Hands up as you come out of the squat.',
+  'High knees and jab':'Stay tall and keep your guard up.',
+  'Free flow':'Change levels. Mix in some head movement.',
+  'Slow motion':'Feel every part: feet, hips, then hands.',
+  'Rhythm and bounce':'Light on your feet. Bounce with the beat.',
+  'Visualise':'Slip what they throw, then counter.'
+};
+const OPTIONS = [{r:3,m:3,coach:'coach'},{r:5,m:3,coach:'ali'},{r:3,m:5,coach:'ali'},{r:5,m:5,coach:'coach'}];
 const SEG = 30, REST = 60, READY = 5;
 // one colour per drill, cycled so neighbours never match; the ring takes the colour of the current drill
 const PALETTE = ['#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
@@ -446,6 +731,10 @@ const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
 const state = {focus:new Set(['jab','speed','power']), opt:0};
+// which coach the chosen format needs; the 3D coach loads him on the setup screen, never during the countdown
+window.coachFor=()=>OPTIONS[state.opt].coach||'coach';
+let coachSwitchT=0;
+function prepCoach(){ clearTimeout(coachSwitchT); coachSwitchT=setTimeout(()=>{ if(window.Coach3D && Coach3D.setAvatar) Coach3D.setAvatar(coachFor()); },350); }
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
 
@@ -486,7 +775,7 @@ $('focusGrid').addEventListener('click',e=>{
   const id=b.dataset.id; state.focus.has(id)?state.focus.delete(id):state.focus.add(id); renderSetup();
 });
 $('roundList').addEventListener('click',e=>{
-  const b=e.target.closest('.round-opt'); if(!b) return; state.opt=+b.dataset.i; renderSetup();
+  const b=e.target.closest('.round-opt'); if(!b) return; state.opt=+b.dataset.i; renderSetup(); prepCoach();
 });
 
 /* ---------- workout generation ---------- */
@@ -505,7 +794,7 @@ function build(){
       const area=order.pop(); let d=draw(area);
       if(d[0]===last){ const alt=draw(area); bags[area.id].unshift(d); d=alt; }
       last=d[0];
-      steps.push({type:'work',round:r,name:d[0],cue:d[1],area:area.name,dur:SEG,color:PALETTE[w++%PALETTE.length]});
+      steps.push({type:'work',round:r,name:d[0],cue:d[1],tip:TIPS[d[0]]||'',moves:d[2]||null,speed:d[3]||1,area:area.name,dur:SEG,color:PALETTE[w++%PALETTE.length]});
     }
     if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the arms. Round ${r+1} is next.`,dur:REST,color:REST_C});
   }
@@ -556,7 +845,7 @@ function loadTrack(i){
 let music=null;
 async function startMusic(){
   ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.();
-  const out=ac.createGain(); out.gain.value=MUSIC_VOL; out.connect(ac.destination);
+  const out=ac.createGain(); out.gain.value=MUSIC_VOL; out.connect(ac.destination); out.connect(beatMeter());
   const m=music={out, order:shuffle(TRACKS.map((_,i)=>i)), pos:0, deck:null, timer:0};
   setMusicUI(true,'Loading music…');
   try{ await playNext(true); }
@@ -686,6 +975,40 @@ function cheer(level=.6, len=2.5){
 function setCrowdUI(on){
   const b=$('crowdBtn'); b.setAttribute('aria-pressed',on); b.setAttribute('aria-label',on?'Stop crowd noise':'Crowd noise'); b.title=on?'Stop crowd noise':'Crowd noise';
 }
+/* ---------- beat mode: reads the music's bass and pulses the progress ring on each beat ---------- */
+let meter=null, meterData=null, beatOn=false, beatRaf=0, beatAvg=0, lastBeat=0, flash=0, beatIdx=0;
+function beatMeter(){
+  if(!meter){ meter=ac.createAnalyser(); meter.fftSize=1024; meter.smoothingTimeConstant=.5; meterData=new Uint8Array(meter.frequencyBinCount); }
+  return meter;
+}
+function beatLoop(now){
+  if(!beatOn) return;
+  beatRaf=requestAnimationFrame(beatLoop);
+  const wrap=$('ringWrap');
+  if(meter && music){
+    meter.getByteFrequencyData(meterData);
+    const top=Math.max(2,Math.round(150/(ac.sampleRate/meter.fftSize)));
+    let bass=0; for(let i=1;i<=top;i++) bass+=meterData[i]; bass/=top;
+    const b=Math.min(1,Math.max(0,(bass-105)/120));
+    if(b>.2 && b>beatAvg*1.18 && now-lastBeat>260){                 // a kick: glow and step to the next colour
+      lastBeat=now; flash=1; beatIdx=(beatIdx+1)%PALETTE.length;
+      wrap.style.setProperty('--beatc',PALETTE[beatIdx]); $('beatBtn').style.setProperty('--beatc',PALETTE[beatIdx]);
+    }
+    beatAvg=beatAvg*.94+b*.06;
+  }
+  flash*=.9;
+  wrap.style.setProperty('--flash',flash.toFixed(3));
+}
+function setBeat(on){
+  beatOn=on; $('beatBtn').setAttribute('aria-pressed',on);
+  $('ringWrap').classList.toggle('beat',on);
+  cancelAnimationFrame(beatRaf);
+  if(on){
+    if(!music) startMusic();                                         // the ring needs music to follow
+    $('ringWrap').style.setProperty('--beatc',PALETTE[beatIdx]);
+    beatRaf=requestAnimationFrame(beatLoop);
+  } else { flash=0; $('ringWrap').style.setProperty('--flash',0); }
+}
 function setMusicUI(on,text){
   const b=$('musicBtn'); b.setAttribute('aria-pressed',on); b.setAttribute('aria-label',on?'Stop music':'Play music'); b.title=on?'Stop music':'Play music';
   $('musicNote').textContent = on ? (text||'Music playing') : 'Tap the music note for music';
@@ -710,6 +1033,7 @@ function say(text, delay=0){
     u.rate = 1.05;
     u.onstart = () => duck(true);                       // music dips while the coach talks
     u.onend = u.onerror = () => duck(false);
+    Coach.bind(u, text);
     synth.speak(u);
   };
   delay ? (sayTimer = setTimeout(go, delay)) : go();
@@ -726,6 +1050,333 @@ function showQuote(){
 // encouragement is spoken only
 function pep(){ say(draw('enc', ENCOURAGE)); }
 
+/* ---------- animated coach: an illustrated boxer drawn in SVG, driven by JavaScript (no images, no libraries) ----------
+   Lip sync: each letter of the spoken line maps to a mouth shape, re-timed on every word the voice reaches.
+   Movement: every part follows its target on a spring, so motion has weight and follow-through.
+   Camera: close on the face while he talks, then pulls back to show the combination. */
+const Coach=(()=>{
+  const q=id=>document.getElementById(id), root=q('coach');
+  const inner=q('ringInner'), tag=q('coachTag');
+  const svg=q('coachSvg'), cam=q('cCam'), body=q('cBody'), head=q('cHead');
+  const face=q('cFace'), beards=[q('cBeard'),q('cBeardT')], mouthIn=q('cMouthIn'), mouthClip=q('cMouthClip');
+  const lipU=q('cLipU'), lipL=q('cLipL'), shine=q('cLipShine'), teeth=q('cTeeth'), tongue=q('cTongue'), mous=q('cMous');
+  const browL=q('cBrowL'), browR=q('cBrowR');
+  const eyes=[q('cEyeL'),q('cEyeR')], irises=eyes.map(e=>e.querySelector('.iris')), lids=eyes.map(e=>e.querySelector('.lid'));
+  const side={L:q('cSideL'),R:q('cSideR')};
+  const parts={}; for(const k of ['L','R']){ const el=c=>side[k].querySelector(c); parts[k]={uo:el('.uo'),ut:el('.ut'),ut2:el('.ut2'),fo:el('.fo'),ft:el('.ft'),ft2:el('.ft2'),fh:el('.fh'),glove:el('.glove')}; }
+  // a limb segment drawn as a tapered capsule: wa wide at the start, wb wide at the end
+  function capsule(ax,ay,bx,by,wa,wb){
+    const dx=bx-ax, dy=by-ay, l=Math.hypot(dx,dy)||1, nx=-dy/l, ny=dx/l, ra=wa/2, rb=wb/2;
+    return `M${f1(ax+nx*ra)} ${f1(ay+ny*ra)} L${f1(bx+nx*rb)} ${f1(by+ny*rb)} A${f1(rb)} ${f1(rb)} 0 0 1 ${f1(bx-nx*rb)} ${f1(by-ny*rb)} L${f1(ax-nx*ra)} ${f1(ay-ny*ra)} A${f1(ra)} ${f1(ra)} 0 0 1 ${f1(ax+nx*ra)} ${f1(ay+ny*ra)} Z`;
+  }
+  const SH={L:[176,126],R:[64,126]}, REACH=92;               // L = lead hand (viewer's right), R = rear hand
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // a glove is x, y, z (how far it comes toward you) and e (how much the elbow drops)
+  const g=(x,y,z,e=1)=>({x,y,z,e});
+  const pose=(L,R,b={})=>({L,R,b:{x:0,y:0,r:0,...b}});
+  const BASE={
+    guard:pose(g(152,84,22),g(89,88,20)),
+    ready:pose(g(146,80,26),g(95,82,26),{y:4}),
+    rest: pose(g(182,212,4),g(58,212,4),{y:3}),
+    talk: pose(g(158,128,16),g(82,130,16)),             // gloves relaxed at chest height while he talks
+  };
+  BASE.idle=BASE.rest;
+  const copy=p=>({L:{...p.L},R:{...p.R},b:{...p.b}});
+  const over=o=>{ const p=copy(BASE.guard); for(const k of ['L','R','b']) if(o[k]) Object.assign(p[k],o[k]); return p; };
+  const F=(o,ms)=>({o,ms});
+  const MOVES={
+    jab:   [F({L:g(132,78,70),b:{r:-3,x:-3}},120),F({},200)],
+    cross: [F({R:g(110,76,74),L:g(156,90,18),b:{r:6,x:5}},140),F({},220)],
+    hook:  [F({L:g(190,82,30,.15),b:{r:-3}},120),F({L:g(126,78,46,.2),b:{r:-10,x:-6}},140),F({},230)],
+    rhook: [F({R:g(50,82,30,.15),b:{r:3}},120),F({R:g(114,78,46,.2),b:{r:10,x:6}},140),F({},230)],
+    upper: [F({L:g(158,150,22,.3),b:{y:7,r:-3}},130),F({L:g(140,70,46,.4),b:{y:-5,r:-7}},140),F({},230)],
+    rupper:[F({R:g(82,150,22,.3),b:{y:7,r:3}},130),F({R:g(100,70,46,.4),b:{y:-5,r:7}},140),F({},230)],
+    slip:  [F({b:{x:-18,r:-8}},200),F({},220)],
+    slipR: [F({b:{x:18,r:8}},200),F({},220)],
+    roll:  [F({b:{y:20,x:-16,r:-7}},250),F({b:{y:20,x:16,r:7}},300),F({},250)],
+    block: [F({L:g(140,62,32),R:g(100,64,32)},150),F({L:g(140,62,32),R:g(100,64,32)},280),F({},220)],
+    parry: [F({R:g(130,86,36)},110),F({},180)],
+    step:  [F({b:{x:14,y:2}},170),F({b:{x:-5}},170),F({},200)],
+    pivot: [F({b:{x:10,r:14}},250),F({},280)],
+    switch:[F({b:{r:-12}},220),F({b:{r:12}},280),F({},220)],
+    feint: [F({L:g(146,84,36)},90),F({},130),F({},170)],
+    squat: [F({b:{y:26}},340),F({},340)],
+    pull:  [F({b:{y:-6,r:-4}},200),F({},220)],
+    catch: [F({R:g(130,86,36)},110),F({},180)],
+    shuffle:[F({b:{x:14,y:2}},170),F({b:{x:-14}},260),F({},200)]
+  };
+  // body shots: any glove that is fully extended drops to stomach height, and the coach sinks with it
+  const lower=o=>{ const c={...o}; let hit=false;
+    for(const k of ['L','R']) if(o[k] && o[k].z>30){ c[k]={...o[k],y:o[k].y+52}; hit=true; }
+    if(hit) c.b={...(o.b||{}), y:((o.b&&o.b.y)||0)+10};
+    return c; };
+  const PUNCH=new Set(['jab','cross','hook','rhook','upper','rupper']);
+  // read a drill name (or its cue) into a list of moves
+  function parse(text,opts={}){
+    const s=text.toLowerCase(), out=[];
+    const pace=/slow/.test(s)?.45:/speed|fast|flurry|non-stop|burnout|rapid|triple/.test(s)?1.5:1;
+    const num=s.match(/\b[1-6](?:-[1-6])+\b/);
+    if(num){ num[0].split('-').forEach(d=>out.push({m:['jab','cross','hook','rhook','upper','rupper'][d-1]})); return {moves:out,pace,found:true}; }
+    const re=/\b(?:punch|hook off the jab|double lead hook|double cross|double jab|triple jab|shoulder roll|pull back|in and out|rear hook|high knees|flurry|counter|return|fire|lateral|jab|cross|straight|hook|uppercut|slip|roll|bob|weave|duck|block|parry|catch|guard|pivot|step|shuffle|circle|switch|southpaw|feint|squat|body|liver|stomach)/g;
+    let m, pendingLow=false, lastPunch=false, slips=0;
+    const add=mv=>{ const p=PUNCH.has(mv); out.push({m:mv,low:p&&pendingLow}); if(p) pendingLow=false; lastPunch=p; };
+    const lastIs=mv=>out.length && out[out.length-1].m===mv;
+    while((m=re.exec(s))){
+      const t=m[0], plural=s[re.lastIndex]==='s';
+      // in a coaching cue, 'the hook' / 'the jab' is the opponent's punch, not one to throw
+      if(opts.raw && /\b(under|slip|slips|catch|block|parry|duck|roll) the $/.test(s.slice(Math.max(0,m.index-14),m.index)) && /^(jab|cross|hook|uppercut|straight|rear hook)$/.test(t)) continue;
+      switch(t){
+        case 'hook off the jab': add('jab'); add('hook'); break;
+        case 'double lead hook': pendingLow=true; add('hook'); add('hook'); break;
+        case 'double cross': add('cross'); add('cross'); break;
+        case 'flurry': add('jab'); add('cross'); add('jab'); add('cross'); add('hook'); add('step'); break;
+        case 'counter': if(!/^\s+(with )?(a |an |the )?(jab|cross|hook|uppercut|straight|1-2)/.test(s.slice(re.lastIndex,re.lastIndex+20))) add('cross'); break;
+        case 'punch': add('jab'); add('cross'); break;
+        case 'return': case 'fire': if(!/^\s+(a |an |the )?(jab|cross|hook|uppercut|straight|1-2)/.test(s.slice(re.lastIndex,re.lastIndex+16))){ add('jab'); add('cross'); } break;
+        case 'double jab': add('jab'); add('jab'); break;
+        case 'triple jab': add('jab'); add('jab'); add('jab'); break;
+        case 'jab': add('jab'); break;
+        case 'cross': add('cross'); break;
+        case 'straight': add('jab'); add('cross'); break;
+        case 'rear hook': add('rhook'); break;
+        case 'hook': add('hook'); if(plural) add('rhook'); break;
+        case 'uppercut': add('upper'); if(plural) add('rupper'); break;
+        case 'slip': add(slips++%2?'slipR':'slip'); break;
+        case 'shoulder roll': add('slipR'); break;
+        case 'roll': case 'bob': case 'weave': case 'duck': if(!lastIs('roll')) add('roll'); break;
+        case 'pull back': add('pull'); break;
+        case 'catch': add('catch'); break;
+        case 'block': case 'guard': if(!lastIs('block')) add('block'); break;
+        case 'parry': add('parry'); break;
+        case 'pivot': add('pivot'); break;
+        case 'shuffle': case 'circle': case 'lateral': if(!lastIs('shuffle')) add('shuffle'); break;
+        case 'step': case 'in and out': if(!lastIs('step')) add('step'); break;
+        case 'switch': case 'southpaw': if(!lastIs('switch')) add('switch'); break;
+        case 'feint': add('feint'); break;
+        case 'squat': case 'high knees': add('squat'); break;
+        default: if(lastPunch) out[out.length-1].low=true; else pendingLow=true;   // body / liver / stomach
+      }
+    }
+    if(pendingLow) out.push({m:'hook',low:true});
+    const found=out.length>0;
+    if(!opts.raw && !out.some(o=>PUNCH.has(o.m))) out.push({m:'jab'},{m:'cross'});   // footwork and defence drills finish with a 1-2
+    if(pace>1 && out.length<3) out.push(...out.slice(0,2));
+    return {moves:out.slice(0,8),pace,found};
+  }
+
+  // ---- springs ----
+  const sp=x=>({x,v:0});
+  function spring(s,target,k,z,dt){ const c=2*Math.sqrt(k)*z; s.v+=(k*(target-s.x)-c*s.v)*dt; s.x+=s.v*dt; }
+  const S={}; const init=p=>{ for(const k of ['L','R']) for(const f of ['x','y','z','e']) S[k+f]=sp(p[k][f]); for(const f of ['x','y','r']) S['b'+f]=sp(p.b[f]); };
+  init(BASE.rest);
+  const C={s:sp(1),fx:sp(120),fy:sp(120)}, H={x:sp(0),r:sp(0),nod:sp(0)}, M={o:sp(0),w:sp(.5),r:sp(0)}, brow=sp(0), eye={x:sp(0),y:sp(0)};
+
+  let mood='idle', paused=true, queue=[], frameEnd=0, target=copy(BASE.rest);
+  let demoT=0, flipT=0, curStep=null, phase='', phaseAt=0;
+  let flipped=false, flipAt=0, heard=false, lastSpeak=0, talking=false, leadFront=true;
+  let nextBlink=performance.now()+2000, blinkAt=-9999, nextLook=0, lookX=0, lookY=0, browKick=0;
+  function flip(on){
+    if(on===flipped) return;
+    flipped=on; inner.classList.toggle('flipped',on);
+    if(on){ flipAt=performance.now(); heard=false; }
+  }
+  function setMood(m){ if(m===mood) return; mood=m; root.dataset.mood=m; if(!queue.length) target=copy(BASE[m]); }
+  // for the 3D coach: the drill's own moves, plus any punches its coaching cue describes (never invented ones)
+  function parseStep(step){
+    const hasPunch=r=>r.moves.some(o=>PUNCH.has(o.m));
+    let p=parse(step.name,{raw:true});
+    const c=step.cue ? parse(step.cue,{raw:true}) : null;
+    if(!p.found) p=(c && c.found) ? c : {moves:[{m:'jab'},{m:'cross'}],pace:p.pace,found:false};
+    else if(!hasPunch(p) && c && hasPunch(c)) p={...p, moves:p.moves.concat(c.moves.filter(o=>PUNCH.has(o.m)))};
+    return p;
+  }
+  function demo(step){
+    if(reduce || !step || mood!=='guard') return false;
+    let p=parse(step.name);
+    if(!p.found && step.cue){ const c=parse(step.cue); if(c.found) p=c; }
+    queue=[];
+    p.moves.forEach(({m,low})=>(MOVES[m]||MOVES.jab).forEach(fr=>queue.push({p:over(low?lower(fr.o):fr.o), ms:fr.ms/p.pace})));
+    frameEnd=0; return true;
+  }
+
+  // ---- lip sync ----
+  const VIS={a:[.85,.55,0],e:[.55,.85,0],i:[.45,.9,0],y:[.4,.8,0],o:[.7,.1,.85],u:[.35,0,1],w:[.25,0,.9],
+             m:[0,.45,0],b:[0,.45,0],p:[0,.45,0],f:[.12,.65,0],v:[.12,.65,0],l:[.35,.6,0],t:[.32,.65,0],d:[.35,.6,0],n:[.3,.6,0],
+             s:[.18,.8,0],z:[.18,.8,0],c:[.22,.75,0],x:[.22,.7,0],r:[.3,.35,.45],k:[.45,.5,0],g:[.45,.5,0],h:[.45,.5,0],q:[.35,.2,.6],j:[.35,.5,.3]};
+  const vis={text:'',t0:0,off:0,ms:70,active:false,bounded:false};
+  function bind(u,text){
+    const ps=u.onstart, pe=u.onend;
+    u.onstart=e=>{ ps&&ps(e); vis.text=text.toLowerCase(); vis.t0=performance.now(); vis.off=0; vis.ms=vis.learned||1000/(14.5*(u.rate||1)); vis.active=true; vis.bounded=false; vis.lastB=null; };
+    u.onboundary=e=>{ if(e.name && e.name!=='word') return;
+      const now=performance.now(), ci=e.charIndex;
+      // learn this voice's real speed from the gap between word starts
+      if(vis.lastB && ci>vis.lastB.ci){ const r=(now-vis.lastB.t)/(ci-vis.lastB.ci); if(r>25 && r<260) vis.ms=vis.ms*.55+r*.45; }
+      vis.lastB={t:now,ci};
+      // the word being spoken right now: the mouth plays it, then waits for the next word
+      let we=ci; const len=e.charLength||0;
+      if(len) we=ci+len; else while(we<vis.text.length && /[a-z0-9']/i.test(vis.text[we])) we++;
+      vis.wordStart=ci; vis.wordEnd=we; vis.wordT=now; vis.bounded=true; brow.v+=8;
+      vis.off=now-(vis.t0+ci*vis.ms); };
+    u.onend=u.onerror=e=>{ pe&&pe(e); vis.active=false; if(vis.bounded) vis.learned=vis.ms; };   // remember the speed for the next line
+  }
+
+  // ---- drawing ----
+  const f1=n=>n.toFixed(1), f2=n=>n.toFixed(2);
+  function drawMouth(o,w,r,jd){
+    const cx=120, my=84, hw=9*(.86+.34*w-.36*r), gap=o*7.5, th=1+r*.9;
+    const up=my-o*1.4, lo=my+gap*1.25;
+    const Lx=cx-hw, Rx=cx+hw, cy=my-.35;
+    const inner=`M${f2(Lx)} ${f2(cy)} Q${cx} ${f2(up)} ${f2(Rx)} ${f2(cy)} Q${cx} ${f2(lo)} ${f2(Lx)} ${f2(cy)} Z`;
+    mouthIn.setAttribute('d',inner); mouthClip.setAttribute('d',inner);
+    lipU.setAttribute('d',`M${f2(Lx)} ${f2(cy)} C${f2(cx-hw*.6)} ${f2(my-2.8-th)} ${f2(cx-2.6)} ${f2(my-3.4-th)} ${cx} ${f2(my-2.3-th*.6)} C${f2(cx+2.6)} ${f2(my-3.4-th)} ${f2(cx+hw*.6)} ${f2(my-2.8-th)} ${f2(Rx)} ${f2(cy)} Q${cx} ${f2(up)} ${f2(Lx)} ${f2(cy)} Z`);
+    const lb=my+gap+3.4+th;
+    lipL.setAttribute('d',`M${f2(Lx)} ${f2(cy)} Q${cx} ${f2(lo)} ${f2(Rx)} ${f2(cy)} C${f2(cx+hw*.55)} ${f2(lb)} ${f2(cx-hw*.55)} ${f2(lb)} ${f2(Lx)} ${f2(cy)} Z`);
+    shine.setAttribute('d',`M${f2(cx-hw*.35)} ${f2(lb-1.4)} Q${cx} ${f2(lb-.6)} ${f2(cx+hw*.35)} ${f2(lb-1.4)}`);
+    teeth.setAttribute('x',f2(cx-hw*.75)); teeth.setAttribute('width',f2(hw*1.5)); teeth.setAttribute('y',f2(up-.5)); teeth.setAttribute('height',f2(1.2+Math.min(o,.6)*3));
+    tongue.setAttribute('cy',f2(lo-1)); tongue.setAttribute('rx',f2(hw*.55)); tongue.setAttribute('ry',f2(1+gap*.25));
+    mous.setAttribute('transform',`translate(0 ${f2(-o*.5)})`);
+    face.setAttribute('d',`M94 54 C94 33 105 22 120 22 C135 22 146 33 146 54 C146 68 145.5 79 141.5 87 C137.5 ${f2(94+jd*.6)} 129 ${f2(99.5+jd)} 120 ${f2(100.5+jd)} C111 ${f2(99.5+jd)} 102.5 ${f2(94+jd*.6)} 98.5 87 C94.5 79 94 68 94 54 Z`);
+    const bd=`M96 70 C97 86 106 ${f2(99+jd)} 120 ${f2(100+jd)} C134 ${f2(99+jd)} 143 86 144 70 C141 81 135 88 129 ${f2(90+jd*.6)} C126 ${f2(91.5+jd)} 123 ${f2(92+jd)} 120 ${f2(92+jd)} C117 ${f2(92+jd)} 114 ${f2(91.5+jd)} 111 ${f2(90+jd*.6)} C105 88 99 81 96 70 Z`;
+    for(const b of beards) b.setAttribute('d',bd);
+  }
+
+  let last=performance.now();
+  function frame(now){
+    requestAnimationFrame(frame);
+    const dt=Math.min(.034,(now-last)/1000); last=now;
+    if(root.offsetParent===null || document.hidden) return;
+    const speaking=!!(voice && synth && synth.speaking);
+
+    // ---- sequence while the timer is turned over: talk (close-up), then show the combo, then turn back ----
+    if(flipped){
+      if(speaking){ heard=true; lastSpeak=now; }
+      const held=now-flipAt;
+      // 3D loop: keep demonstrating until the announcement ends, finish the current run, then turn back
+      if(phase==='loop3d' && ((heard && !speaking && now-lastSpeak>300 && held>2500) || (!heard && held>4000) || held>12000)){ Coach3D.finish(); phase='finishing3d'; }
+      if(phase==='finishing3d' && (!Coach3D.busy() || held>15000)){ phase='done'; phaseAt=now; }
+      if(phase==='talk' && ((heard && !speaking && now-lastSpeak>250) || (!heard && held>2600) || held>9000)){
+        phase=demo(curStep)?'demo':'done'; phaseAt=now;
+        if(window.Coach3D && Coach3D.ready){ phase='demo'; Coach3D.setPhase('demo'); Coach3D.demo(curStep); }
+      }
+      if(phase==='demo' && !queue.length && now>frameEnd+250 && !(window.Coach3D && Coach3D.busy())){ phase='done'; phaseAt=now; }
+      if((phase==='done' && now-phaseAt>450) || held>15000){ flip(false); phase=''; }
+    }
+    // ---- pose target from the move queue ----
+    if(now>=frameEnd){
+      if(queue.length){ const st=queue.shift(); target=st.p; frameEnd=now+st.ms; }
+      else target=copy(phase==='talk'?BASE.talk:BASE[mood]);
+    }
+    const kG=reduce?120:620, kB=reduce?60:170;
+    for(const k of ['L','R']){ for(const f of ['x','y','z']) spring(S[k+f],target[k][f],kG,.82,dt); spring(S[k+'e'],target[k].e??1,300,1,dt); }
+    for(const f of ['x','y','r']) spring(S['b'+f],target.b[f],kB,.72,dt);
+
+    // ---- camera: close on the face while talking, wide for the combo ----
+    const close=phase==='talk';
+    spring(C.s,close?1.55:1.02,32,1,dt); spring(C.fx,120,32,1,dt); spring(C.fy,close?66:118,32,1,dt);
+    cam.setAttribute('transform',`translate(120 120) scale(${C.s.x.toFixed(4)}) translate(${f2(-C.fx.x)} ${f2(-C.fy.x)})`);
+
+    // ---- body: bounce while working, slow breathing always ----
+    const t=now/1000, live=!paused && (mood==='guard'||mood==='ready') && !reduce && !close;
+    const bounce=live?Math.sin(t*Math.PI*3.4):0, breathe=reduce?0:Math.sin(t*Math.PI*.6);
+    const bx=S.bx.x, by=S.by.x+bounce*1.8+breathe*.7, br=S.br.x;
+    body.setAttribute('transform',`translate(${f2(bx)} ${f2(by)}) rotate(${f2(br)} 120 240)`);
+
+    // ---- arms and gloves ----
+    for(const k of ['L','R']){
+      const Sh=SH[k], sd=k==='L'?1:-1;
+      let gx=S[k+'x'].x, gy=S[k+'y'].x+(live?Math.sin(t*Math.PI*3.4-.9)*1.4:0), gz=S[k+'z'].x;
+      let dx=gx-Sh[0], dy=gy-Sh[1], d=Math.hypot(dx,dy,gz);
+      if(d>REACH){ const f=REACH/d; dx*=f; dy*=f; gz*=f; gx=Sh[0]+dx; gy=Sh[1]+dy; d=REACH; }
+      // elbow: tucked down at the ribs in a guard, out to the side for hooks, never longer than the upper arm
+      const bend=Math.max(0,1-d/92), e=S[k+'e'].x;
+      let ex=Sh[0]+dx/2+sd*bend*(-8*e+40*(1-e)), ey=Sh[1]+dy/2+85*bend*e;
+      const ux=ex-Sh[0], uy=ey-Sh[1], ul=Math.hypot(ux,uy);
+      if(ul>46){ ex=Sh[0]+ux/ul*46; ey=Sh[1]+uy/ul*46; }
+      const P=parts[k], up=`M${Sh[0]} ${Sh[1]} L${f1(ex)} ${f1(ey)}`, fo=`M${f1(ex)} ${f1(ey)} L${f1(gx)} ${f1(gy)}`;
+      P.uo.setAttribute('d',capsule(Sh[0],Sh[1],ex,ey,27,21));
+      P.fo.setAttribute('d',capsule(ex,ey,gx,gy,21,15.5));
+      P.ut.setAttribute('d',up); P.ut.setAttribute('stroke-width','19'); P.ut2.setAttribute('d',up);
+      P.ft.setAttribute('d',fo); P.ft.setAttribute('stroke-width','15'); P.ft2.setAttribute('d',fo);
+      const hl=Math.hypot(gx-ex,gy-ey)||1;
+      P.fh.setAttribute('d',`M${f1(ex-(gy-ey)/hl*5)} ${f1(ey+(gx-ex)/hl*5*-1+0)} L${f1(gx-(gy-ey)/hl*4)} ${f1(gy-(gx-ex)/hl*4)}`);
+      const ang=Math.atan2(gy-ey,gx-ex)*180/Math.PI+90, toward=Math.min(1,Math.max(0,(gz-22)/40));
+      const sc=.82+gz*.011;
+      parts[k].glove.setAttribute('transform',`translate(${f1(gx)} ${f1(gy)}) rotate(${f2(ang*(1-toward))}) scale(${sc.toFixed(3)})`);
+    }
+    const lf=S.Lz.x>=S.Rz.x;
+    if(lf!==leadFront){ leadFront=lf; body.appendChild(lf?side.L:side.R); }
+
+    // ---- head: follows the body a beat late, nods while talking ----
+    spring(H.x,-S.bx.v*.012,90,.8,dt); spring(H.r,-S.br.x*.35+(talking?Math.sin(t*2.1)*1.2:0),70,.8,dt);
+    // ---- lip sync ----
+    if(speaking!==talking){ talking=speaking; root.classList.toggle('talking',speaking); }
+    let to=0,tw=.5,tr=0;
+    if(false && speaking){   // the coach demonstrates silently; the voice does the talking
+      if(vis.active){
+        const pos=(now-vis.t0-vis.off)/vis.ms, i=Math.floor(pos), ch=vis.text[i];
+        if(ch!==undefined){ const v=VIS[ch]; if(v){ [to,tw,tr]=v; } else { to=.04; } }
+        else { to=.25+.2*Math.sin(t*18); }
+      } else { to=.3+.3*Math.sin(t*17)*Math.sin(t*5.3); }
+    }
+    spring(M.o,to,reduce?400:900,.9,dt); spring(M.w,tw,700,.9,dt); spring(M.r,tr,700,.9,dt);
+    const o=Math.max(0,M.o.x), jd=o*3.2;
+    spring(H.nod,talking?o*1.2:0,200,.8,dt);
+    head.setAttribute('transform',`translate(${f2(H.x.x)} ${f2(H.nod.x)}) rotate(${f2(H.r.x)} 120 100)`);
+    drawMouth(o,Math.min(1,Math.max(0,M.w.x)),Math.min(1,Math.max(0,M.r.x)),jd);
+    // ---- eyes and brows ----
+    if(now>nextBlink){ blinkAt=now; nextBlink=now+2200+Math.random()*3300; }
+    const bk=now-blinkAt, lid=bk<70?bk/70:bk<170?1-(bk-70)/100:0;
+    for(const l of lids) l.setAttribute('transform',`scale(1 ${f2(Math.max(0,lid))})`);
+    if(now>nextLook){ nextLook=now+900+Math.random()*2200; lookX=talking?0:(Math.random()-.5)*2.4; lookY=(Math.random()-.5)*.8; }
+    spring(eye.x,lookX,260,1,dt); spring(eye.y,lookY,260,1,dt);
+    for(const ir of irises) ir.setAttribute('transform',`translate(${f2(eye.x.x)} ${f2(eye.y.x)})`);
+    spring(brow,(mood==='ready'||phase==='demo')?-1:0,120,.6,dt);
+    const bu=brow.x;
+    browL.setAttribute('transform',`translate(0 ${f2(-bu*1.2)}) rotate(${f2(bu<0?bu*-6:0)} 115 52)`);
+    browR.setAttribute('transform',`translate(0 ${f2(-bu*1.2)}) rotate(${f2(bu<0?bu*6:0)} 125 52)`);
+  }
+  requestAnimationFrame(frame);
+
+  return {
+    bind,
+    // called on every changeover (timer, skip forward, skip back)
+    onStep(step, prev){
+      curStep=step; clearTimeout(demoT); clearTimeout(flipT); queue=[]; frameEnd=0;
+      setMood(step.type==='ready'?'ready':step.type==='rest'?'rest':'guard');
+      if(step.type!=='work'){ flip(false); phase=''; return; }
+      tag.textContent=step.name;
+      const first=!prev || prev.type!=='work';
+      // on a round start, wait for the "Fight!" burst to finish before turning over
+      flipT=setTimeout(()=>{
+        if(curStep!==step || paused) return;
+        if(window.Coach3D && Coach3D.place) Coach3D.place(step.round);   // where he trains this round
+        phaseAt=performance.now(); flip(true);
+        if(window.Coach3D && Coach3D.ready){ phase='loop3d'; Coach3D.play(step.moves ? {keys:step.moves,pace:step.speed||1} : parseStep(step)); }   // 3D: the drill's own moves, on a loop
+        else phase='talk';
+      }, first?1250:0);
+    },
+    // called every frame while the clock runs: get ready before each round
+    tick(step, el){
+      if(step===curStep && step.type==='rest' && el>=REST-READY) setMood('ready');
+    },
+    pause(p){ paused=p; if(p){ clearTimeout(demoT); clearTimeout(flipT); queue=[]; flip(false); phase=''; } },
+    // where the voice is in the current line, for the 3D coach's lip sync
+    speech(){
+      if(!(voice && synth && synth.speaking)) return null;
+      if(!vis.active) return {ch:null};
+      const now=performance.now();
+      if(vis.bounded){
+        const i=vis.wordStart+Math.floor((now-vis.wordT)/vis.ms);
+        if(i>=vis.wordEnd) return {ch:' ',prev:'',next:''};            // word finished: hold until the voice reaches the next one
+        return {ch:vis.text[i]??' ', prev:vis.text[i-1]??'', next:vis.text[i+1]??''};
+      }
+      if(now-vis.t0>700) return {ch:null};                              // this voice gives no word timing: use a natural rhythm
+      const i=Math.floor((now-vis.t0)/vis.ms);
+      return {ch:vis.text[i]??null, prev:vis.text[i-1]??'', next:vis.text[i+1]??''};
+    }
+  };
+})();
+
 /* ---------- clock ---------- */
 let idx=0, el=0, running=false, last=0, speed=1, raf=0, wake=null, readyBeep=-1;
 let midDone=false, lateDone=false, lastPepIdx=-9;
@@ -737,6 +1388,7 @@ function enter(i,silent){
   showQuote();
   if(idx>=steps.length){ finish(); return; }
   renderList(true);   // every changeover (timer, skip forward, skip back) rebuilds Up next from the new position
+  Coach.onStep(steps[idx], steps[idx-1]);
   if(silent) return;
   const s=steps[idx], prev=steps[idx-1];
   const first = s.type==='work' && (!prev||prev.type!=='work');
@@ -752,12 +1404,13 @@ function tick(t){
     while(idx<steps.length && el>=steps[idx].dur){ const over=el-steps[idx].dur; enter(idx+1); el=over; }
     // get-ready countdown: one beep per second (5, 4, 3, 2, 1), then the start bell
     const cs=steps[idx];
+    if(cs) Coach.tick(cs, el);
     if(cs && cs.type==='ready'){ const sec=Math.floor(el); if(sec!==readyBeep && sec<READY){ readyBeep=sec; tone(660,0,.15); } }
-    // encouragement: sometimes halfway through a drill (never two drills in a row),
-    // always a push in the last 10 seconds of a round, and a quote during each rest
+    // halfway through every drill: a second tip for that drill,
+    // then a push in the last 10 seconds of a round, and a quote during each rest
     if(cs && cs.type==='work'){
       const lastInRound = !steps[idx+1] || steps[idx+1].type!=='work';
-      if(!midDone && el>=15 && !lastInRound){ midDone=true; if(Math.random()<.45 && idx-lastPepIdx>1){ lastPepIdx=idx; pep(); } }
+      if(!midDone && el>=SEG/2){ midDone=true; if(cs.tip) say(spoken(cs.tip)); }
       if(!lateDone && lastInRound && el>=SEG-10){ lateDone=true; say(draw('fin',FINISH)); cheer(.6, 4); }
     }
     if(cs && cs.type==='rest'){
@@ -920,13 +1573,15 @@ list.addEventListener('keydown',e=>{
 function setPlaying(p){
   running=p; last=performance.now();
   if(!p) hush();
+  Coach.pause(!p);
   $('playIcon').innerHTML = p ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>' : '<path d="M7 4l13 8-13 8z"/>';
   $('playBtn').setAttribute('aria-label',p?'Pause':'Play');
 }
 async function keepAwake(){ try{ wake = await navigator.wakeLock?.request('screen'); }catch(e){} }
 function show(id){ ['setup','timer','done'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'; window.scrollTo(0,0); }
 function start(){
-  build(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  build(); clearTimeout(coachSwitchT); if(window.Coach3D && Coach3D.setAvatar) Coach3D.setAvatar(coachFor());   // normally already loaded: does nothing
+  listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
@@ -951,6 +1606,7 @@ $('nextBtn').onclick=()=>{ if(idx<steps.length-1){ enter(idx+1); render(); } els
 $('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; } else enter(idx-1); render(); };
 $('speedBtn').onclick=e=>{ speed=speed===1?10:1; e.currentTarget.setAttribute('aria-pressed',speed>1); };
 $('musicBtn').onclick=()=>{ music ? stopMusic() : startMusic(); };
+$('beatBtn').onclick=e=>{ e.stopPropagation(); setBeat(!beatOn); };
 $('trackBtn').onclick=nextTrack;
 $('crowdBtn').onclick=()=>{ crowd ? stopCrowd() : startCrowd(); };
 $('voiceBtn').onclick=e=>{ voice=!voice; e.currentTarget.setAttribute('aria-pressed',voice); if(!voice) hush(); else if(steps[idx]) say(spoken(steps[idx].name)); };
@@ -959,6 +1615,715 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && runnin
 
 renderSetup();
 setPlaying(false);
+</script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+/* ---------- 3D coach: the Avaturn model in three.js, with Mixamo moves ----------
+   Loads after the page is ready. If WebGL or any file fails, the illustrated coach stays. */
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const root=document.getElementById('coach'), inner=document.getElementById('ringInner');
+let canvas=document.getElementById('coach3d');
+// the coaches: model file and glove colours. The round format picks which one coaches (see OPTIONS).
+const AVATARS={
+  coach:{name:'Coach', file:'coach.glb',     glove:0x0b0b0b, band:0xd4a548},
+  ali:  {name:'Ali',   file:'coach-ali.glb', glove:0xf4f1ea, band:0xd4a548},
+};
+let avatarKey=(window.coachFor && AVATARS[window.coachFor()]) ? window.coachFor() : 'coach';
+let bootGen=0, live=null;            // live: the running renderer, so it can be shut down on a switch
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const api={ready:false, phase:'', setPhase(p){ api.phase=p; }, demo(){}, busy(){ return false; }};
+window.Coach3D=api;
+
+// model files: the real file where the host serves it (GitHub Pages), otherwise a packaged copy in models/<name>.js
+const assetCache=new Map();
+function asset(name){ if(!assetCache.has(name)) assetCache.set(name,loadAsset(name)); return assetCache.get(name); }
+async function loadAsset(name){
+  try{ const r=await fetch('models/'+name); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>1024) return b; } }catch(e){}
+  await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='models/'+name+'.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+  if(!window.__assets || !window.__assets[name]) throw new Error('missing '+name);
+  const bin=atob(window.__assets[name]), out=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i);
+  delete window.__assets[name];
+  return out.buffer;
+}
+let fbxParsed=null;                 // move files are parsed once and shared by every coach
+async function boot(avKey){
+  if(!canvas) return;
+  const gen=++bootGen, AV=AVATARS[avKey]||AVATARS.coach;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
+  live={renderer,gen};
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  const scene=new THREE.Scene();
+  const pmrem=new THREE.PMREMGenerator(renderer);
+  scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+
+  // studio lighting: warm key from the front, gold and cool rim lights from behind
+  const key=new THREE.DirectionalLight(0xffe1c2,2.4); key.position.set(-1.4,2.4,2.6); scene.add(key);
+  const rimGold=new THREE.DirectionalLight(0xffb357,3.2); rimGold.position.set(2.2,2.0,-2.4); scene.add(rimGold);
+  const rimCool=new THREE.DirectionalLight(0x8fb2ff,1.4); rimCool.position.set(-2.4,1.6,-2.0); scene.add(rimCool);
+  scene.add(new THREE.HemisphereLight(0xa9bccf,0x2a1a10,0.45));
+  const camera=new THREE.PerspectiveCamera(28,1,0.05,30);
+  let gym=null;
+  try{ gym=buildGym(); }catch(err){ console.warn('Gym scene skipped.',err); }
+
+  /* ---------- the boxing gym around him: ring, ropes, heavy bags, lamps and haze. Everything is drawn in code, no files. ----------
+     He stands in the middle of the ring with his feet at y = 0 and faces +z. Units are metres. */
+  function buildGym(){
+    const G=new THREE.Group(); scene.add(G);
+    const FLOOR=-1.0, H=3.0, ED=H+.4, ROOM=13, CEIL=FLOOR+9;
+    const HAZE=0x0c0e12;
+    scene.background=new THREE.Color(HAZE); scene.fog=new THREE.Fog(HAZE,9.5,25);
+    const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    const FONT='"Arial Black","Helvetica Neue",Impact,Arial,sans-serif';
+    function tex(w,h,draw,rep){
+      const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); draw(x,w,h);
+      const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=aniso;
+      if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep[0],rep[1]); }
+      return t;
+    }
+    const speckle=(x,w,h,n,a)=>{ for(let i=0;i<n;i++){ x.fillStyle=`rgba(${Math.random()<.5?'255,255,255':'0,0,0'},${Math.random()*a})`; x.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*2,1+Math.random()*2); } };
+    const lettering=(x,txt,cx,cy,px,track,fill)=>{
+      x.font=`900 ${px}px ${FONT}`; x.textBaseline='middle'; x.fillStyle=fill;
+      const ws=[...txt].map(ch=>x.measureText(ch).width), tw=ws.reduce((a,b)=>a+b,0)+track*(txt.length-1); let px0=cx-tw/2;
+      [...txt].forEach((ch,i)=>{ x.fillText(ch,px0,cy); px0+=ws[i]+track; });
+    };
+    const GOLD='#d4a548';
+
+    // ring canvas: deep navy with a gold centre circle and the logo under his feet
+    const canvasTex=tex(1024,1024,(x,w,h)=>{
+      x.fillStyle='#1b2533'; x.fillRect(0,0,w,h); speckle(x,w,h,9000,.05);
+      x.strokeStyle='rgba(255,255,255,.55)'; x.lineWidth=10; x.strokeRect(46,46,w-92,h-92);
+      x.strokeStyle='rgba(212,165,72,.55)'; x.lineWidth=12; x.beginPath(); x.arc(w/2,h/2,250,0,Math.PI*2); x.stroke();
+      x.globalAlpha=.42; lettering(x,'BOXING',w/2,h/2-50,74,8,GOLD); lettering(x,'FLOW',w/2,h/2+44,100,18,GOLD); x.globalAlpha=1;
+    });
+    const canvasMat=new THREE.MeshStandardMaterial({map:canvasTex,roughness:.88,metalness:0});
+    const mat=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,ED*2),canvasMat); mat.rotation.x=-Math.PI/2; mat.position.y=.004; G.add(mat);
+
+    // apron skirt round the ring, branded
+    const skirtTex=tex(2048,256,(x,w,h)=>{
+      x.fillStyle='#0d0d0f'; x.fillRect(0,0,w,h); speckle(x,w,h,4000,.04);
+      x.fillStyle=GOLD; x.fillRect(0,10,w,6); x.fillRect(0,h-16,w,6);
+      lettering(x,'BOXING FLOW',w*.25,h/2+4,84,12,GOLD); lettering(x,'BOXING FLOW',w*.75,h/2+4,84,12,GOLD);
+      x.fillStyle=GOLD; for(const cx of [0,w*.5,w]){ x.beginPath(); x.arc(cx,h/2,9,0,Math.PI*2); x.fill(); }
+    });
+    const skirtMat=new THREE.MeshStandardMaterial({map:skirtTex,roughness:.8});
+    for(let k=0;k<4;k++){
+      const s=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,-FLOOR),skirtMat), a=k*Math.PI/2;
+      s.position.set(Math.sin(a)*ED,FLOOR/2,Math.cos(a)*ED); s.rotation.y=a; G.add(s);
+    }
+
+    // posts, corner pads, ropes. Anything between the camera and him fades out so he is never blocked.
+    // anything that would come between the camera and him fades out: ropes are segments, posts, pads and bags are points
+    const fade=[];
+    const fadeable=(mesh,shape)=>{ mesh.material=mesh.material.clone(); mesh.material.transparent=true; fade.push({mesh,o:1,min:.12,...shape}); return mesh; };
+    const segShape=(ax,az_,bx,bz,y0,y1)=>({seg:[ax,az_,bx,bz],y0,y1});
+    const ptShape=(x,z,r,y0,y1)=>({pt:[x,z],r,y0,y1});
+    const chrome=new THREE.MeshStandardMaterial({color:0xc9ccd2,metalness:1,roughness:.22});
+    const padMat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.55});
+    for(const [sx,sz,col] of [[1,1,0xc8102e],[-1,-1,0x1f4fd1],[1,-1,0xe9e6df],[-1,1,0xe9e6df]]){
+      const post=fadeable(new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.55,16),chrome),ptShape(sx*(H+.08),sz*(H+.08),.3,0,1.55)); post.position.set(sx*(H+.08),.775,sz*(H+.08)); G.add(post);
+      const pad=fadeable(new THREE.Mesh(new THREE.BoxGeometry(.17,1.08,.17),padMat(col)),ptShape(sx*H,sz*H,.3,.26,1.34)); pad.position.set(sx*H,.8,sz*H); pad.rotation.y=Math.PI/4; G.add(pad);
+    }
+    const ropeMat=new THREE.MeshStandardMaterial({color:0xf1ece2,roughness:.5});
+    const ropeGeo=new THREE.CylinderGeometry(.022,.022,H*2,12);
+    for(let k=0;k<4;k++){
+      const a=k*Math.PI/2;
+      for(const y of [.42,.82,1.22]){
+        const cx=Math.sin(a)*H, cz=Math.cos(a)*H, tx=Math.cos(a)*H, tz=-Math.sin(a)*H;
+        const r=fadeable(new THREE.Mesh(ropeGeo,ropeMat),segShape(cx-tx,cz-tz,cx+tx,cz+tz,y-.03,y+.03));
+        r.position.set(Math.sin(a)*H,y,Math.cos(a)*H); r.rotation.set(0,a,Math.PI/2); G.add(r);
+      }
+      for(const t of [-.5,.5]){            // rope ties
+        const px=Math.sin(a)*H+Math.cos(a)*t*H, pz=Math.cos(a)*H-Math.sin(a)*t*H;
+        const tie=fadeable(new THREE.Mesh(new THREE.BoxGeometry(.05,.84,.05),ropeMat),ptShape(px,pz,.15,.4,1.24));
+        tie.position.set(px,.82,pz); G.add(tie);
+      }
+    }
+
+    // gym floor and brick walls
+    const floorTex=tex(512,512,(x,w,h)=>{ x.fillStyle='#17191c'; x.fillRect(0,0,w,h); speckle(x,w,h,6000,.07);
+      x.strokeStyle='rgba(0,0,0,.55)'; x.lineWidth=3; for(let i=0;i<=4;i++){ x.beginPath(); x.moveTo(i*w/4,0); x.lineTo(i*w/4,h); x.moveTo(0,i*h/4); x.lineTo(w,i*h/4); x.stroke(); } },[10,10]);
+    const floorMat=new THREE.MeshStandardMaterial({map:floorTex,roughness:.95});
+    const floor=new THREE.Mesh(new THREE.PlaneGeometry(ROOM*2,ROOM*2),floorMat); floor.rotation.x=-Math.PI/2; floor.position.y=FLOOR; G.add(floor);
+    const brickTex=tex(512,512,(x,w,h)=>{
+      x.fillStyle='#16110e'; x.fillRect(0,0,w,h);
+      const bw=64,bh=28;
+      for(let r=0;r*bh<h;r++) for(let c=-1;c*bw<w;c++){
+        const off=(r%2)*bw/2, l=28+Math.random()*16;
+        x.fillStyle=`hsl(${14+Math.random()*10},${30+Math.random()*12}%,${l*.55}%)`; x.fillRect(c*bw+off+2,r*bh+2,bw-4,bh-4);
+      }
+      speckle(x,w,h,5000,.08);
+    },[7,3]);
+    const wallMat=new THREE.MeshStandardMaterial({map:brickTex,roughness:.92,side:THREE.BackSide});
+    const ceilMat=new THREE.MeshStandardMaterial({color:0x0b0c0e,roughness:1,side:THREE.BackSide});
+    const room=new THREE.Mesh(new THREE.BoxGeometry(ROOM*2,CEIL-FLOOR,ROOM*2),[wallMat,wallMat,ceilMat,floorMat,wallMat,wallMat]);
+    room.position.y=(CEIL+FLOOR)/2; G.add(room);
+
+    // banners on every wall, so the brand shows whichever way the camera looks
+    const banner=(txt,sub)=>tex(1024,256,(x,w,h)=>{
+      x.fillStyle='#0a0a0b'; x.fillRect(0,0,w,h); x.strokeStyle=GOLD; x.lineWidth=8; x.strokeRect(14,14,w-28,h-28);
+      lettering(x,txt,w/2,h/2-(sub?18:0),104,16,GOLD);
+      if(sub) lettering(x,sub,w/2,h/2+70,34,12,'rgba(241,236,226,.85)');
+    });
+    [['BOXING FLOW','TRAIN  ·  FIGHT  ·  FLOW'],['BOXING FLOW','ROUND AFTER ROUND'],['STAY HUNGRY',null],['TRAIN HARD',null]].forEach(([t,s],k)=>{
+      const a=k===0?Math.PI:k===1?0:k===2?Math.PI/2:-Math.PI/2;
+      const m=new THREE.MeshStandardMaterial({map:banner(t,s),emissive:0xffffff,emissiveMap:null,roughness:.7});
+      m.emissiveMap=m.map; m.emissiveIntensity=.35;
+      const b=new THREE.Mesh(new THREE.PlaneGeometry(7,1.75),m);
+      b.position.set(Math.sin(a)*(ROOM-.05),FLOOR+4.6,Math.cos(a)*(ROOM-.05)); b.rotation.y=a+Math.PI; G.add(b);
+    });
+
+    // heavy bags hanging on chains, swaying a little
+    const bags=[];
+    const leather=[0x0d0d0e,0x7d1013,0x0d0d0e,0x3a2418];
+    const chainMat=new THREE.MeshStandardMaterial({color:0x777a80,metalness:1,roughness:.4});
+    const bandMat=new THREE.MeshStandardMaterial({color:0xd4a548,metalness:.6,roughness:.35});
+    [[-5.4,-5.8],[-1.9,-7.4],[2.5,-7.2],[5.8,-5.0],[6.6,2.0],[-6.5,2.8],[-3.6,7.2],[3.9,7.0]].forEach(([x,z],i)=>{
+      const pivot=new THREE.Group(); pivot.position.set(x,CEIL,z); G.add(pivot);
+      const top=FLOOR+1.85, len=CEIL-top;
+      const chain=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,len,6),chainMat); chain.position.y=-len/2; pivot.add(chain);
+      const bm=new THREE.MeshPhysicalMaterial({color:leather[i%leather.length],roughness:.42,clearcoat:.5,clearcoatRoughness:.35});
+      const body=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,1.12,28),bm); body.position.y=-len-.56; pivot.add(body);
+      fadeable(body,ptShape(x,z,.32,FLOOR+.62,FLOOR+1.88)); fade[fade.length-1].min=.22;
+      const bodyMat=body.material;
+      for(const yy of [-len-.02,-len-1.1]){ const cap=new THREE.Mesh(new THREE.SphereGeometry(.2,24,10,0,Math.PI*2,0,Math.PI/2),bodyMat); cap.scale.y=.25; cap.position.y=yy; if(yy<-len-.5) cap.rotation.x=Math.PI; pivot.add(cap); }
+      const band=new THREE.Mesh(new THREE.CylinderGeometry(.203,.203,.07,28,1,true),bandMat.clone()); band.material.transparent=true; band.position.y=-len-.18; pivot.add(band);
+      fade[fade.length-1].extra=[band.material];
+      bags.push({pivot,ph:Math.random()*6.3,amp:.006+Math.random()*.01});
+    });
+
+    // lamps over the ring: shades, glowing bulbs, a soft beam in the haze and one warm light from above
+    const shadeMat=new THREE.MeshStandardMaterial({color:0x1c1d20,metalness:.7,roughness:.4,side:THREE.DoubleSide});
+    const bulbMat=new THREE.MeshStandardMaterial({color:0x000000,emissive:0xffd9a0,emissiveIntensity:.9,roughness:1});
+    const beamTex=tex(4,256,(x,w,h)=>{ const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,'rgba(255,236,200,.9)'); g.addColorStop(1,'rgba(255,236,200,0)'); x.fillStyle=g; x.fillRect(0,0,w,h); });
+    const beamMat=new THREE.MeshBasicMaterial({map:beamTex,transparent:true,opacity:.022,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
+    const LAMP=6.4;                                     // high in the rafters
+    for(const [x,z] of [[-1.5,-1.5],[1.5,-1.5],[-1.5,1.5],[1.5,1.5]]){
+      const cord=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,CEIL-LAMP,4),chainMat); cord.position.set(x,(CEIL+LAMP)/2,z); G.add(cord);
+      const shade=new THREE.Mesh(new THREE.ConeGeometry(.42,.32,28,1,true),shadeMat); shade.position.set(x,LAMP,z); G.add(shade);
+      const bulb=new THREE.Mesh(new THREE.CircleGeometry(.3,28),bulbMat); bulb.rotation.x=Math.PI/2; bulb.position.set(x,LAMP-.1,z); G.add(bulb);   // a diffuser disc inside the shade, facing down
+      const beam=new THREE.Mesh(new THREE.CylinderGeometry(.36,2.1,LAMP-.15,32,1,true),beamMat); beam.position.set(x*.85,(LAMP-.15)/2,z*.85); G.add(beam);
+    }
+    const spot=new THREE.SpotLight(0xffe4bd,30,0,.5,.85,2); spot.position.set(0,7.2,0); spot.target.position.set(0,0,0); G.add(spot,spot.target);
+
+    // a soft contact shadow under his feet
+    const shadowTex=tex(256,256,(x,w,h)=>{ const g=x.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2); g.addColorStop(0,'rgba(0,0,0,.62)'); g.addColorStop(.55,'rgba(0,0,0,.28)'); g.addColorStop(1,'rgba(0,0,0,0)'); x.fillStyle=g; x.fillRect(0,0,w,h); });
+    shadowTex.colorSpace=THREE.NoColorSpace;
+    const shadow=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.0),new THREE.MeshBasicMaterial({map:shadowTex,transparent:true,depthWrite:false}));
+    shadow.rotation.x=-Math.PI/2; shadow.position.y=.008; G.add(shadow);
+
+    // where he trains: the middle of the ring, or on the gym floor squared up to a heavy bag
+    const atBag=(bx,bz,ox,oz)=>{ const x=bx+ox, z=bz+oz; return {x,y:FLOOR,z,yaw:Math.atan2(bx-x,bz-z)}; };
+    const places={ ring:{x:0,y:0,z:0,yaw:0}, bagA:atBag(5.8,-5.0,-.5,.66), bagB:atBag(-6.5,2.8,.72,-.36) };
+
+    // 2D helpers for the line-of-sight test
+    const segHit=(p,q,a,b)=>{            // where segment p->q crosses segment a->b: returns t along p->q, or -1
+      const rx=q[0]-p[0], rz=q[1]-p[1], sx=b[0]-a[0], sz=b[1]-a[1], den=rx*sz-rz*sx;
+      if(Math.abs(den)<1e-9) return -1;
+      const t=((a[0]-p[0])*sz-(a[1]-p[1])*sx)/den, u=((a[0]-p[0])*rz-(a[1]-p[1])*rx)/den;
+      return (t>0&&t<1&&u>=-.03&&u<=1.03)?t:-1;
+    };
+    const ptHit=(p,q,c,r)=>{             // closest approach of p->q to point c within r: returns t, or -1
+      const rx=q[0]-p[0], rz=q[1]-p[1], L=rx*rx+rz*rz; if(L<1e-9) return -1;
+      const t=Math.max(0,Math.min(1,((c[0]-p[0])*rx+(c[1]-p[1])*rz)/L));
+      const dx=p[0]+rx*t-c[0], dz=p[1]+rz*t-c[1];
+      return (t<.97 && dx*dx+dz*dz<r*r)?t:-1;
+    };
+    return {
+      places,
+      update(now,dt,cam,him){            // cam: camera position; him: {x,z,feet,head}
+        const t=now/1000;
+        for(const b of bags){ b.pivot.rotation.x=Math.sin(t*.9+b.ph)*b.amp; b.pivot.rotation.z=Math.cos(t*.7+b.ph*1.3)*b.amp*.8; }
+        const P=[cam.x,cam.z], Q=[him.x,him.z], k=1-Math.exp(-dt*10);
+        for(const f of fade){
+          const tt=f.seg ? segHit(P,Q,[f.seg[0],f.seg[1]],[f.seg[2],f.seg[3]]) : ptHit(P,Q,f.pt,f.r);
+          let block=false;
+          if(tt>=0){                        // it is in the way only if it overlaps the band from his feet to his head as seen from the camera
+            const lo=cam.y+(him.feet-cam.y)*tt, hi=cam.y+(him.head-cam.y)*tt;
+            block=f.y1>Math.min(lo,hi)-.05 && f.y0<Math.max(lo,hi)+.05;
+          }
+          f.o+=((block?f.min:1)-f.o)*k;
+          f.mesh.material.opacity=f.o; f.mesh.material.depthWrite=f.o>.97;
+          if(f.extra) for(const m of f.extra){ m.opacity=f.o; m.depthWrite=f.o>.97; }
+        }
+        shadow.position.set(him.x,him.feet+.008,him.z);
+      }
+    };
+  }
+
+  // embedded textures are read as images (works inside the page's sandbox)
+  const gl=new GLTFLoader();
+  gl.register(parser=>{ parser.textureLoader=new THREE.TextureLoader(parser.options.manager); return {name:'image-textures'}; });
+  /* ================= MOVE LIBRARY: the single source of truth =================
+     Every move the coach can show, and the ONE file (or built-in move) that shows it.
+     Nothing else in the app picks files. To change what a move looks like, change it here.
+       file  : the Mixamo file in models/ (all orthodox; never mirrored)
+       hand  : which part moves, used only to trim still frames before and after the move
+       mod   : 'low' bends his knees and leans him in while the clip plays, so a head punch lands to the body
+       built : a move animated in code on top of his stance (no file exists for it)
+     Keys are the moves the drill reader produces; '_low' means to the body; keys with commas
+     are combinations, used whole whenever a drill calls those punches in that order. */
+  const MOVE_LIBRARY={
+    stance:                {file:'stance.fbx',                 hand:'both'},   // between moves
+    // punches to the head
+    jab:                   {file:'jab.fbx',                    hand:'lead'},
+    cross:                 {file:'cross-straight-right.fbx',   hand:'rear'},
+    hook:                  {file:'hook-lead.fbx',              hand:'lead'},   // a 3 is a lead hook
+    upper:                 {file:'uppercut-lead.fbx',          hand:'lead'},
+    rhook:                 {file:'body-hook-rear.fbx',         hand:'rear'},   // no rear head-hook file yet
+    rupper:                {file:'body-uppercut-rear.fbx',     hand:'rear'},   // no rear head-uppercut file yet
+    // punches to the body
+    jab_low:               {file:'jab.fbx',                    hand:'lead', mod:'low'},   // the real jab, knees bent so it lands low
+    cross_low:             {file:'cross-straight-right.fbx',   hand:'rear', mod:'low'},
+    hook_low:              {file:'body-hook-lead.fbx',         hand:'lead'},
+    rhook_low:             {file:'body-hook-rear.fbx',         hand:'rear'},
+    upper_low:             {file:'body-uppercut-rear.fbx',     hand:'rear'},
+    rupper_low:            {file:'body-uppercut-rear.fbx',     hand:'rear'},
+    // combinations, played whole
+    'jab,cross':           {file:'combo-1-2.fbx',              hand:'both'},
+    'jab,cross,jab,cross': {file:'combo-1-2-1-2.fbx',          hand:'both'},
+    'jab_low,cross_low':   {file:'body-jab-cross.fbx',         hand:'both'},
+    // defence and footwork
+    slip:                  {file:'slip-left.fbx',              hand:'torso'},
+    slipR:                 {built:'slipR',   dur:.62},   // orthodox slip to his right
+    roll:                  {built:'roll',    dur:.95},   // roll under / bob and weave
+    block:                 {built:'guard',   dur:1.3},   // high guard
+    parry:                 {built:'parry',   dur:.5},
+    catch:                 {built:'catch',   dur:.62},
+    shuffle:               {built:'shuffle', dur:1.6},   // lateral shuffle
+    squat:                 {built:'squat',   dur:1.0},
+    step:                  {file:'step-back.fbx',              hand:'both'},
+    pull:                  {file:'step-back.fbx',              hand:'both'},
+    pivot:                 {file:'pivot-right.fbx',            hand:'both'},
+    switch:                {file:'pivot-left.fbx',             hand:'both'},
+    feint:                 {file:'jab.fbx',                    hand:'lead'},
+  };
+  const MOVE_FILE_LIST=[...new Set(Object.values(MOVE_LIBRARY).filter(e=>e.file).map(e=>e.file))];
+  const fbxLoader=new FBXLoader();
+  if(!fbxParsed) fbxParsed=Promise.all(MOVE_FILE_LIST.map(f=>asset(f).then(buf=>fbxLoader.parse(buf,'')).catch(()=>null)));
+  const [gltf,moveFbx]=await Promise.all([asset(AV.file).then(buf=>gl.parseAsync(buf,'')), fbxParsed]);
+  if(gen!==bootGen){ renderer.dispose(); return; }             // switched again while loading
+  const model=gltf.scene; scene.add(model);
+  model.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; if(o.material){ o.material.envMapIntensity=.55; } } });
+  const bones={}; model.traverse(o=>{ if(o.isBone) bones[o.name]=o; });
+  const restHips=bones.Hips ? bones.Hips.position.clone() : new THREE.Vector3(0,1,0);
+
+  // leather gloves with gold bands, fixed to each hand (black for Coach, white for Ali)
+  const leather=new THREE.MeshPhysicalMaterial({color:AV.glove,roughness:.34,metalness:0,clearcoat:.7,clearcoatRoughness:.22});
+  const gold=new THREE.MeshStandardMaterial({color:AV.band,metalness:1,roughness:.28});
+  for(const side of ['Left','Right']){
+    const hand=bones[side+'Hand']; if(!hand) continue;
+    const g=new THREE.Group();
+    const fist=new THREE.Mesh(new THREE.SphereGeometry(1,40,28),leather); fist.scale.set(.064,.088,.072); fist.position.set(0,.085,.012); g.add(fist);
+    const thumb=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),leather); thumb.scale.set(.026,.05,.03); thumb.position.set(side==='Left'?.05:-.05,.06,.035); g.add(thumb);
+    const cuff=new THREE.Mesh(new THREE.CylinderGeometry(.047,.05,.08,32),leather); cuff.position.y=-.005; g.add(cuff);
+    for(const y of [-.03,.022]){ const band=new THREE.Mesh(new THREE.TorusGeometry(.05,.0055,10,40),gold); band.rotation.x=Math.PI/2; band.position.y=y; g.add(band); }
+    hand.add(g);
+  }
+
+  // face: every mesh that carries a shape gets it (head, teeth, tongue, lashes, eyes)
+  const faceMeshes=[]; model.traverse(o=>{ if(o.isMesh && o.morphTargetDictionary && o.morphTargetInfluences) faceMeshes.push(o); });
+  const shape={};
+  function setShape(name,v){ for(const m of faceMeshes){ const i=m.morphTargetDictionary[name]; if(i!==undefined) m.morphTargetInfluences[i]=v; } }
+  const VISEMES=['sil','PP','FF','TH','DD','kk','CH','SS','nn','RR','aa','E','I','O','U'];
+  const vw={}; for(const v of VISEMES) vw[v]=0;
+  const OPEN={aa:.38,O:.3,E:.2,I:.14,U:.16,CH:.12,RR:.12,kk:.12,DD:.1,nn:.08,SS:.06,TH:.08,FF:.04,PP:0,sil:0};
+  function visemeFor(sp){
+    if(!sp) return 'sil';
+    const c=sp.ch;
+    if(c===null || c===undefined) return null;
+    if(c==='h' && 'tcs'.includes(sp.prev)) return sp.prev==='t'?'TH':'CH';
+    if(c==='t' && sp.next==='h') return 'TH';
+    if((c==='c'||c==='s') && sp.next==='h') return 'CH';
+    if('a'.includes(c)) return 'aa'; if(c==='e') return 'E'; if('iy'.includes(c)) return 'I';
+    if(c==='o') return 'O'; if('uw'.includes(c)) return 'U';
+    if('mbp'.includes(c)) return 'PP'; if('fv'.includes(c)) return 'FF';
+    if('td'.includes(c)) return 'DD'; if('kgqcxh'.includes(c)) return 'kk'; if(c==='j') return 'CH';
+    if('sz'.includes(c)) return 'SS'; if('nl'.includes(c)) return 'nn'; if(c==='r') return 'RR';
+    return 'sil';
+  }
+  let nextBlink=performance.now()+1800, blinkAt=-1e9, nextLook=0, look={x:0,y:0}, lookNow={x:0,y:0}, browNow=0;
+  function updateFace(now,dt){
+    const sp=null;   // he demonstrates silently: the mouth stays closed while the voice announces the drill
+    let v=visemeFor(sp), target={}, amt=.6;
+    for(const k of VISEMES) target[k]=0;
+    if(v===null){
+      // no word timing from this voice: syllable-like rhythm (about 4.5 per second) with natural variation
+      const ph=now/1000*Math.PI*2*4.5, env=Math.max(0,Math.sin(ph))*(.6+.4*Math.sin(now/1000*Math.PI*2*.9));
+      v=(Math.floor(now/450)%3===0)?'O':'aa'; amt=.5*env;
+    }
+    target[v]=v==='sil'?0:amt;
+    const kk=1-Math.exp(-dt*16);
+    let jaw=0;
+    for(const k of VISEMES){ vw[k]+=(target[k]-vw[k])*kk; setShape('viseme_'+k,vw[k]); jaw+=vw[k]*(OPEN[k]||0); }
+    setShape('jawOpen',Math.min(.3,jaw));
+    // blinks
+    if(now>nextBlink){ blinkAt=now; nextBlink=now+2400+Math.random()*3200; }
+    const b=now-blinkAt, bl=b<75?b/75:b<180?1-(b-75)/105:0;
+    setShape('eyeBlinkLeft',bl); setShape('eyeBlinkRight',bl);
+    // small eye movements, looking at you while he talks
+    if(now>nextLook){ nextLook=now+900+Math.random()*2200; look=sp?{x:0,y:0}:{x:(Math.random()-.5)*.5,y:(Math.random()-.5)*.25}; }
+    const lk=1-Math.exp(-dt*14); lookNow.x+=(look.x-lookNow.x)*lk; lookNow.y+=(look.y-lookNow.y)*lk;
+    setShape('eyeLookOutRight',Math.max(0,lookNow.x)); setShape('eyeLookInLeft',Math.max(0,lookNow.x));
+    setShape('eyeLookOutLeft',Math.max(0,-lookNow.x)); setShape('eyeLookInRight',Math.max(0,-lookNow.x));
+    setShape('eyeLookUpLeft',Math.max(0,lookNow.y)); setShape('eyeLookUpRight',Math.max(0,lookNow.y));
+    setShape('eyeLookDownLeft',Math.max(0,-lookNow.y)); setShape('eyeLookDownRight',Math.max(0,-lookNow.y));
+    // brows lift a touch while he talks, relaxed half-smile otherwise
+    browNow+=((sp?.22+.12*Math.sin(now/260):0)-browNow)*(1-Math.exp(-dt*6));
+    setShape('browInnerUp',0); setShape('browDownLeft',.18); setShape('browDownRight',.18); setShape('mouthSmile',.06);
+  }
+
+  // movement: Avaturn's idle loop, plus Mixamo clips matched to this skeleton
+  const mixer=new THREE.AnimationMixer(model);
+  let idle=null;
+  if(gltf.animations.length){ idle=mixer.clipAction(gltf.animations[0]); idle.play(); }
+  function retarget(clip,name){
+    const tracks=[];
+    for(const t of clip.tracks){
+      const dot=t.name.lastIndexOf('.'), node=t.name.slice(0,dot).replace(/^mixamorig[:_]?/,''), prop=t.name.slice(dot+1);
+      if(!bones[node]) continue;
+      if(prop==='quaternion') tracks.push(new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,t.values));
+      else if(prop==='position' && node==='Hips'){
+        // keep the punch's weight shift but stay in place, scaled from Mixamo's units to this model
+        const v=Float32Array.from(t.values), s=restHips.y/(t.values[1]||1);
+        for(let i=0;i<v.length;i+=3){ v[i]=restHips.x+(t.values[i]-t.values[0])*s*.4; v[i+1]=t.values[i+1]*s; v[i+2]=restHips.z+(t.values[i+2]-t.values[2])*s*.4; }
+        tracks.push(new THREE.VectorKeyframeTrack('Hips.position',t.times,v));
+      }
+    }
+    let c=new THREE.AnimationClip(name,clip.duration,tracks);
+    if(c.duration>8) c=THREE.AnimationUtils.subclip(c,name,0,8*30,30);
+    return c;
+  }
+  // left/right mirror of a move: swap sides and flip rotations across the body's centre line
+  function mirror(clip,name){
+    const swap=n=>n.includes('Left')?n.replace('Left','Right'):n.includes('Right')?n.replace('Right','Left'):n;
+    const tracks=clip.tracks.map(t=>{
+      const dot=t.name.lastIndexOf('.'), node=swap(t.name.slice(0,dot)), prop=t.name.slice(dot+1), v=Float32Array.from(t.values);
+      if(prop==='quaternion'){ for(let i=0;i<v.length;i+=4){ v[i+1]=-v[i+1]; v[i+2]=-v[i+2]; } return new THREE.QuaternionKeyframeTrack(node+'.quaternion',t.times,v); }
+      for(let i=0;i<v.length;i+=3) v[i]=2*restHips.x-v[i];
+      return new THREE.VectorKeyframeTrack(node+'.'+prop,t.times,v);
+    });
+    return new THREE.AnimationClip(name,clip.duration,tracks);
+  }
+  const CLIPS={};
+  MOVE_FILE_LIST.forEach((f,i)=>{ const o=moveFbx[i]; if(o && o.animations && o.animations[0]) CLIPS[f]=retarget(o.animations[0],f); });
+  // no mirroring: every clip is orthodox, and a mirrored clip would turn him southpaw
+  const stanceClip=CLIPS[MOVE_LIBRARY.stance.file];
+  if(stanceClip){ if(idle) idle.stop(); idle=mixer.clipAction(stanceClip); idle.play(); }
+
+  // ---- clean punches: measure how far each arm moves from guard, frame by frame, then cut to the action ----
+  const FPS=30, LEAD=['LeftArm','LeftForeArm'], REAR=['RightArm','RightForeArm'], TORSO=['Spine1','Spine2','Neck'];
+  function motion(clip,names){
+    let times=null, vals=null;
+    for(const bn of names){
+      const t=clip.tracks.find(t=>t.name===bn+'.quaternion'); if(!t) continue;
+      const v=t.values, n=t.times.length; times=times||t.times; vals=vals||new Float32Array(n);
+      for(let i=0;i<Math.min(n,vals.length);i++){
+        const d=Math.abs(v[i*4]*v[0]+v[i*4+1]*v[1]+v[i*4+2]*v[2]+v[i*4+3]*v[3]);
+        vals[i]+=2*Math.acos(Math.min(1,d));
+      }
+    }
+    return times ? {times,vals} : null;
+  }
+  function span(m,frac=.22){
+    let mx=0, pk=0; for(let i=0;i<m.vals.length;i++) if(m.vals[i]>mx){ mx=m.vals[i]; pk=i; }
+    let a=0, b=m.vals.length-1;
+    while(a<pk && m.vals[a]<mx*frac) a++;
+    while(b>pk && m.vals[b]<mx*frac) b--;
+    return {a:m.times[a], b:m.times[b], peak:m.times[pk], max:mx};
+  }
+  const sub=(clip,name,t0,t1)=>THREE.AnimationUtils.subclip(clip,name,Math.max(0,Math.floor(t0*FPS)),Math.max(Math.floor(t0*FPS)+2,Math.ceil(t1*FPS)),FPS);
+  // remove only the still frames before a move starts and after he is back in guard; the move itself is never cut
+  function trim(name,side){
+    const c=CLIPS[name]; if(!c) return; const m=motion(c,side); if(!m) return;
+    const r=span(m,.05); CLIPS[name]=sub(c,name,r.a-.15,Math.min(c.duration,r.b+.3));
+  }
+  // the body jab-cross becomes a body jab on its own (for 'Jab to the body') and a body cross on its own
+  function split(name,first,second){
+    const c=CLIPS[name]; if(!c) return false;
+    const mL=motion(c,LEAD), mR=motion(c,REAR); if(!mL||!mR) return false;
+    const L=span(mL), R=span(mR);
+    if(!(R.peak>L.peak+.08)) return false;
+    const cut=(L.peak+R.peak)/2;
+    CLIPS[first]=sub(c,first,L.a-.15,cut); CLIPS[second]=sub(c,second,cut,Math.min(c.duration,R.b+.3));
+    return true;
+  }
+  const SIDE={lead:LEAD, rear:REAR, both:REAR, torso:TORSO};
+  // halves first (from the untrimmed file), then trim each whole file by the part that moves
+  const done={};
+  for(const e of Object.values(MOVE_LIBRARY)) if(e.part && !done[e.file]){ done[e.file]=1; split(e.file,e.file+'#first',e.file+'#second'); }
+  const trimmed={};
+  for(const e of Object.values(MOVE_LIBRARY)) if(e.file && !e.part && !trimmed[e.file]){ trimmed[e.file]=1; trim(e.file,SIDE[e.hand]||REAR); }
+  // look a move up in the library: a clip, a built-in move, or nothing
+  function resolve(key){
+    const e=MOVE_LIBRARY[key]; if(!e) return null;
+    if(e.built) return {proc:e.built,dur:e.dur};
+    const c=CLIPS[e.part ? e.file+'#'+e.part : e.file];
+    return c ? {clip:c, mod:e.mod||null} : null;
+  }
+
+  // ---- built-in moves layered on his stance: lean, dip, travel, and hands steered to a target ----
+  const V=()=>new THREE.Vector3(), Q=()=>new THREE.Quaternion();
+  const AX_F=new THREE.Vector3(0,0,1), AX_X=new THREE.Vector3(1,0,0);
+  function rotateWorld(bone,axis,ang){
+    if(!bone||!ang) return;
+    const pw=Q(), bw=Q(); bone.parent.getWorldQuaternion(pw); bone.getWorldQuaternion(bw);
+    bone.quaternion.copy(pw.invert().multiply(Q().setFromAxisAngle(axis,ang).multiply(bw)));
+    bone.updateMatrixWorld(true);
+  }
+  function aim(bone,fromW,toW){
+    const bp=V(); bone.getWorldPosition(bp);
+    const v1=fromW.clone().sub(bp).normalize(), v2=toW.clone().sub(bp).normalize();
+    const pw=Q(), bw=Q(); bone.parent.getWorldQuaternion(pw); bone.getWorldQuaternion(bw);
+    bone.quaternion.copy(pw.invert().multiply(Q().setFromUnitVectors(v1,v2).multiply(bw)));
+    bone.updateMatrixWorld(true);
+  }
+  // two-bone arm reach: elbow kept down and slightly out, blended in by w
+  function reach(side,target,w){
+    const up=bones[side+'Arm'], fo=bones[side+'ForeArm'], ha=bones[side+'Hand']; if(!up||!fo||!ha||w<=0) return;
+    const q0=up.quaternion.clone(), q1=fo.quaternion.clone();
+    const S=V(), E=V(), H=V(); up.getWorldPosition(S); fo.getWorldPosition(E); ha.getWorldPosition(H);
+    const a=S.distanceTo(E), b=E.distanceTo(H), d=Math.min(Math.max(S.distanceTo(target),.02),a+b-.002);
+    const dir=target.clone().sub(S).normalize();
+    const pole=new THREE.Vector3(side==='Left'?.2:-.2,-.9,.15);
+    const perp=pole.sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+    const cosA=(a*a+d*d-b*b)/(2*a*d), along=a*cosA, h=a*Math.sqrt(Math.max(0,1-cosA*cosA));
+    const Ed=S.clone().add(dir.clone().multiplyScalar(along)).add(perp.multiplyScalar(h));
+    aim(up,E,Ed); fo.getWorldPosition(E); ha.getWorldPosition(H); aim(fo,H,target);
+    const u1=up.quaternion.clone(), f1=fo.quaternion.clone();
+    up.quaternion.copy(q0.slerp(u1,w)); fo.quaternion.copy(q1.slerp(f1,w)); up.updateMatrixWorld(true);
+  }
+  const headW=()=>{ const p=V(); (bones.Head||model).getWorldPosition(p); return p; };
+  const guardTarget=(side,lift=0)=>headW().add(new THREE.Vector3(side==='Left'?.085:-.085,.02+lift,.17));
+  const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const env=p=>Math.min(1,p/.18,(1-p)/.22);
+  const touched=['Hips','Spine','Spine1','Spine2','LeftArm','LeftForeArm','RightArm','RightForeArm'].map(n=>bones[n]).filter(Boolean);
+  let saved=null, proc=null;
+  function restoreBase(){ if(!saved) return; touched.forEach((b,i)=>b.quaternion.copy(saved.q[i])); if(bones.Hips) bones.Hips.position.copy(saved.hips); }
+  function saveBase(){ saved={q:touched.map(b=>b.quaternion.clone()), hips:bones.Hips?bones.Hips.position.clone():V()}; }
+  function lean(ang){ rotateWorld(bones.Spine,AX_F,ang*.3); rotateWorld(bones.Spine1,AX_F,ang*.35); rotateWorld(bones.Spine2,AX_F,ang*.35); }
+  function bend(ang){ rotateWorld(bones.Spine,AX_X,ang*.35); rotateWorld(bones.Spine1,AX_X,ang*.35); rotateWorld(bones.Spine2,AX_X,ang*.3); }
+  function applyProc(now){
+    model.position.x=0;
+    if(!proc && curMod==='low' && cur){                   // body shot from a head punch: bend the knees and lean in
+      const c=cur.getClip(), t=Math.min(1,Math.max(0,cur.time/(c.duration||1))), s=Math.sin(Math.PI*t);
+      model.updateMatrixWorld(true);
+      if(bones.Hips) bones.Hips.position.y-=.13*s;
+      model.updateMatrixWorld(true); bend(.2*s);
+      return;
+    }
+    if(!proc) return;
+    const p=Math.min(1,(now-proc.t0)/proc.ms), e=env(p), s=Math.sin(Math.PI*p);
+    model.updateMatrixWorld(true);
+    const H=bones.Hips;
+    switch(proc.name){
+      case 'guard':                                       // high guard: gloves up at the temples, elbows tight
+        reach('Left',guardTarget('Left',.04),e); reach('Right',guardTarget('Right',.04),e); break;
+      case 'catch':                                       // rear glove catches the jab in front of the face
+        reach('Right',headW().add(new THREE.Vector3(-.03,-.02,.26+.04*s)),e); reach('Left',guardTarget('Left'),e*.6); break;
+      case 'parry':                                       // rear hand taps the jab across
+        reach('Right',headW().add(new THREE.Vector3(-.09+.12*s,-.06,.24+.06*s)),e); break;
+      case 'slipR':                                       // orthodox slip to his right: lean and dip, hands stay home
+        if(H){ H.position.x-=.035*s; H.position.y-=.035*s; } model.updateMatrixWorld(true);
+        lean(.3*s); reach('Left',guardTarget('Left'),e*.5); reach('Right',guardTarget('Right'),e*.5); break;
+      case 'roll': {                                      // roll under: dip and travel across in a U, guard held high
+        const x=.13*Math.cos(Math.PI*ease(p)), y=-.17*s;
+        if(H){ H.position.x+=x*e; H.position.y+=y; } model.updateMatrixWorld(true);
+        bend(.32*s); lean(-x*1.9*e);
+        reach('Left',guardTarget('Left'),e*.7); reach('Right',guardTarget('Right'),e*.7); break; }
+      case 'squat':                                       // squat with the guard held
+        if(H) H.position.y-=.26*s; model.updateMatrixWorld(true);
+        bend(.3*s); reach('Left',guardTarget('Left'),e*.6); reach('Right',guardTarget('Right'),e*.6); break;
+      case 'shuffle': {                                   // lateral shuffle: out to the side, settle, back across
+        const seg=p<.32?ease(p/.32):p<.5?1:p<.82?1-ease((p-.5)/.32):0;
+        model.position.x=-.2*seg;
+        const pushing=(p<.32||(p>.5&&p<.82));
+        if(H) H.position.y-=pushing?.03*Math.abs(Math.sin(p*Math.PI*6)):0;
+        model.updateMatrixWorld(true);
+        lean(.06*(p<.5?1:-1)*(pushing?1:0)); break; }
+    }
+  }
+
+  // ---- sequencer: clips and built-in moves, looped until the announcement ends ----
+  let seq=[], si=0, cur=null, looping=false, playing=false, pace=1, curMod=null;
+  function toStance(fade){ if(cur){ cur.fadeOut(fade); cur=null; } if(idle){ idle.reset().fadeIn(fade).play(); } }
+  function playNext(){
+    proc=null;
+    if(!seq.length){ playing=false; return; }
+    if(si>=seq.length){
+      if(!looping){ playing=false; toStance(.3); return; }
+      si=0;
+    }
+    const it=seq[si++];
+    if(it.clip){
+      const act=mixer.clipAction(it.clip);
+      act.reset(); act.setLoop(THREE.LoopOnce,1); act.clampWhenFinished=true; act.timeScale=pace;
+      if(cur && cur!==act) act.crossFadeFrom(cur,.1,false); else if(idle && idle.isRunning()) act.crossFadeFrom(idle,.14,false);
+      act.play(); cur=act; curMod=it.mod||null; if(api.punch) api.punch();
+    } else {
+      curMod=null;
+      toStance(.16);
+      proc={name:it.proc, t0:performance.now(), ms:it.dur*1000/Math.min(pace,1.25)};
+    }
+    playing=true;
+  }
+  mixer.addEventListener('finished',e=>{ if(e.action===cur) playNext(); });
+  // play a drill's moves as a combo, over and over, until finish() is called
+  api.play=p=>{
+    api._last=p;
+    if(reduce || !p) return;
+    pace=Math.min(1.45,Math.max(.6,p.pace));
+    seq=[];
+    if(p.keys){ seq=p.keys.map(resolve).filter(Boolean); if(!seq.length) seq=[resolve('jab,cross')].filter(Boolean); si=0; looping=true; playNext(); return; }
+    const mv=p.moves, k=m=>m.m+(m.low?'_low':''), key=(i,n)=>mv.slice(i,i+n).map(k).join(',');
+    for(let i=0;i<mv.length;){
+      let it=null, used=1;
+      for(const n of [4,3,2]) if(i+n<=mv.length && key(i,n).includes(',') && (it=resolve(key(i,n)))){ used=n; break; }   // whole combination first
+      if(!it) it=resolve(k(mv[i])) || (mv[i].low ? resolve(mv[i].m) : null);
+      if(it) seq.push(it);
+      i+=used;
+    }
+    if(!seq.length){ const it=resolve('jab,cross')||resolve('jab'); if(it) seq.push(it); }
+    si=0; looping=true; playNext();
+  };
+  api.finish=()=>{ looping=false; if(!playing) toStance(.3); };
+  api.busy=()=>playing;
+  api.demo=()=>{};
+
+  // camera: wide framing that moves between several angles while he demonstrates
+  const head=bones.Head, tmp=new THREE.Vector3(), camPos=new THREE.Vector3(0,1.3,5), camLook=new THREE.Vector3(0,1,0);
+  let last=performance.now(), shownAt=-1e9;
+  // camera shots around him. He faces the front (+z); his lead (left) side is +x. az = angle round him in radians,
+  // h = camera height above the hips, r = distance, look = aim height above the hips.
+  const SHOTS={
+    // every shot looks down from above the top rope (the top rope is about 1.2 m over the canvas)
+    front:     {az:.05,    h:1.2,  r:5.6, look:.02},
+    frontWide: {az:0,      h:1.45, r:7.6, look:0},     // zoomed far out
+    leadQtr:   {az:.8,     h:1.15, r:5.5, look:.02},
+    leadSide:  {az:1.45,   h:1.1,  r:5.4, look:.02},
+    rearSide:  {az:-1.45,  h:1.1,  r:5.4, look:.02},   // his right side
+    rearQtr:   {az:-.75,   h:1.15, r:5.5, look:.02},
+    back:      {az:Math.PI,h:1.2,  r:5.6, look:.04},   // from behind
+    backQtr:   {az:2.35,   h:1.15, r:5.6, look:.04},
+    highWide:  {az:.45,    h:2.3,  r:6.9, look:-.05},
+  };
+  const SHOT_NAMES=Object.keys(SHOTS);
+  const LIFT=.24;                       // aim this much lower so he sits higher in the circle, feet clear of the drill pill
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const easeIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const wrapA=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  let shot=SHOTS.front, shotName='front', shotAt=0, shotUntil=0, roam=true, wasFlipped=false;
+  let from={az:.05,h:1.2,r:5.6,look:.02}, transAt=-1e9, TRANS=1300, drift={az:0,r:0}, punchAt=-1e9;
+  let camAz=.05, camH=1.2, camR=5.6, camLookH=.02;
+  // where he stands (always the middle of the ring; kept as a setting so other spots can be tried later)
+  let spot={x:0,y:0,z:0,yaw:0}, pendingRound=null;
+  const baseY=()=>model.position.y+restHips.y;
+  function applyPlace(){
+    if(pendingRound==null || !gym) return;
+    const r=pendingRound; pendingRound=null;
+    spot=gym.places.ring;                                                  // every round in the ring
+    model.position.set(spot.x,spot.y,spot.z); model.rotation.y=spot.yaw; model.updateMatrixWorld(true);
+  }
+  api.place=r=>{ pendingRound=r; };
+  function setShot(n,now,cut){
+    from={az:camAz,h:camH,r:camR,look:camLookH};
+    shotName=n; shot=SHOTS[n]; shotAt=now; shotUntil=now+rnd(2600,4200); transAt=cut?-1e9:now;
+    drift={az:rnd(.1,.22)*(Math.random()<.5?-1:1), r:rnd(-.5,.5)};    // slow orbit and push during the hold
+  }
+  function nextShot(now){
+    let n; do{ n=SHOT_NAMES[Math.floor(Math.random()*SHOT_NAMES.length)]; } while(n===shotName);
+    setShot(n,now,false);
+  }
+  // each flip: about a third stay on one straight view; the rest roam randomly
+  function planFlip(now){
+    applyPlace();                                                          // move between rounds while he is turned away
+    roam=Math.random()>.33;
+    const n=roam ? (Math.random()<.5 ? 'front' : SHOT_NAMES[Math.floor(Math.random()*SHOT_NAMES.length)]) : (Math.random()<.6 ? 'front' : 'frontWide');
+    const S=SHOTS[n]; camAz=S.az; camH=S.h; camR=S.r; camLookH=S.look;
+    setShot(n,now,true);                                                  // open on the first shot straight away
+    bodyCentre(centre);
+    centre.copy(bodyCentre(hipNow.clone()));
+    camPos.set(centre.x+Math.sin(camAz+spot.yaw)*camR,baseY()+camH,centre.z+Math.cos(camAz+spot.yaw)*camR);
+    camLook.set(centre.x,baseY()+camLookH-LIFT,centre.z);
+  }
+  api.punch=()=>{ punchAt=performance.now(); };
+  // the point the camera circles and aims at: his hips, so he stays in the middle of the frame
+  const centre=new THREE.Vector3(), hipNow=new THREE.Vector3();
+  function bodyCentre(out){ if(bones.Hips){ bones.Hips.getWorldPosition(hipNow); out.set(hipNow.x,0,hipNow.z); } else out.set(model.position.x,0,0); return out; }
+  const nodQ=new THREE.Quaternion(), X_AXIS=new THREE.Vector3(1,0,0);
+  function frame(now){
+    if(gen!==bootGen) return;                                              // this coach was switched out
+    requestAnimationFrame(frame);
+    const flipped=inner.classList.contains('flipped');
+    if(flipped && !wasFlipped) planFlip(now);
+    wasFlipped=flipped;
+    if(flipped) shownAt=now;
+    if(document.hidden || now-shownAt>1000) { last=now; return; }    // only render while he's on screen
+    const dt=Math.min(.05,(now-last)/1000); last=now;
+    const w=canvas.clientWidth, h=canvas.clientHeight;
+    if(w && (canvas.width!==Math.round(w*renderer.getPixelRatio()) || canvas.height!==Math.round(h*renderer.getPixelRatio()))){
+      renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+    }
+    restoreBase();              // undo last frame's built-in move so nothing accumulates
+    mixer.update(dt);
+    saveBase();
+    if(proc && now-proc.t0>=proc.ms) playNext();
+    applyProc(now);
+    if(faceMeshes.length) updateFace(now,dt);
+    if(head) head.getWorldPosition(tmp); else tmp.set(0,1.6,0);
+    // camera: eased moves between random shots, a slow drift within each shot, a gentle sway, and a small push on each punch
+    if(!reduce && roam && now>shotUntil) nextShot(now);
+    const S=reduce ? SHOTS.front : shot;
+    const tp=Math.min(1,(now-transAt)/TRANS), e=easeIO(tp);
+    const hold=Math.min(1,(now-shotAt)/Math.max(1,shotUntil-shotAt)), dr=reduce?0:(hold-.5);
+    camAz=from.az+wrapA(S.az-from.az)*e + drift.az*dr;
+    camH =from.h+(S.h-from.h)*e;
+    camR =from.r+(S.r-from.r)*e + drift.r*dr;
+    camLookH=from.look+(S.look-from.look)*e;
+    const t=now/1000, sway=reduce?0:1;
+    const swayAz=sway*(.012*Math.sin(t*.53)+.006*Math.sin(t*1.31)), swayH=sway*(.018*Math.sin(t*.71)+.008*Math.sin(t*1.7));
+    const pk=Math.max(0,1-(now-punchAt)/450), push=reduce?0:.28*Math.sin(Math.PI*Math.min(1,(now-punchAt)/450))*(pk>0?1:0);
+    const az=camAz+swayAz+spot.yaw, rr=camR-push;          // shots are relative to the way he faces
+    const c=bodyCentre(hipNow.clone()); centre.lerp(c,1-Math.exp(-dt*6));
+    camPos.set(centre.x+Math.sin(az)*rr,baseY()+camH+swayH,centre.z+Math.cos(az)*rr);
+    camLook.set(centre.x,baseY()+camLookH-LIFT,centre.z);
+    camera.position.copy(camPos); camera.lookAt(camLook);
+    if(gym) gym.update(now,dt,camPos,{x:centre.x,z:centre.z,feet:model.position.y,head:model.position.y+1.85});
+    renderer.render(scene,camera);
+  }
+  // warm up now, while he is hidden: compile every material and upload every texture, so the first flip does not stall the timer
+  try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); else renderer.compile(scene,camera); }catch(e){}
+  if(gen!==bootGen){ renderer.dispose(); return; }
+  { const w=canvas.clientWidth||320, h=canvas.clientHeight||320;
+    renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+    camera.position.set(0,2.2,5.6); camera.lookAt(0,.8,0); renderer.render(scene,camera); }
+  requestAnimationFrame(frame);
+  root.classList.add('has3d');
+  api.avatar=avKey;
+  api.ready=true;
+  // switched mid-drill: pick the drill straight back up
+  if(api._last && inner.classList.contains('flipped')) api.play(api._last);
+}
+const start=()=>boot(avatarKey).catch(err=>{ console.warn('3D coach unavailable, using the illustrated coach.',err); root.classList.remove('has3d'); });
+
+// switch coach: shut the running scene down, give it a fresh canvas and load the other coach
+api.setAvatar=async key=>{
+  if(!AVATARS[key] || key===avatarKey) return;
+  avatarKey=key;
+  api.ready=false; bootGen++;
+  if(live){ try{ live.renderer.dispose(); live.renderer.forceContextLoss(); }catch(e){} live=null; }
+  const fresh=canvas.cloneNode(false); canvas.replaceWith(fresh); canvas=fresh;
+  try{ await boot(key); }catch(err){ console.warn('Could not load that coach.',err); }
+};
+if(document.readyState==='complete') setTimeout(start,300); else window.addEventListener('load',()=>setTimeout(start,300));
 </script>
 
 </body>
