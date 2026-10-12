@@ -250,6 +250,55 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .g-toast b{color:var(--gold)}
 .g-toast.show{opacity:1;transform:none}
 @media (max-width:760px){.g-toast{top:calc(max(14px,env(safe-area-inset-top)) + 196px);left:14px;right:14px;max-width:none}.g-toast::before{display:none}}
+/* finale */
+.g-finale{position:absolute;inset:0;pointer-events:none;display:none}
+#gymView.finale .g-finale{display:block}
+#gymView.finale .g-hud{display:none}
+.gf-wall{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:min(380px,calc(100% - 32px));max-height:calc(100% - 32px);display:flex;flex-direction:column;gap:10px;
+  padding:14px;border-radius:18px;background:rgba(12,15,20,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);
+  opacity:0;transform:translateX(30px);transition:opacity .5s,transform .6s cubic-bezier(.2,.8,.2,1);pointer-events:auto}
+.g-finale.on .gf-wall{opacity:1;transform:none}
+.g-finale.done .gf-wall{opacity:0;transform:translateX(30px) scale(.96);pointer-events:none}
+.gf-head{display:flex;flex-direction:column;gap:2px}
+.gf-head b{font-family:var(--display);font-size:20px;letter-spacing:.02em}
+.gf-tiles{display:none!important}
+.gf-wall{left:50%;right:auto;width:auto;max-width:calc(100% - 32px);text-align:center;padding:10px 18px;transform:translate(-50%,-10px)}
+.g-finale.on .gf-wall{transform:translate(-50%,0)}
+.g-finale.done .gf-wall{transform:translate(-50%,-10px)}
+.gf-tiles-old{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-y:auto;scrollbar-width:thin;padding:2px}
+.gf-tile{--c:var(--gold);position:relative;border-radius:10px;padding:9px 10px;font-weight:700;font-size:13px;line-height:1.25;min-height:44px;
+  background:color-mix(in srgb,var(--c) 16%,#11151b);border:1.5px solid color-mix(in srgb,var(--c) 60%,transparent);color:#f2ecdf;overflow:visible}
+.gf-tile small{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--c);font-weight:700;margin-top:2px}
+.gf-tile.hit{animation:gfHit .2s ease-out}
+@keyframes gfHit{0%{transform:scale(1)}40%{transform:scale(1.12) rotate(-2deg)}100%{transform:scale(.96) rotate(1deg)}}
+.gf-tile.crushed{transform:scale(.94) rotate(var(--rot,-1.5deg));background:#16130c;border-color:color-mix(in srgb,var(--gold) 70%,transparent);color:color-mix(in srgb,#f2ecdf 45%,transparent);
+  transition:transform .25s,background .25s,color .25s}
+.gf-tile.crushed span{text-decoration:line-through;text-decoration-color:var(--gold);text-decoration-thickness:2px}
+.gf-tile.crushed::after{content:"CRUSHED";position:absolute;right:6px;top:50%;transform:translateY(-50%) rotate(-12deg);padding:2px 6px;border:2px solid var(--gold);border-radius:5px;
+  color:var(--gold);font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.08em;animation:gfStamp .28s cubic-bezier(.2,1.6,.4,1)}
+@keyframes gfStamp{0%{transform:translateY(-50%) rotate(-12deg) scale(2.2);opacity:0}100%{transform:translateY(-50%) rotate(-12deg) scale(1);opacity:1}}
+.gf-bit{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:60}
+.gf-result{position:absolute;left:50%;bottom:max(22px,env(safe-area-inset-bottom));width:min(560px,calc(100% - 32px));transform:translate(-50%,30px);opacity:0;
+  transition:opacity .6s,transform .7s cubic-bezier(.2,.8,.2,1);text-align:center;padding:18px 18px 16px;border-radius:20px;
+  background:rgba(12,15,20,.7);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid color-mix(in srgb,var(--gold) 45%,transparent);pointer-events:none}
+.g-finale.done .gf-result{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.gf-big{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,46px);line-height:1.05;color:var(--gold);text-transform:uppercase;letter-spacing:.02em;margin:4px 0 10px}
+.gf-stats{display:flex;justify-content:center;gap:clamp(16px,5vw,38px);margin-bottom:14px}
+.gf-stats div{font-family:var(--display);font-weight:700;font-size:clamp(26px,5vw,36px);line-height:1}
+.gf-stats span{display:block;font-family:inherit;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:4px}
+.gf-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.gf-confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.gf-flash{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;background:radial-gradient(circle at 50% 45%,#fff6dc 0%,#f5c95a 55%,#b8862b 100%)}
+.gf-flash.go{animation:gfFlash .75s ease-out}
+.gf-fade{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:0;background:#07080a}
+.gf-fade.go{animation:gfFade 1.6s ease-in-out}
+@keyframes gfFade{0%{opacity:0}40%{opacity:1}55%{opacity:1}100%{opacity:0}}
+@keyframes gfFlash{0%{opacity:0}22%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.gf-flash.go{animation-duration:.3s}}
+@media (max-width:760px){
+  .gf-head b{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){.gf-tile.hit{animation:none}.gf-tile.crushed::after{animation:none}}
 .g-top{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;display:flex;gap:8px;align-items:center}
 .g-cam{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
   background:rgba(12,15,20,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#f1ece2;font-weight:700;font-size:14px}
@@ -562,6 +611,25 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 <!-- ============ DONE ============ -->
 <!-- gym mode: the 3D gym full screen, with a small timer, the drill and the list over it -->
 <div id="gymView" hidden aria-label="Gym view">
+  <!-- the finale: every drill on the wall is ticked off, the bricks blow out, and he walks into the next room to be celebrated -->
+  <canvas class="gf-confetti" id="gfConfetti" aria-hidden="true"></canvas>
+  <div class="gf-flash" id="gfFlash" aria-hidden="true"></div>
+  <div class="gf-fade" id="gfFade" aria-hidden="true"></div>
+  <div class="g-finale" id="gFinale" aria-live="polite">
+    <div class="gf-wall">
+      <div class="gf-head"><span class="eyebrow">Final bell</span><b id="gfCount">Every drill you threw</b></div>
+      <div class="gf-tiles" id="gfTiles"></div>
+    </div>
+    <div class="gf-result" id="gfResult">
+      <div class="eyebrow">Round after round</div>
+      <div class="gf-big">Workout complete</div>
+      <div class="gf-stats" id="gfStats"></div>
+      <div class="gf-row">
+        <button class="btn" id="gfAgain" type="button">Train again</button>
+        <button class="btn ghost" id="gfChange" type="button">Change workout</button>
+      </div>
+    </div>
+  </div>
   <div class="g-hud">
     <div class="g-left g-panel"><div class="g-timer" id="gTimer"></div><div id="gControls"></div></div>
     <div class="g-now g-panel" id="gNow"></div>
@@ -795,7 +863,7 @@ const TIPS = {
   'Rhythm and bounce':'Light on your feet. Bounce with the beat.',
   'Visualise':'Slip what they throw, then counter.'
 };
-const OPTIONS = [{r:3,m:3},{r:5,m:3},{r:3,m:5},{r:5,m:5}];
+const OPTIONS = [{r:3,m:3},{r:5,m:3},{r:6,m:3},{r:12,m:3},{r:3,m:5},{r:5,m:5}];   // rounds x minutes
 const SEG = 30, REST = 60, READY = 5;
 // one colour per drill, cycled so neighbours never match; the ring takes the colour of the current drill
 const PALETTE = ['#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
@@ -1144,6 +1212,7 @@ function pep(){ say(draw('enc', ENCOURAGE)); }
    Movement: every part follows its target on a spring, so motion has weight and follow-through.
    Camera: close on the face while he talks, then pulls back to show the combination. */
 const Coach=(()=>{
+  window.bfParseStep=s=>parseStep(s);   // the finale's copies of him use each drill's moves too
   const q=id=>document.getElementById(id), root=q('coach');
   const inner=q('ringInner'), tag=q('coachTag');
   const svg=q('coachSvg'), cam=q('cCam'), body=q('cBody'), head=q('cHead');
@@ -1679,6 +1748,8 @@ window.iaPrompt=iaPrompt;
 if($('iaPromptText') && matchMedia('(hover:hover) and (pointer:fine)').matches) $('iaPromptText').textContent='Double-click for interactive';
 function start(){
   window.bfAutoGym=true;                                          // the first drill of each workout opens interactive mode
+  // the crowd for the finale is fetched and decoded early in the workout, so the celebration never waits for it
+  setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
   build(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
@@ -1689,14 +1760,26 @@ function finish(){
   running=false; cancelAnimationFrame(raf); bell(); try{wake?.release()}catch(e){}
   say('Workout complete. Great work.', 1400);
   stopMusic();
+  const o=OPTIONS[state.opt], work=steps.filter(s=>s.type==='work');
+  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${o.r*o.m}<span>Minutes boxed</span></div><div>${work.length}<span>Drills</span></div>`;
+  // the finale: every drill on the wall, crushed one by one, then the fighter is celebrated (needs the 3D coach)
+  const seen=new Map(); work.forEach(s=>{ const d=seen.get(s.name); if(d) d.n++; else { let play=null; try{ play=s.moves?{keys:s.moves,pace:s.speed||1}:window.bfParseStep?.(s); }catch(e){} seen.set(s.name,{name:s.name,n:1,color:s.color,play}); } });
+  const data={drills:[...seen.values()], stats:{rounds:o.r, minutes:o.r*o.m, drills:work.length}};
+  if(window.Coach3D && Coach3D.ready && Coach3D.finale && Coach3D.finale(data)){ if(!crowd) startCrowd(); return; }
   if(crowd){ cheer(1, 5); setTimeout(stopCrowd, 6000); }   // big final roar, then the arena empties
-  const o=OPTIONS[state.opt];
-  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${o.r*o.m}<span>Minutes boxed</span></div><div>${steps.filter(s=>s.type==='work').length}<span>Drills</span></div>`;
   show('done');
 }
+// sound for the finale: a thud for every drill crushed, the crowd for the celebration
+window.bfFx={ thud:()=>{ try{ tone(78,0,.18,.5); tone(52,.02,.22,.35); }catch(e){} },
+              ding:i=>{ try{ const f=660*Math.pow(2,(i%8)/12); tone(f,0,.16,.18); tone(f*1.5,.05,.22,.12); }catch(e){} },
+              poof:soft=>{ try{ if(soft){ tone(990,0,.1,.08); tone(1480,.04,.14,.06); } else { tone(240,0,.12,.22); tone(480,.02,.16,.12); tone(70,0,.22,.3); } }catch(e){} },
+              boom:()=>{ try{ tone(64,0,.35,.55); tone(41,.03,.45,.45); tone(130,0,.09,.2); }catch(e){} },
+              cheer:(l,len)=>cheer(l,len), quiet:ms=>setTimeout(()=>{ if(crowd) stopCrowd(); },ms) };
 
 $('buildBtn').onclick=start;
 $('againBtn').onclick=start;
+$('gfAgain').onclick=()=>{ window.Coach3D?.endFinale?.(); start(); };
+$('gfChange').onclick=()=>{ window.Coach3D?.endFinale?.(); show('setup'); };
 $('changeBtn').onclick=()=>{show('setup');};
 $('exitBtn').onclick=()=>{ window.bfAutoGym=false; iaPrompt(false); hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} show('setup'); };
 $('playBtn').onclick=()=>setPlaying(!running);
@@ -1724,6 +1807,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {clone as skClone} from 'three/addons/utils/SkeletonUtils.js';
 
 const root=document.getElementById('coach'), inner=document.getElementById('ringInner');
 let canvas=document.getElementById('coach3d');
@@ -1875,8 +1959,91 @@ async function boot(avKey,opts={}){
     },[7,3]);
     const wallMat=new THREE.MeshStandardMaterial({map:brickTex,roughness:.92,side:THREE.BackSide});
     const ceilMat=new THREE.MeshStandardMaterial({color:0x0b0c0e,roughness:1,side:THREE.BackSide});
-    const room=new THREE.Mesh(new THREE.BoxGeometry(ROOM*2,CEIL-FLOOR,ROOM*2),[wallMat,wallMat,ceilMat,floorMat,wallMat,wallMat]);
+    const noFace=new THREE.MeshBasicMaterial({visible:false});
+    const room=new THREE.Mesh(new THREE.BoxGeometry(ROOM*2,CEIL-FLOOR,ROOM*2),[wallMat,wallMat,ceilMat,floorMat,noFace,wallMat]);
     room.position.y=(CEIL+FLOOR)/2; G.add(room);
+    // the wall under ROUND AFTER ROUND has a doorway in it, bricked up: the finale breaks through it into the next room
+    const HOLE={w:4.8,h:3.4}; HOLE.x0=-HOLE.w/2; HOLE.x1=HOLE.w/2; HOLE.y0=FLOOR; HOLE.y1=FLOOR+HOLE.h;
+    const shape=new THREE.Shape(); shape.moveTo(-ROOM,FLOOR); shape.lineTo(ROOM,FLOOR); shape.lineTo(ROOM,CEIL); shape.lineTo(-ROOM,CEIL); shape.lineTo(-ROOM,FLOOR);
+    const gap=new THREE.Path(); gap.moveTo(HOLE.x0,HOLE.y0); gap.lineTo(HOLE.x0,HOLE.y1); gap.lineTo(HOLE.x1,HOLE.y1); gap.lineTo(HOLE.x1,HOLE.y0); gap.lineTo(HOLE.x0,HOLE.y0); shape.holes.push(gap);
+    const wallTex=brickTex.clone(); wallTex.needsUpdate=true; wallTex.repeat.set(7/(ROOM*2),3/(CEIL-FLOOR));
+    const frontMat=new THREE.MeshStandardMaterial({map:wallTex,roughness:.92,side:THREE.DoubleSide});
+    const front=new THREE.Mesh(new THREE.ShapeGeometry(shape),frontMat); front.position.z=ROOM; front.rotation.y=Math.PI; G.add(front);
+    const reveal=new THREE.MeshStandardMaterial({color:0x2a1d17,roughness:.95});
+    for(const [w,h,x,y] of [[.22,HOLE.h,HOLE.x0-.11,FLOOR+HOLE.h/2],[.22,HOLE.h,HOLE.x1+.11,FLOOR+HOLE.h/2],[HOLE.w+.44,.22,0,HOLE.y1+.11]]){
+      const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,.5),reveal); b.position.set(x,y,ROOM); G.add(b);
+    }
+    const plugTex=brickTex.clone(); plugTex.needsUpdate=true; plugTex.repeat.set(7/(ROOM*2)*HOLE.w,3/(CEIL-FLOOR)*HOLE.h);
+    const plug=new THREE.Mesh(new THREE.BoxGeometry(HOLE.w,HOLE.h,.3),new THREE.MeshStandardMaterial({map:plugTex,roughness:.92}));
+    plug.position.set(0,FLOOR+HOLE.h/2,ROOM); G.add(plug);
+
+    // the next room: a champions' gym behind the wall. Built with the gym (lights off) so the finale never has to compile anything new
+    function buildRoom2(){
+      const R2=new THREE.Group(), z0=ROOM, D=16, W=16, zc=z0+D/2;
+      const plankTex=tex(512,512,(x,w,h)=>{ for(let i=0;i<8;i++){ x.fillStyle=`hsl(${26+Math.random()*6},${38+Math.random()*10}%,${17+Math.random()*7}%)`; x.fillRect(0,i*h/8,w,h/8-3);
+        for(let k=0;k<30;k++){ x.fillStyle='rgba(0,0,0,.08)'; x.fillRect(Math.random()*w,i*h/8+Math.random()*h/8,40+Math.random()*80,1); } x.fillStyle='rgba(0,0,0,.6)'; x.fillRect(Math.random()*w,i*h/8,3,h/8); } },[4,4]);
+      const floor2=new THREE.Mesh(new THREE.PlaneGeometry(W,D),new THREE.MeshStandardMaterial({map:plankTex,roughness:.45,metalness:.05}));
+      floor2.rotation.x=-Math.PI/2; floor2.position.set(0,FLOOR+.002,zc); R2.add(floor2);
+      const logo=tex(512,512,(x,w,h)=>{ x.strokeStyle=GOLD; x.lineWidth=14; x.beginPath(); x.arc(w/2,h/2,230,0,Math.PI*2); x.stroke();
+        lettering(x,'BOXING',w/2,h/2-42,62,6,GOLD); lettering(x,'FLOW',w/2,h/2+40,86,14,GOLD); });
+      const logoM=new THREE.Mesh(new THREE.PlaneGeometry(4,4),new THREE.MeshStandardMaterial({map:logo,transparent:true,roughness:.5,emissive:0xd4a548,emissiveMap:logo,emissiveIntensity:.25}));
+      logoM.rotation.x=-Math.PI/2; logoM.position.set(0,FLOOR+.006,zc-1.2); R2.add(logoM);
+      const panelTex=tex(512,512,(x,w,h)=>{ x.fillStyle='#141518'; x.fillRect(0,0,w,h); for(let i=0;i<4;i++){ x.fillStyle='#0d0e10'; x.fillRect(i*w/4,0,4,h); } speckle(x,w,h,3000,.05); },[6,2]);
+      const wall2=new THREE.MeshStandardMaterial({map:panelTex,roughness:.7,side:THREE.BackSide});
+      const ceil2=new THREE.MeshStandardMaterial({color:0x08090b,roughness:1,side:THREE.BackSide});
+      const box2=new THREE.Mesh(new THREE.BoxGeometry(W,CEIL-FLOOR,D),[wall2,wall2,ceil2,noFace,wall2,noFace]); box2.position.set(0,(CEIL+FLOOR)/2,zc); R2.add(box2);
+      const glow=new THREE.MeshBasicMaterial({color:0xf2c35a});
+      for(let i=0;i<6;i++){ const z=z0+1.5+i*2.6;                           // gold light strips up the side walls
+        for(const sx of [-1,1]){ const st=new THREE.Mesh(new THREE.BoxGeometry(.05,5.2,.08),glow); st.position.set(sx*(W/2-.04),FLOOR+3.1,z); R2.add(st); } }
+      for(let i=-3;i<=3;i++){ const st=new THREE.Mesh(new THREE.BoxGeometry(.08,5.6,.05),glow); st.position.set(i*1.9,FLOOR+3.3,z0+D-.04); if(Math.abs(i)>1) R2.add(st); }
+      const sign=tex(1024,320,(x,w,h)=>{ x.shadowColor='#ffcf6a'; x.shadowBlur=26; lettering(x,'CHAMPION',w/2,h/2-28,150,22,'#f5c95a'); x.shadowBlur=10; lettering(x,'BOXING FLOW',w/2,h/2+92,46,16,'#f1ece2'); });
+      const signM=new THREE.Mesh(new THREE.PlaneGeometry(8.5,2.65),new THREE.MeshBasicMaterial({map:sign,transparent:true,fog:false}));
+      signM.scale.setScalar(.7); signM.position.set(0,FLOOR+7.9,z0+D-.08); signM.rotation.y=Math.PI; R2.add(signM);
+      const bagM=new THREE.MeshPhysicalMaterial({color:0x0d0d0e,roughness:.42,clearcoat:.5}), bandM=new THREE.MeshStandardMaterial({color:0xd4a548,metalness:.6,roughness:.35});
+      for(const sx of [-1,1]) for(const z of [z0+3.2,z0+7.2,z0+11.2]){
+        const b=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,1.12,24),bagM); b.position.set(sx*5.6,FLOOR+1.25,z); R2.add(b);
+        const bd=new THREE.Mesh(new THREE.CylinderGeometry(.203,.203,.07,24,1,true),bandM); bd.position.set(sx*5.6,FLOOR+1.63,z); R2.add(bd);
+        const ch=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,CEIL-FLOOR-1.81,6),chainMat); ch.position.set(sx*5.6,(CEIL+FLOOR+1.81)/2,z); R2.add(ch);
+      }
+      const sp=new THREE.SpotLight(0xffe4bd,0,0,.6,.75,2); sp.position.set(0,FLOOR+7.6,z0+5.6); sp.target.position.set(0,0,z0+7.5); R2.add(sp,sp.target);
+      const warm=new THREE.PointLight(0xffc860,0,16,2); warm.position.set(0,FLOOR+4.2,z0+D-2); R2.add(warm);
+      R2.userData.lights=[[sp,60],[warm,14]];
+      // the champion's ring in the middle of the room: same canvas and apron as the main ring, gold corners and gold ropes
+      const RZ=z0+7.5, ring2=new THREE.Group(); ring2.position.set(0,0,RZ); R2.add(ring2);
+      const m2=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,ED*2),canvasMat); m2.rotation.x=-Math.PI/2; m2.position.y=.004; ring2.add(m2);
+      for(let k=0;k<4;k++){ const s2=new THREE.Mesh(new THREE.PlaneGeometry(ED*2,-FLOOR),skirtMat), a=k*Math.PI/2; s2.position.set(Math.sin(a)*ED,FLOOR/2,Math.cos(a)*ED); s2.rotation.y=a; ring2.add(s2); }
+      const ropeGold=new THREE.MeshStandardMaterial({color:0xd9b25a,metalness:.7,roughness:.35});
+      for(const [sx,sz] of [[1,1],[-1,-1],[1,-1],[-1,1]]){
+        const post=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.55,16),chrome); post.position.set(sx*(H+.08),.775,sz*(H+.08)); ring2.add(post);
+        const pad=new THREE.Mesh(new THREE.BoxGeometry(.17,1.08,.17),bandM); pad.position.set(sx*H,.8,sz*H); pad.rotation.y=Math.PI/4; ring2.add(pad); }
+      for(let k=0;k<4;k++){ const a=k*Math.PI/2;
+        for(const y of [.42,.82,1.22]){ const r=new THREE.Mesh(ropeGeo,ropeGold); r.position.set(Math.sin(a)*H,y,Math.cos(a)*H); r.rotation.set(0,a,Math.PI/2); ring2.add(r); } }
+      // the big screen behind the ring: a live feed from a second camera (the hype video), with titles drawn over it
+      const phoneish=matchMedia('(pointer:coarse)').matches;
+      const SW=9.6, SH=5.4, SZ=RZ+6.2, SY=FLOOR+1.55+SH/2;
+      const rt=new THREE.WebGLRenderTarget(phoneish?512:768, phoneish?288:432);
+      const bez=new THREE.Mesh(new THREE.BoxGeometry(SW+.4,SH+.4,.22),new THREE.MeshStandardMaterial({color:0x0a0a0b,roughness:.45,metalness:.4})); bez.position.set(0,SY,SZ+.13); R2.add(bez);
+      for(const [w,h,x,y] of [[SW+.44,.05,0,SH/2+.2],[SW+.44,.05,0,-SH/2-.2],[.05,SH+.44,SW/2+.2,0],[.05,SH+.44,-SW/2-.2,0]]){
+        const tr=new THREE.Mesh(new THREE.BoxGeometry(w,h,.05),glow); tr.position.set(x,SY+y,SZ-.01); R2.add(tr); }
+      for(const sx of [-1,1]){ const leg=new THREE.Mesh(new THREE.BoxGeometry(.18,SY-SH/2-FLOOR,.18),chrome); leg.position.set(sx*SW*.32,(SY-SH/2+FLOOR)/2,SZ+.15); R2.add(leg); }
+      const scr=new THREE.Mesh(new THREE.PlaneGeometry(SW,SH),new THREE.MeshBasicMaterial({map:rt.texture,toneMapped:false,fog:false,color:0xdddddd}));
+      scr.position.set(0,SY,SZ); scr.rotation.y=Math.PI; R2.add(scr);
+      const ovC=document.createElement('canvas'); ovC.width=1024; ovC.height=576;
+      const ovT=new THREE.CanvasTexture(ovC); ovT.colorSpace=THREE.SRGBColorSpace;
+      const ov=new THREE.Mesh(new THREE.PlaneGeometry(SW,SH),new THREE.MeshBasicMaterial({map:ovT,transparent:true,toneMapped:false,fog:false,depthWrite:false}));
+      ov.position.set(0,SY,SZ-.02); ov.rotation.y=Math.PI; R2.add(ov);
+      // gold confetti over the ring: one instanced mesh, empty until the finale
+      const CN=phoneish?260:520;
+      const conf=new THREE.InstancedMesh(new THREE.PlaneGeometry(.075,.042),
+        new THREE.MeshStandardMaterial({color:0xe2b44f,metalness:.85,roughness:.28,side:THREE.DoubleSide,emissive:0x4a3408,emissiveIntensity:.7}),CN);
+      conf.count=0; conf.frustumCulled=false; conf.instanceMatrix.setUsage(THREE.DynamicDrawUsage); R2.add(conf);
+      const studio=new THREE.Group(); studio.position.set(200,0,0); studio.visible=false; G.add(studio);
+      { const rc=ring2.clone(); rc.position.set(0,0,0); studio.add(rc); }
+      const sf=new THREE.Mesh(new THREE.PlaneGeometry(40,40),floorMat); sf.rotation.x=-Math.PI/2; sf.position.y=FLOOR; studio.add(sf);
+      for(const [lx,lz] of [[-2,-2],[2,-2],[-2,2],[2,2]]){ const lb=new THREE.Mesh(new THREE.BoxGeometry(1.1,.06,.5),glow); lb.position.set(lx,4.6,lz); studio.add(lb); }
+      Object.assign(R2.userData,{RZ,studio,rt,screen:scr,overlay:{mesh:ov,tex:ovT,canvas:ovC},conf,CN});
+      G.add(R2); return R2;
+    }
 
     // banners on every wall, so the brand shows whichever way the camera looks
     const banner=(txt,sub)=>tex(1024,256,(x,w,h)=>{
@@ -1948,8 +2115,12 @@ async function boot(avKey,opts={}){
       const dx=p[0]+rx*t-c[0], dz=p[1]+rz*t-c[1];
       return (t<.97 && dx*dx+dz*dz<r*r)?t:-1;
     };
+    const finaleSpot=new THREE.SpotLight(0xffe4bd,0,0,.55,.7,2);         // switched on for the finale, under ROUND AFTER ROUND
+    finaleSpot.position.set(0,FLOOR+5.6,9.4); finaleSpot.target.position.set(0,FLOOR+1.4,ROOM); G.add(finaleSpot,finaleSpot.target);
+    const room2=buildRoom2();                  // hidden behind the bricked-up doorway until the finale (built last: it uses the gym's materials)
     return {
-      places,
+      G, places, floor:FLOOR, finaleSpot, wallZ:ROOM, hole:HOLE, plug, brickTex, room2,
+      showRoom2(on){ for(const [l,i] of room2.userData.lights) l.intensity=on?i:0; },
       update(now,dt,cam,him){            // cam: camera position; him: {x,z,feet,head}
         const t=now/1000;
         for(const b of bags){ b.pivot.rotation.x=Math.sin(t*.9+b.ph)*b.amp; b.pivot.rotation.z=Math.cos(t*.7+b.ph*1.3)*b.amp*.8; }
@@ -2033,11 +2204,12 @@ async function boot(avKey,opts={}){
   const lowestFoot=()=>{ let lo=Infinity; for(const b of FEET){ b.getWorldPosition(footV); if(footV.y<lo) lo=footV.y; } return lo; };
   model.updateMatrixWorld(true);
   const TOE_REST=FEET.length ? lowestFoot()-model.position.y : 0;
+  let groundY=0;                               // the canvas (0), or the gym floor during the finale
   function groundFeet(dt){                     // every frame: lift or lower him so his lowest foot rests on the canvas (no floating, no sinking)
     if(!FEET.length) return;
     model.updateMatrixWorld(true);
     const lo=lowestFoot(); if(!isFinite(lo)) return;
-    const want=model.position.y+(TOE_REST-lo);
+    const want=model.position.y+(groundY+TOE_REST-lo);
     model.position.y+=(want-model.position.y)*Math.min(1,dt*16);
     model.updateMatrixWorld(true);
   }
@@ -2287,7 +2459,7 @@ async function boot(avKey,opts={}){
     if(home) return;                                                        // walking back to the centre: the drill resumes after
     proc=null; rootAct=null;
     if(moveQ.length){ playLoco(moveQ.shift()); return; }
-    if(!seq.length){ playing=false; return; }
+    if(!seq.length){ playing=false; toStance(.25); return; }
     if(si>=seq.length){
       if(!looping){ playing=false; toStance(.3); return; }
       si=0;
@@ -2445,7 +2617,8 @@ async function boot(avKey,opts={}){
   function startRestMix(){ if(looping || restMix) return; restMix={act:null,key:'stance',until:performance.now()+2500+Math.random()*2000}; }
   function stepRest(now){
     const r=restMix; if(!r || now<r.until) return;
-    const keys=['stance',...Object.keys(REST)].filter(k=>k!==r.key);
+    const pool=(finaleOn ? ['hiphop','bboy','uprock','ready','happy'] : ['stance','happy','stretch','angry']).filter(k=>k==='stance'||REST[k]);
+    const keys=pool.filter(k=>k!==r.key); if(!keys.length) keys.push('stance');
     const key=keys[Math.floor(Math.random()*keys.length)];
     const next=key==='stance' ? idle : mixer.clipAction(REST[key].clip);
     const prev=r.act || idle;
@@ -2458,6 +2631,11 @@ async function boot(avKey,opts={}){
     r.until=now+len*1000;
   }
   function stopRestMix(){ if(!restMix) return; if(restMix.act){ cur=restMix.act; } restMix=null; restAfter=false; }
+  function stopDances(fade=.3){                // every rest/celebration move faded out, whatever was playing
+    for(const k in REST){ const a=mixer.existingAction(REST[k].clip); if(a && (a.isRunning()||a.getEffectiveWeight()>0)) a.fadeOut(fade); }
+    if(restMix && restMix.act && cur===restMix.act) cur=null;
+    restMix=null; restAfter=false;
+  }
   function snapHome(){                         // leaving interactive mode mid-walk: finish it at once
     if(!home) return; const h=home; home=null;
     if(h.walk) h.walk.stop();
@@ -2536,19 +2714,23 @@ async function boot(avKey,opts={}){
     if(home && home.endYaw!=null){ home.endYaw=null; }                     // the next drill has started: no need to face the front
     restAfter=false; stopRestMix();
     pace=Math.min(2.2,Math.max(.6,p.pace));
-    seq=[];
-    if(p.keys){ seq=p.keys.map(resolve).filter(Boolean); if(!seq.length) seq=[resolve('jab,cross')].filter(Boolean); si=0; looping=true; playNext(); return; }
-    const mv=p.moves, k=m=>m.m+(m.low?'_low':''), key=(i,n)=>mv.slice(i,i+n).map(k).join(',');
+    seq=seqFor(p); si=0; looping=true; playNext();
+  };
+  // a drill's moves as a list of clips and built-in moves (whole combinations first)
+  function seqFor(p){
+    let out=[];
+    if(p.keys){ out=p.keys.map(resolve).filter(Boolean); if(!out.length) out=[resolve('jab,cross')].filter(Boolean); return out; }
+    const mv=p.moves||[], k=m=>m.m+(m.low?'_low':''), key=(i,n)=>mv.slice(i,i+n).map(k).join(',');
     for(let i=0;i<mv.length;){
       let it=null, used=1;
-      for(const n of [4,3,2]) if(i+n<=mv.length && key(i,n).includes(',') && (it=resolve(key(i,n)))){ used=n; break; }   // whole combination first
+      for(const n of [4,3,2]) if(i+n<=mv.length && key(i,n).includes(',') && (it=resolve(key(i,n)))){ used=n; break; }
       if(!it) it=resolve(k(mv[i])) || (mv[i].low ? resolve(mv[i].m) : null);
-      if(it) seq.push(it);
+      if(it) out.push(it);
       i+=used;
     }
-    if(!seq.length){ const it=resolve('jab,cross')||resolve('jab'); if(it) seq.push(it); }
-    si=0; looping=true; playNext();
-  };
+    if(!out.length){ const it=resolve('jab,cross')||resolve('jab'); if(it) out.push(it); }
+    return out;
+  }
   api.finish=()=>{ looping=false; moveQ=[]; if(!playing && !home) toStance(.3); };
   api.busy=()=>playing;
   api.demo=()=>{};
@@ -2660,9 +2842,11 @@ async function boot(avKey,opts={}){
       gPos.lerp(tgtP,k); gLook.lerp(tgtL,kl);                               // face cam: the aim follows his face tightly, the camera glides after
       camera.position.copy(gPos); camera.lookAt(gLook);
     } else { camera.position.copy(camPos); camera.lookAt(camLook); }
-    const fovT=gymMode?(faceCam?34:50):28;
+    const fovT=finaleOn?(fin&&fin.fov||52):gymMode?(faceCam?34:50):28;
     if(Math.abs(fovNow-fovT)>.05){ fovNow+=(fovT-fovNow)*(1-Math.exp(-dt*3)); camera.fov=fovNow; camera.updateProjectionMatrix(); }
-    if(gym) gym.update(now,dt,camera.position,{x:centre.x,z:centre.z,feet:0,head:1.85});   // his shadow always sits on the canvas under him
+    if(gym) gym.update(now,dt,camera.position,{x:centre.x,z:centre.z,feet:groundY,head:groundY+1.85});
+    if(finaleOn) finaleStep(dt);   // his shadow always sits on the floor under him
+    if(fin && fin.hype) renderHype(now,dt);
     renderer.render(scene,camera);
   }
 
@@ -2681,6 +2865,7 @@ async function boot(avKey,opts={}){
     L.set(headP.x, headP.y-(camera.aspect<.8?.16:.02), headP.z);           // on a phone, keep his face above the panels
   }
   function gymTarget(now,P,L){
+    if(finaleOn){ finaleTarget(P,L); return; }
     if(faceCam && now-gymAt>1200){ faceTarget(P,L); return; }
     const t=(now-gymAt)/1000, c=centre;
     if(t<2.6){                                   // high up: the whole gym, turning slowly
@@ -2732,7 +2917,7 @@ async function boot(avKey,opts={}){
     return true;
   };
   api.exitGym=instant=>{
-    if(!gymMode || !view) return;
+    if(!gymMode || !view || finaleOn) return;
     gymTimers.forEach(clearTimeout); gymTimers=[];
     gymMode=false; window.gymMode=false; gymOutAt=performance.now(); wasFlipped=false; moveQ=[]; snapHome();
     view.classList.remove('hud-on'); document.getElementById('gymToast')?.classList.remove('show');
@@ -2747,13 +2932,399 @@ async function boot(avKey,opts={}){
     },instant?0:320);
   };
   document.getElementById('gymExit')?.addEventListener('click',()=>{ if(gen===bootGen) api.exitGym(); });
+
+  /* ---------- the finale: every drill is a brick in the wall under ROUND AFTER ROUND. Each is ticked off, then the bricks burst into
+     thin air, he walks through into the champions' gym and comes out in its ring under falling gold confetti, with a big screen
+     behind him playing a hype reel of him, cut live from a second camera. The camera keeps moving the whole way. ---------- */
+  let finaleOn=false, finaleT=[], confettiRaf=0, fin=null;
+  const clampN=(v,a,b)=>Math.max(a,Math.min(b,v)), smooth=k=>k*k*(3-2*k);
+  const F_CAM=()=>2.2;
+  function finaleTarget(P,L){
+    const now=performance.now(), F=groundY, phone=camera.aspect<.8, Z=gym.wallZ, z=base.y;
+    const ph=fin?fin.phase:'wall', age=fin?(now-fin.t0)/1000:0, R=phone?1.35:1;
+    if(ph==='wall'){
+      if(age<fin.tickS){                                                  // a slow arc behind him while the drills are ticked off
+        const e=smooth(clampN(age/fin.tickS,0,1)), a=-.62+1.24*e, r=4.9*R;
+        P.set(Math.sin(a)*r, F+2.6-.8*e, Z-1.55-Math.cos(a)*r); L.set(0, F+(phone?1.2:1.65), Z);
+      } else {                                                             // then a push in as the bricks go, with a kick on every burst
+        const e=smooth(clampN((age-fin.tickS)/2.2,0,1)), j=fin.flash!=null?(1-fin.flash/.35)*.06:0;
+        P.set(.62-.4*e+(Math.random()-.5)*j, F+1.75-.25*e+(Math.random()-.5)*j, Z-1.55-(4.9-1.7*e)*R); L.set(0, F+(phone?1.15:1.5), Z);
+      }
+      fin.fov=52;
+    } else if(ph==='walk' || ph==='flash'){                                // tracking him through the gap, rising as he enters
+      const inside=clampN(z-Z,0,6);
+      P.set(base.x+1.4-inside*.12, F+1.7+inside*.32, z-(4.2+inside*.15)*R); L.set(base.x, F+1.1, z+2.5);
+      fin.fov=54;
+    } else {                                                               // the celebration: moving shots from the front, the big screen behind him
+      const C=fin.C, u=(now-fin.arriveAt)/1000, shot=Math.floor(u/6.5)%4, s=u%6.5, e=smooth(s/6.5);
+      const at=(a,r,y,ly)=>{ P.set(C.x+Math.sin(a)*r*R, F+y, C.z-Math.cos(a)*r*R); L.set(C.x, F+(phone?ly-.45:ly), C.z); };
+      const d=.06*Math.sin(u*.35);                                                        // a slight drift, never off the front
+      if(shot===0){ at(d, 6.2-1.4*e, 2.2, 1.7); fin.fov=50; }                             // wide from the front, pushing in slowly
+      else if(shot===1){ at(d, 2.6, .4, 1.55); fin.fov=60; }                              // low from the front, looking up at him and the screen
+      else if(shot===2){ at(d, 3.6-1.2*e, 1.55, 1.5); fin.fov=40; }                       // closer, at his height
+      else { at(d, 5.6, 3.6-1.2*e, 1.1); fin.fov=50; }                                    // high from the front, coming down
+    }
+    if(ph!=='wall'){ P.x=clampN(P.x,-7.3,7.3); P.y=Math.min(P.y,F+8.4); if(ph==='celebrate') P.z=clampN(P.z,Z+.7,Z+12); }
+  }
+  // a brick with the drill's name on a plaque
+  function plaqueTex(name,n,col){
+    const c=document.createElement('canvas'); c.width=512; c.height=256; const x=c.getContext('2d');
+    x.fillStyle='#16110e'; x.fillRect(0,0,512,256);
+    for(let r=0;r<10;r++) for(let k=-1;k<9;k++){ const off=(r%2)*32, l=28+Math.random()*16;
+      x.fillStyle=`hsl(${14+Math.random()*10},${30+Math.random()*12}%,${l*.55}%)`; x.fillRect(k*64+off+2,r*28+2,60,24); }
+    if(name){
+      const pw=440, phh=150, px=(512-pw)/2, py=(256-phh)/2;
+      x.fillStyle='rgba(10,10,12,.9)'; x.strokeStyle=col||'#d4a548'; x.lineWidth=7;
+      x.beginPath(); x.roundRect?x.roundRect(px,py,pw,phh,16):x.rect(px,py,pw,phh); x.fill(); x.stroke();
+      let size=58; x.font=`900 ${size}px "Arial Black",Impact,Arial,sans-serif`;
+      while(x.measureText(name).width>pw-40 && size>22){ size-=2; x.font=`900 ${size}px "Arial Black",Impact,Arial,sans-serif`; }
+      x.fillStyle='#f5c95a'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(name,256,n>1?118:128);
+      if(n>1){ x.font='700 26px Arial,sans-serif'; x.fillStyle='rgba(241,236,226,.85)'; x.fillText('× '+n,256,176); }
+    }
+    const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; t.userData={c,col}; return t;
+  }
+  // a drill done: the plaque's border lights up and a gold tick badge is stamped on its corner
+  function stampDone(tile){
+    const tx=tile.material[5].map, c=tx.userData.c, x=c.getContext('2d');
+    const pw=440, phh=150, px=(512-pw)/2, py=(256-phh)/2;
+    x.strokeStyle='#f5c95a'; x.lineWidth=9; x.beginPath(); x.roundRect?x.roundRect(px,py,pw,phh,16):x.rect(px,py,pw,phh); x.stroke();
+    const cx=px+pw-14, cy=py+14, r=40;
+    x.fillStyle='#f5c95a'; x.beginPath(); x.arc(cx,cy,r,0,Math.PI*2); x.fill();
+    x.strokeStyle='#1d1606'; x.lineWidth=5; x.beginPath(); x.arc(cx,cy,r-6,0,Math.PI*2); x.stroke();
+    x.strokeStyle='#1d1606'; x.lineWidth=11; x.lineCap='round'; x.lineJoin='round';
+    x.beginPath(); x.moveTo(cx-17,cy+1); x.lineTo(cx-5,cy+14); x.lineTo(cx+19,cy-13); x.stroke();
+    tx.needsUpdate=true;
+    tile.material[5].emissiveIntensity=.55; tile.userData.pop=0;          // a glow and a little pop
+  }
+  const UNIT=new THREE.BoxGeometry(1,1,1);    // every spark shares one box, scaled
+  const sparkMat=new THREE.MeshBasicMaterial({color:0xffd47a,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+  const G_add=o=>scene.add(o), G_rem=o=>{ scene.remove(o); if(o.geometry && o.geometry!==UNIT) o.geometry.dispose(); };
+  const SPARKS=matchMedia('(pointer:coarse)').matches?7:12;
+  function sparkle(x,y,z,w,h,n=SPARKS){                                    // gold sparks that shrink to nothing: gone into thin air
+    for(let i=0;i<n;i++){ const m=new THREE.Mesh(UNIT,sparkMat), sz=.035+Math.random()*.06, a=Math.random()*Math.PI*2, sp=.6+Math.random()*2.2;
+      m.position.set(x+(Math.random()-.5)*w, y+(Math.random()-.5)*h, z+(Math.random()-.5)*.2); m.scale.setScalar(sz); m.rotation.set(Math.random()*3,Math.random()*3,0); G_add(m);
+      fin.sparks.push({m, v:new THREE.Vector3(Math.cos(a)*sp, Math.sin(a)*sp*.8+.5, (Math.random()-.5)*sp), sz, age:0, life:.45+Math.random()*.45}); }
+  }
+  function poof(tile){                                                      // the brick blasts off the wall into the next room, then is gone into thin air
+    const u=tile.userData, p=tile.position;
+    u.shake=null; u.poof=0; u.puffed=false; tile.position.set(u.x0,u.y0,u.z0);
+    u.v=new THREE.Vector3(u.x0*.9+(Math.random()-.5)*1.2, 1.2+Math.random()*2.2, 4.5+Math.random()*3.5);
+    u.spin=new THREE.Vector3((Math.random()-.5)*7,(Math.random()-.5)*7,(Math.random()-.5)*7);
+    window.bfFx?.boom(); fin.flash=0;                                       // the wall spotlight flares (no new lights: nothing to recompile)
+    sparkle(p.x,p.y,p.z-.1,u.w,u.h,6);
+  }
+
+  // ---- gold confetti over the ring (one instanced mesh, so it costs one draw) ----
+  const cfD=new THREE.Object3D(); let cf=null;
+  function startConfetti(){
+    const U=gym.room2.userData, C=fin.C, n=U.CN; cf={bits:[], t:0, n};
+    for(let i=0;i<n;i++) cf.bits.push(newBit(C,true));
+    U.conf.count=n;
+  }
+  function newBit(C,first){
+    return {x:C.x+(Math.random()-.5)*7.4, y:first?2.5+Math.random()*6:6.5+Math.random()*2, z:C.z+(Math.random()-.5)*7.4,
+      vy:-(.55+Math.random()*.7), ph:Math.random()*6.3, sw:.6+Math.random()*1.2, rx:Math.random()*6, ry:Math.random()*6, rz:Math.random()*6,
+      sx:2+Math.random()*5, sy:1+Math.random()*4, landed:false};
+  }
+  function stepConfetti(dt){
+    if(!cf) return; const U=gym.room2.userData, C=fin.C; cf.t+=dt;
+    const inRing=b=>Math.abs(b.x-C.x)<3.3 && Math.abs(b.z-C.z)<3.3;
+    for(let i=0;i<cf.n;i++){ const b=cf.bits[i];
+      if(!b.landed){
+        b.y+=b.vy*dt; b.x+=Math.sin(cf.t*b.sw+b.ph)*.35*dt; b.z+=Math.cos(cf.t*b.sw*.8+b.ph)*.25*dt;
+        b.rx+=b.sx*dt; b.ry+=b.sy*dt;
+        const fl=inRing(b)?.006:FLOOR_Y()+.006;
+        if(b.y<=fl){ if(cf.t<14){ cf.bits[i]=newBit(C,false); continue; } b.y=fl; b.landed=true; b.rx=-Math.PI/2; b.ry=0; }   // rains for a while, then settles
+      }
+      cfD.position.set(b.x,b.y,b.z); cfD.rotation.set(b.rx,b.ry,b.rz); cfD.updateMatrix(); U.conf.setMatrixAt(i,cfD.matrix);
+    }
+    U.conf.instanceMatrix.needsUpdate=true;
+  }
+  const FLOOR_Y=()=>gym.floor;
+  function stopConfetti(){ cf=null; gym.room2.userData.conf.count=0; }
+
+  // ---- the hype reel on the big screen: a second camera films a short story in a ring set up far off, out of sight.
+  //      He knocks out three challengers (the title fight ends in slow motion), is crowned world champion, and it plays again. ----
+  const hypeCam=new THREE.PerspectiveCamera(35,16/9,.05,40), hh=new THREE.Vector3(), oh=new THREE.Vector3();
+  let reel=null;                               // the two fighters, built quietly during the workout
+  function buildReel(){
+    if(reel || !gym || gen!==bootGen || !stanceClip) return;
+    const set=gym.room2.userData.studio;
+    const mk=()=>{ const m=skClone(model); m.position.set(0,0,0); m.rotation.set(0,0,0); m.visible=true; m.traverse(o=>{ if(o.isMesh) o.frustumCulled=false; }); return m; };
+    const hero=mk(); hero.position.z=-.53; set.add(hero);
+    const pivot=new THREE.Group(); pivot.position.z=.53; pivot.rotation.y=Math.PI; set.add(pivot);   // the challenger falls about his feet
+    const opp=mk(); pivot.add(opp);
+    const tint=[]; opp.traverse(o=>{ if(!o.isMesh) return; o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();
+      (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ if(m.color) tint.push(m); }); });
+    // the world title belt, round his waist for the last part
+    const belt=new THREE.Group(), gm=new THREE.MeshStandardMaterial({color:0xd4a548,metalness:1,roughness:.28});
+    const band=new THREE.Mesh(new THREE.TorusGeometry(.16,.032,10,40),gm); band.rotation.x=Math.PI/2; band.scale.y=.78; belt.add(band);
+    const plate=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.025,32),gm); plate.rotation.x=Math.PI/2; plate.position.set(0,0,.13); belt.add(plate);
+    belt.visible=false; (hero.getObjectByName('Hips')||hero).add(belt);
+    const hm=new THREE.AnimationMixer(hero), om=new THREE.AnimationMixer(opp);
+    reel={set,hero,opp,pivot,tint,belt,hm,om,hIdle:hm.clipAction(stanceClip),oIdle:om.clipAction(stanceClip),
+      hHead:hero.getObjectByName('Head')||hero, oHead:opp.getObjectByName('Head')||opp, cur:null, dance:null};
+    hm.addEventListener('finished',e=>{ if(e.action===reel.cur){ reel.hIdle.reset().play(); reel.hIdle.crossFadeFrom(reel.cur,.15,false); reel.cur=null; } });
+    // everything in the gym that the reel camera should not spend time drawing (lights stay on: nothing recompiles)
+    reel.skip=[]; gym.G.traverse(o=>{ if((o.isMesh||o.isLine||o.isPoints) && !isIn(o,set)) reel.skip.push(o); });
+  }
+  const isIn=(o,p)=>{ for(let q=o;q;q=q.parent) if(q===p) return true; return false; };
+  setTimeout(()=>{ const go=()=>{ try{ buildReel(); }catch(e){ console.warn('Hype reel skipped.',e); } };
+    if(window.requestIdleCallback) requestIdleCallback(go,{timeout:4000}); else go(); },9000);
+
+  function reelScript(){                       // the story, as timed events (seconds)
+    const E=[]; let t=0; const ev=(dt,fn)=>{ t+=dt; E.push({at:t,fn}); };
+    const len=(c,s)=>((CLIPS[c]||{}).duration||.8)/s;
+    const fights=[
+      {title:'FIGHT ONE',   tint:0x8a2c2c, combo:[['jab.fbx',1.6],['cross-straight-right.fbx',1.6],['jab.fbx',1.7]], ko:['hook-lead.fbx',1.5], rate:1},
+      {title:'FIGHT TWO',   tint:0x2c418c, combo:[['cross-straight-right.fbx',1.6],['hook-lead.fbx',1.5]],          ko:['uppercut-lead.fbx',1.4], rate:1},
+      {title:'TITLE FIGHT', tint:0x2a2a2e, combo:[['jab.fbx',1.7],['cross-straight-right.fbx',1.6],['hook-lead.fbx',1.5],['cross-straight-right.fbx',1.7]], ko:['hook-lead.fbx',1.4], rate:.38},
+    ];
+    for(const f of fights){
+      ev(.01,()=>{ resetOpp(f.tint); reelShot('wide'); hypeTitle(f.title); });
+      ev(1.4,()=>reelShot('ots'));
+      for(const [c,s] of f.combo){ ev(0,()=>reelPunch(c,s,false)); t+=len(c,s)*.78; }
+      ev(.05,()=>{ reelShot(f.rate<1?'oppface':'side'); reel.rate=f.rate; });
+      ev(.3,()=>reelPunch(f.ko[0],f.ko[1],true));
+      t+=len(f.ko[0],f.ko[1])*.42/f.rate;                                   // the punch lands…
+      ev(.9/f.rate*.6,()=>reelShot('low'));                                 // …and he goes down
+      ev(1.6,()=>{ reel.rate=1; });
+      ev(.6,()=>{});
+    }
+    ev(.01,()=>{ reel.pivot.visible=false; reel.belt.visible=true; reelShot('orbit'); hypeTitle('WORLD CHAMPION'); fin.hype.confetti=true; reelDance(); });
+    ev(3.2,()=>{ reelShot('face'); hypeTitle('BOXING FLOW'); });
+    ev(2.4,()=>{ reelShot('top'); hypeTitle('CHAMPION'); });
+    ev(2.6,()=>{ fin.hype.confetti=false; });
+    return {E,len:t+.01};
+  }
+  function resetOpp(col){
+    const r=reel; r.pivot.visible=true; r.pivot.rotation.x=0; r.pivot.position.z=.53; r.fall=null; r.jolt=0; r.rate=1;
+    r.tint.forEach(m=>m.color.setHex(col)); r.om.stopAllAction(); r.om.timeScale=1; r.oIdle.reset().play();
+    r.hm.stopAllAction(); r.cur=null; r.dance=null; r.hIdle.reset().play(); r.belt.visible=false;
+  }
+  function reelPunch(c,s,ko){
+    const r=reel, clip=CLIPS[c]; if(!clip) return;
+    const a=r.hm.clipAction(clip); a.reset(); a.setLoop(THREE.LoopOnce,1); a.clampWhenFinished=true; a.timeScale=s;
+    a.play(); a.crossFadeFrom(r.cur||r.hIdle,.1,false); r.cur=a;
+    r.hit={at:clip.duration*.42/s, t:0, ko};                               // contact, in the reel's own (slowed) time
+  }
+  function reelDance(){
+    const r=reel, k=['hiphop','bboy','happy'].find(x=>REST[x]); if(!k) return;
+    const a=r.hm.clipAction(REST[k].clip); a.reset(); a.setLoop(THREE.LoopRepeat,Infinity); a.play(); a.crossFadeFrom(r.cur||r.hIdle,.4,false); r.cur=null; r.dance=a;
+  }
+  function reelShot(name){ reel.shot=name; reel.shotT=0; }
+  function hypeTitle(w){ const h=fin.hype; h.word=w; h.wordAt=performance.now(); h.cut++; }
+
+  function startHype(){
+    try{ buildReel(); }catch(e){}
+    const st=fin.stats||{};
+    fin.hype={cut:0, word:'', wordAt:0, drawn:-1, frame:0, confetti:false, flecks:[], t:0, ei:0, script:null, st};
+    if(reel){ reel.set.visible=false; fin.hype.script=reelScript(); resetOpp(0x8a2c2c); }
+  }
+  function stopHype(){
+    if(reel){ reel.set.visible=false; reel.hm.stopAllAction(); reel.om.stopAllAction(); reel.pivot.rotation.x=0; reel.belt.visible=false; }
+    if(!fin) return; fin.hype=null; const O=gym.room2.userData.overlay, x=O.canvas.getContext('2d'); x.clearRect(0,0,1024,576); O.tex.needsUpdate=true;
+    renderer.setRenderTarget(gym.room2.userData.rt); renderer.setClearColor(0x000000,1); renderer.clear(); renderer.setRenderTarget(null); renderer.setClearColor(0x000000,0);
+  }
+  function renderHype(now,dt){
+    const h=fin.hype, U=gym.room2.userData, r=reel;
+    if(!r || !h.script){ drawHypeTitles(now); return; }
+    // the story clock
+    h.t+=dt; const S=h.script;
+    while(h.ei<S.E.length && h.t>=S.E[h.ei].at){ S.E[h.ei++].fn(); }
+    if(h.t>=S.len){ h.t=0; h.ei=0; }                                        // and again
+    const rdt=dt*(r.rate||1);
+    r.hm.update(rdt); r.om.update(rdt); r.shotT=(r.shotT||0)+rdt;
+    if(r.hit){ r.hit.t+=rdt; if(r.hit.t>=r.hit.at){ const ko=r.hit.ko; r.hit=null;
+        if(ko){ r.fall={t:0}; r.om.timeScale=0; hypeTitle('K.O.!'); } else { r.jolt=.16; h.wordAt=now-80; } } }   // every landed shot flashes the screen
+    let tilt=0;
+    if(r.jolt>0){ tilt=r.jolt; r.jolt=Math.max(0,r.jolt-rdt*1.1); }
+    if(r.fall){ r.fall.t+=rdt; const k=Math.min(1,r.fall.t/.85), e=k*k;                  // timber: straight back onto the canvas, a small bounce
+      tilt=(Math.PI/2-.06)*e - (k>=1?Math.max(0,.06*Math.sin(Math.min(1,(r.fall.t-.85)/.25)*Math.PI)):0);
+      r.pivot.position.z=.53+.35*e; }
+    r.pivot.rotation.x=tilt;
+    // the camera for this shot
+    r.set.updateMatrixWorld(true); r.hHead.getWorldPosition(hh); r.oHead.getWorldPosition(oh);
+    const O=r.set.position, k=r.shotT, hz=O.z-.53, j=.01;
+    switch(r.shot){
+      case 'ots':     hypeCam.position.set(hh.x-.38, hh.y+.1, hh.z-.95); hypeCam.fov=38; hypeCam.lookAt(oh.x, oh.y-.08, oh.z); break;
+      case 'side':    hypeCam.position.set(O.x-2.5+k*.2, 1.25, O.z+.2); hypeCam.fov=34; hypeCam.lookAt(O.x, 1.15, O.z+.2); break;
+      case 'oppface': hypeCam.position.set(O.x+.8, 1.5, O.z-.35); hypeCam.fov=32; hypeCam.lookAt(O.x, 1.35, O.z+.6); break;
+      case 'low':     hypeCam.position.set(O.x+1.6, .24, O.z+2.7); hypeCam.fov=50; hypeCam.lookAt(O.x, .5, O.z+1.1); break;
+      case 'orbit': { const a=k*.7; hypeCam.position.set(O.x+Math.sin(a)*2.4, 1.35, hz+Math.cos(a)*2.4); hypeCam.fov=42; hypeCam.lookAt(O.x, 1.0, hz); break; }
+      case 'face':    hypeCam.position.set(hh.x+.15, hh.y, hh.z+.95-k*.08); hypeCam.fov=30; hypeCam.lookAt(hh.x, hh.y-.05, hh.z); break;
+      case 'top':   { const a=k*.6; hypeCam.position.set(O.x+Math.sin(a)*.5, 4.3, hz+Math.cos(a)*.5); hypeCam.fov=50; hypeCam.lookAt(O.x, 0, hz); break; }
+      default:        hypeCam.position.set(O.x+3.4-k*.15, 1.45, O.z+.2); hypeCam.fov=40; hypeCam.lookAt(O.x, 1.1, O.z);   // wide
+    }
+    hypeCam.position.x+=(Math.random()-.5)*j; hypeCam.position.y+=(Math.random()-.5)*j;   // a little hand-held shake
+    hypeCam.updateProjectionMatrix();
+    // phones draw the feed every other frame; only the far-off set is drawn (the gym is hidden for this pass, its lights stay on)
+    if(!(SPARKS<10 && (h.frame++%2))){
+      const was=model.visible; model.visible=false; for(const o of r.skip) o.userData._v=o.visible, o.visible=false;
+      r.set.visible=true;
+      renderer.setRenderTarget(U.rt); renderer.render(scene,hypeCam); renderer.setRenderTarget(null);
+      r.set.visible=false; for(const o of r.skip) o.visible=o.userData._v; model.visible=was;
+    }
+    drawHypeTitles(now);
+  }
+  function drawHypeTitles(now){                                            // redrawn only while a title is moving
+    const h=fin.hype, O=gym.room2.userData.overlay, age=(now-h.wordAt)/1000;
+    if(age>.45 && h.drawn===h.cut && !h.confetti) return;
+    const x=O.canvas.getContext('2d'), W=1024, Hh=576; x.clearRect(0,0,W,Hh);
+    x.fillStyle='rgba(0,0,0,.85)'; x.fillRect(0,0,W,46); x.fillRect(0,Hh-46,W,46);              // letterbox
+    x.fillStyle='rgba(255,255,255,'+Math.max(0,.55-age*2.4)+')'; x.fillRect(0,46,W,Hh-92);       // a white flash on every cut
+    x.font='900 22px "Arial Black",Impact,Arial,sans-serif'; x.textBaseline='middle'; x.textAlign='left'; x.fillStyle='#f5c95a'; x.fillText('BOXING FLOW',28,23);
+    x.textAlign='right'; x.fillStyle='#ff4040'; x.beginPath(); x.arc(W-92,23,7,0,Math.PI*2); x.fill(); x.fillStyle='#fff'; x.fillText('LIVE',W-26,23);
+    const e=Math.min(1,age/.28), sc=1+.7*Math.pow(1-e,3), a=Math.min(1,age/.12);
+    x.save(); x.translate(W/2,Hh-128); x.scale(sc,sc); x.globalAlpha=a;
+    let size=96; x.font=`900 ${size}px "Arial Black",Impact,Arial,sans-serif`;
+    while(x.measureText(h.word).width>W-120 && size>40){ size-=4; x.font=`900 ${size}px "Arial Black",Impact,Arial,sans-serif`; }
+    x.textAlign='center'; x.lineJoin='round'; x.lineWidth=10; x.strokeStyle='rgba(0,0,0,.75)'; x.strokeText(h.word,0,0);
+    const ko=h.word==='K.O.!'; x.shadowColor=ko?'#ff5a3c':'#ffcf6a'; x.shadowBlur=ko?40:24; x.fillStyle=ko?'#ff6a3d':'#f5c95a'; x.fillText(h.word,0,0); x.restore();
+    x.fillStyle='#d4a548'; x.fillRect(W/2-120,Hh-70,240,6);
+    if(h.confetti){                                                        // gold confetti over the crowning
+      if(h.flecks.length<140) for(let i=0;i<6;i++) h.flecks.push({x:Math.random()*W, y:40, vy:2+Math.random()*3, vx:(Math.random()-.5)*1.5, a:Math.random()*6, c:['#d4a548','#f5c95a','#fff1c4','#b8862b'][i%4]});
+      for(const f of h.flecks){ f.y+=f.vy; f.x+=f.vx; f.a+=.2; if(f.y>Hh-46) f.y=46; x.save(); x.translate(f.x,f.y); x.rotate(f.a); x.fillStyle=f.c; x.fillRect(-5,-3,10,6*Math.abs(Math.cos(f.a))); x.restore(); }
+    } else h.flecks.length=0;
+    O.tex.needsUpdate=true; if(age>.45) h.drawn=h.cut;
+  }
+  function finaleStep(dt){                                                  // ticks, bursts, sparks, the walk, the copies
+    if(!fin) return;
+    for(const t of fin.tiles){ const u=t.userData;
+      if(u.pop!=null){ u.pop+=dt; const k=Math.min(1,u.pop/.35); t.scale.setScalar(1+Math.sin(k*Math.PI)*.08); t.position.z=u.z0-Math.sin(k*Math.PI)*.06;
+        t.material[5].emissiveIntensity=.55-.25*k; if(k>=1){ u.pop=null; t.scale.setScalar(1); t.position.z=u.z0; } }
+      if(u.shake!=null){ u.shake+=dt; const a=.02+u.shake*.08; t.position.x=u.x0+(Math.random()-.5)*a; t.position.y=u.y0+(Math.random()-.5)*a;
+        t.material[5].emissiveIntensity=.3+u.shake*3; }
+      if(u.poof!=null){ u.poof+=dt; const k=Math.min(1,u.poof/1.1);
+        u.v.y-=7*dt; t.position.addScaledVector(u.v,dt); t.rotation.x+=u.spin.x*dt; t.rotation.y+=u.spin.y*dt; t.rotation.z+=u.spin.z*dt;
+        const s=k<.55?1:1-smooth((k-.55)/.45); t.scale.setScalar(Math.max(.001,s)); t.material[5].emissiveIntensity=.4+k*1.6;
+        if(k>.55 && !u.puffed){ u.puffed=true; sparkle(t.position.x,t.position.y,t.position.z,u.w*.5,u.h*.5); }   // gone, mid-air, in a puff of gold
+        if(k>=1){ u.poof=null; t.visible=false; t.scale.setScalar(1); t.rotation.set(0,0,0); } } }
+    if(fin.flash!=null){ fin.flash+=dt; gym.finaleSpot.intensity=45+70*Math.max(0,1-fin.flash/.35); if(fin.flash>=.35) fin.flash=null; }
+    for(let i=fin.sparks.length-1;i>=0;i--){ const p=fin.sparks[i]; p.age+=dt;
+      p.m.position.addScaledVector(p.v,dt); p.v.multiplyScalar(Math.max(0,1-dt*2.2)); p.m.rotation.x+=dt*6; p.m.rotation.y+=dt*5;
+      const k=p.age/p.life; p.m.scale.setScalar(Math.max(.0005,p.sz*(1-k*k)));
+      if(k>=1){ G_rem(p.m); fin.sparks.splice(i,1); } }
+    if(fin.phase==='walk'){
+      const v=Math.abs(LOCO.walk?LOCO.walk.total.z/LOCO.walk.dur:.55)*1.8;
+      base.y=Math.min(fin.walkTo,base.y+v*dt); model.position.z=base.y; centre.set(base.x,0,base.y);
+      if(base.y>=fin.walkTo){ fin.phase='flash'; fin.onFlash&&fin.onFlash(); }
+    }
+    stepConfetti(dt);
+  }
+  function confetti(){
+    const cv=document.getElementById('gfConfetti'); if(!cv || reduce) return;
+    const ctx=cv.getContext('2d'), dpr=Math.min(2,window.devicePixelRatio||1);
+    cv.width=cv.clientWidth*dpr; cv.height=cv.clientHeight*dpr;
+    const cols=['#d4a548','#f5c95a','#e8c26a','#b8862b','#fff1c4','#c99a3a'];   // gold, all of it
+    const bits=Array.from({length:240},()=>({x:Math.random()*cv.width, y:-Math.random()*cv.height*.6, vx:(Math.random()-.5)*2.2*dpr, vy:(2+Math.random()*3.5)*dpr,
+      w:(5+Math.random()*6)*dpr, h:(8+Math.random()*8)*dpr, a:Math.random()*6.3, va:(Math.random()-.5)*.25, c:cols[Math.random()*cols.length|0]}));
+    const t0=performance.now(); cancelAnimationFrame(confettiRaf);
+    const step=now=>{
+      const age=(now-t0)/1000; ctx.clearRect(0,0,cv.width,cv.height);
+      ctx.globalAlpha=Math.max(0,Math.min(1,(7-age)/1.5));
+      for(const b of bits){ b.x+=b.vx+Math.sin(now/600+b.a)*.6*dpr; b.y+=b.vy; b.a+=b.va;
+        ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.a); ctx.fillStyle=b.c; ctx.fillRect(-b.w/2,-b.h/2,b.w,b.h*Math.abs(Math.cos(b.a*1.3))); ctx.restore(); }
+      if(age<7) confettiRaf=requestAnimationFrame(step); else ctx.clearRect(0,0,cv.width,cv.height);
+    };
+    confettiRaf=requestAnimationFrame(step);
+  }
+  api.finale=data=>{
+    if(!api.ready || !view || !gym || finaleOn) return false;
+    finaleOn=true; finaleT.forEach(clearTimeout); finaleT=[];
+    const at=(fn,ms)=>finaleT.push(setTimeout(()=>{ if(gen===bootGen && finaleOn) fn(); },ms));
+    looping=false; seq=[]; moveQ=[]; rootAct=null; home=null; proc=null; stopDances(.2);
+    // into the gym (straight out of the timer, or from interactive mode) without the workout panels
+    window.gymMode=true;
+    if(gymMode){ moveHud(false); view.classList.remove('hud-on'); }
+    else {
+      gymMode=true; gymAt=performance.now(); gPos.copy(camera.position); gLook.copy(camLook);
+      view.style.transition='none'; circleAt(inner); view.hidden=false; view.prepend(canvas);
+      renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));
+      view.getBoundingClientRect(); view.style.transition='';
+      requestAnimationFrame(()=>view.style.setProperty('--gr',Math.hypot(innerWidth,innerHeight)+'px'));
+      document.documentElement.style.overflow='hidden';
+    }
+    document.getElementById('gymToast')?.classList.remove('show');
+    view.classList.add('finale');
+    // he squares up to the wall under ROUND AFTER ROUND
+    const Z=gym.wallZ, H=gym.hole;
+    groundY=gym.floor; base.set(0,Z-1.55); model.rotation.y=0; model.position.set(0,gym.floor,Z-1.55); centre.set(0,0,Z-1.55);
+    toStance(.2); gym.finaleSpot.intensity=45;
+    // the bricked-up doorway becomes one brick per drill, each with its name on a plaque (spare spaces are plain bricks)
+    const n=data.drills.length; let best=null;
+    for(let cols=1;cols<=7;cols++){ const rows=Math.ceil(n/cols), asp=(H.w/cols)/(H.h/rows), sc=Math.abs(Math.log(asp/2))+.12*(cols*rows-n); if(!best||sc<best.sc) best={cols,rows,sc}; }
+    const {cols,rows}=best, tw=H.w/cols, th=H.h/rows;
+    gym.showRoom2(true);
+    fin={phase:'wall', t0:performance.now(), tiles:[], sparks:[], flash:null, t:0, room2:gym.room2, walkTo:Z+1.9, C:{x:0,z:gym.room2.userData.RZ}, stats:data.stats, hype:null, walk:null, fov:52, tickS:3};
+    gym.plug.visible=false;
+    const side=new THREE.MeshStandardMaterial({color:0x3a2219,roughness:.95});
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      const i=r*cols+c, d=data.drills[i];
+      const tx=plaqueTex(d?d.name:null, d?d.n:0, d?d.color:null); try{ renderer.initTexture(tx); }catch(e){}
+      const face=new THREE.MeshStandardMaterial({map:tx,roughness:.85,emissive:0xffffff,emissiveMap:tx,emissiveIntensity:d?.22:0});
+      const tile=new THREE.Mesh(new THREE.BoxGeometry(tw-.025,th-.025,.3),[side,side,side,side,side,face]);
+      tile.position.set(H.x0+tw*(c+.5), H.y1-th*(r+.5), Z); tile.userData={w:tw,h:th,named:!!d,d:d||null,order:i,z0:Z,x0:H.x0+tw*(c+.5),y0:H.y1-th*(r+.5)};
+      G_add(tile); fin.tiles.push(tile);
+    }
+    document.getElementById('gfCount').textContent=`${data.stats.drills} drills · ${data.stats.rounds} rounds — through the wall`;
+    document.getElementById('gfStats').innerHTML=`<div>${data.stats.rounds}<span>Rounds</span></div><div>${data.stats.minutes}<span>Minutes boxed</span></div><div>${data.stats.drills}<span>Drills</span></div>`;
+    const Fd=document.getElementById('gFinale'); Fd.classList.remove('on','done');
+    at(()=>Fd.classList.add('on'),1300);
+    // every drill is ticked off in reading order, then the bricks burst into thin air one after another
+    const named=fin.tiles.filter(t=>t.userData.named);
+    const gap=Math.max(180,Math.min(520,5200/Math.max(1,named.length)));
+    named.forEach((tile,i)=>at(()=>{ stampDone(tile); window.bfFx?.ding(i); },2400+i*gap));
+    const ticked=2400+named.length*gap+700; fin.tickS=ticked/1000;
+    window.bfFx?.cheer(.7,4);
+    at(()=>window.bfFx?.cheer(.85,4), ticked-400);
+    const order=fin.tiles.slice().sort((a,b)=>Math.abs(a.position.x)-Math.abs(b.position.x)+(Math.random()-.5)*.3);   // from the middle out
+    const bgap=Math.max(60,Math.min(150,1300/order.length));
+    order.forEach((tile,i)=>{ const u=tile.userData;
+      at(()=>{ u.shake=0; },ticked+i*bgap);
+      at(()=>poof(tile),ticked+i*bgap+260); });
+    const end=ticked+order.length*bgap+560;
+    at(()=>window.bfFx?.cheer(1,4), end);
+    // the picture fades, and comes back up on him in the middle of the champions' ring:
+    // gold confetti, the crowd, and the hype reel on the big screen behind him
+    at(()=>{ Fd.classList.remove('on'); fin.onFlash(); },end+500);
+    fin.onFlash=()=>{
+      const fl=document.getElementById('gfFade'); if(fl){ fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go'); }
+      at(()=>{
+        const C=fin.C; if(fin.walk){ fin.walk.stop(); fin.walk=null; }
+        groundY=0; base.set(C.x,C.z); model.rotation.y=Math.PI; model.position.set(C.x,0,C.z); centre.set(C.x,0,C.z);
+        toStance(.05); fin.tiles.forEach(t=>t.visible=false);
+        fin.phase='celebrate'; fin.arriveAt=performance.now(); gPos.set(C.x,F_CAM(),C.z-6.2); gLook.set(C.x,1.3,C.z);
+        startConfetti(); startHype(); confetti(); window.bfFx?.cheer(1,7);
+        seq=[]; startRestMix(); if(restMix) restMix.until=performance.now()+900;
+        at(()=>Fd.classList.add('done'),1800);
+        at(()=>window.bfFx?.cheer(.9,6),6000); at(()=>window.bfFx?.quiet(4000),14000);
+      },650);
+    };
+    return true;
+  };
+  api.endFinale=()=>{
+    if(!finaleOn) return;
+    finaleOn=false; finaleT.forEach(clearTimeout); finaleT=[]; cancelAnimationFrame(confettiRaf);
+    const cv=document.getElementById('gfConfetti'); cv?.getContext('2d')?.clearRect(0,0,cv.width,cv.height);
+    stopHype(); stopConfetti();
+    if(fin){ fin.tiles.forEach(t=>{ t.material[5].map?.dispose(); G_rem(t); }); fin.sparks.forEach(p=>G_rem(p.m)); if(fin.walk) fin.walk.stop(); gym.showRoom2(false); fin=null; }
+    gym.plug.visible=true;
+    stopDances(.1); looping=false; seq=[]; playing=false; home=null; toStance(.1);
+    groundY=0; base.set(0,0); model.rotation.y=0; model.position.set(0,0,0); centre.set(0,0,0); gym.finaleSpot.intensity=0;
+    document.getElementById('gFinale')?.classList.remove('on','done'); document.getElementById('gfFade')?.classList.remove('go'); view.classList.remove('finale','hud-on');
+    gymMode=false; window.gymMode=false; gymOutAt=-1e9; wasFlipped=false;
+    root.prepend(canvas); view.hidden=true; document.documentElement.style.overflow='';
+    renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  };
+
   const camBtn=document.getElementById('gymCam'), camLbl=document.getElementById('gymCamLabel');
   camBtn?.addEventListener('click',()=>{
     if(gen!==bootGen) return;
     faceCam=!faceCam; setCamUI();
     if(!faceCam) gymAt=performance.now()-3000;                             // back to circling the ring (skipping the overview)
   });
-  document.addEventListener('keydown',e=>{ if(gen===bootGen && e.key==='Escape' && gymMode) api.exitGym(); });
+  document.addEventListener('keydown',e=>{ if(gen===bootGen && e.key==='Escape' && gymMode && !finaleOn) api.exitGym(); });
   // double-tap (or double-click) the timer at any time
   let lastTap=0;
   inner.addEventListener('pointerup',e=>{
@@ -2771,7 +3342,15 @@ async function boot(avKey,opts={}){
     setTimeout(()=>h.classList.add('show'),900); setTimeout(()=>h.classList.remove('show'),4200);
   }
   // warm up now, while he is hidden: compile every material and upload every texture, so the first flip does not stall the timer
+  const warmBits=[];
+  if(gym){                                     // the finale's bricks and rubble, compiled now with everything else and thrown away
+    const tx=plaqueTex('Warm up',1,null), side=new THREE.MeshStandardMaterial({color:0x3a2219,roughness:.95});
+    const face=new THREE.MeshStandardMaterial({map:tx,roughness:.85,emissive:0xffffff,emissiveMap:tx,emissiveIntensity:.2});
+    warmBits.push(new THREE.Mesh(new THREE.BoxGeometry(.5,.3,.3),[side,side,side,side,side,face]), new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.1),sparkMat));
+    warmBits.forEach(m=>{ m.position.set(0,-50,0); scene.add(m); });
+  }
   try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); else renderer.compile(scene,camera); }catch(e){}
+  warmBits.forEach(m=>{ scene.remove(m); m.geometry.dispose(); });
   if(gen!==bootGen){ renderer.dispose(); return; }
   { const w=canvas.clientWidth||320, h=canvas.clientHeight||320;
     renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
@@ -2791,6 +3370,7 @@ async function boot(avKey,opts={}){
     if(hp){ const v=hp.values, n=hp.times.length, T=hp.times[n-1]||1, dx=v[(n-1)*3]-v[0], dz=v[(n-1)*3+2]-v[2];
       for(let i=0;i<n;i++){ const f=hp.times[i]/T; v[i*3]-=dx*f; v[i*3+2]-=dz*f; } }
     REST[k]={clip:d<c.duration?THREE.AnimationUtils.subclip(c,'rest:'+k,0,Math.floor(d*30),30):c, dur:d};
+    mixer.clipAction(REST[k].clip);                                        // bound now, not on the first dance
   }).catch(()=>{})));
   // swapped coach while in interactive mode: carry straight on in the gym; otherwise pick the drill back up if he is showing
   if(opts.resumeGym) api.enterGym({resume:true, faceCam:opts.faceCam});
