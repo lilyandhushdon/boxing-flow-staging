@@ -53,7 +53,7 @@ To change a drill, edit its moves in the drill list. To change how a move looks,
 
 ## Payments (Stripe + Netlify)
 
-Visitors get the home page and live preview for free. Opening the app needs a subscription: NZ$9.99 a month or NZ$69 a year, each with a 7-day free trial (card taken at sign-up, first charge when the trial ends).
+Visitors get the home page and live preview for free. Opening the app needs a subscription: NZ$9.99 a month or NZ$69.99 a year, each with a 7-day free trial (card taken at sign-up, first charge when the trial ends).
 
 How it works:
 
@@ -68,7 +68,7 @@ How it works:
 Do everything in Stripe's **Test mode** first (the toggle at the top of the Stripe dashboard), then repeat steps 2 to 4 in live mode when you're ready to take real money.
 
 1. **Create a Stripe account** at stripe.com with your New Zealand business and bank details.
-2. **Create the product.** Product catalogue → Add product → name it "Boxing Flow". Add two recurring prices in NZD: NZ$9.99 monthly and NZ$69 yearly. Copy each price's ID (it starts with `price_`).
+2. **Create the product.** Product catalogue → Add product → name it "Boxing Flow". Add two recurring prices in NZD: NZ$9.99 monthly and NZ$69.99 yearly. Copy each price's ID (it starts with `price_`).
 3. **Turn on the customer portal.** Settings → Billing → Customer portal → allow customers to cancel, switch plans and update payment methods → Save.
 4. **Copy your secret key.** Developers → API keys → Secret key (starts with `sk_test_` in test mode, `sk_live_` in live mode).
 5. **Put the site on Netlify.** Push this folder to a GitHub repository, then in Netlify: Add new site → Import an existing project → GitHub → pick the repository. Leave the build command empty and the publish directory as `.` (netlify.toml sets this).

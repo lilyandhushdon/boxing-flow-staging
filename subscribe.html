@@ -110,7 +110,7 @@ footer svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
         <input type="radio" name="plan" value="yearly" checked>
         <span class="tag">Best value</span><span class="tick" aria-hidden="true"></span>
         <span class="name">Yearly</span>
-        <div class="price">NZ$69 <small>/ year</small></div>
+        <div class="price">NZ$69.99 <small>/ year</small></div>
         <div class="sub">NZ$5.75 a month. Save 42%.</div>
       </label>
       <label class="plan">
@@ -123,7 +123,7 @@ footer svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
     </fieldset>
     <button class="go" type="submit" id="goBtn">Start my free week
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-    <p class="fine" id="fine">Free for 7 days, then <b>NZ$69 a year</b>. Cancel before then and you pay nothing.</p>
+    <p class="fine" id="fine">Free for 7 days, then <b>NZ$69.99 a year</b>. Cancel before then and you pay nothing.</p>
     <p class="err" id="err" role="alert"></p>
   </form>
 
@@ -161,7 +161,7 @@ footer svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 <script>
 // Plan choice -> /api/checkout (Stripe Checkout, 7-day trial) ; restore -> /api/restore, then into the app.
 const $=id=>document.getElementById(id);
-const FINE={yearly:'Free for 7 days, then <b>NZ$69 a year</b>. Cancel before then and you pay nothing.',
+const FINE={yearly:'Free for 7 days, then <b>NZ$69.99 a year</b>. Cancel before then and you pay nothing.',
             monthly:'Free for 7 days, then <b>NZ$9.99 a month</b>. Cancel before then and you pay nothing.'};
 document.querySelectorAll('input[name=plan]').forEach(r=>r.addEventListener('change',()=>{ $('fine').innerHTML=FINE[r.value]; }));
 
