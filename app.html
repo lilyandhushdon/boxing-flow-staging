@@ -32,6 +32,12 @@ h2{font-size:24px}
 .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
 .brand .eyebrow{color:var(--gold)}
+.brand .manage{color:var(--muted);font-size:14px;font-weight:600;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.brand .manage:hover{color:var(--fg);border-color:var(--muted)}
+.welcome{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);z-index:60;max-width:calc(100% - 32px);
+  background:var(--surface);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);border-radius:14px;padding:12px 16px;font-weight:600;
+  box-shadow:0 12px 32px rgba(0,0,0,.45);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.welcome.show{transform:translate(-50%,0)}
 .icon{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* focus grid */
@@ -349,7 +355,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 
 <!-- ============ SETUP ============ -->
 <section id="setup" class="wrap">
-  <div class="brand"><a class="eyebrow" href="index.html" style="text-decoration:none">&larr; Boxing Flow</a></div>
+  <div class="brand"><a class="eyebrow" href="index.html" style="text-decoration:none">&larr; Boxing Flow</a><a class="manage" id="manageSub" href="/api/portal" hidden>Manage subscription</a></div>
   <h1>What do you want to work on?</h1>
   <p class="sub">Choose your focus areas and we'll build your workout automatically.</p>
   <div class="focus-bar">
@@ -1777,6 +1783,18 @@ window.bfFx={ thud:()=>{ try{ tone(78,0,.18,.5); tone(52,.02,.22,.35); }catch(e)
               cheer:(l,len)=>cheer(l,len), quiet:ms=>setTimeout(()=>{ if(crowd) stopCrowd(); },ms) };
 
 $('buildBtn').onclick=start;
+// subscriptions (only where the payment functions run, i.e. the Netlify site): manage link, and a hello after checkout
+if(location.protocol==='https:' && !/claude|usercontent/.test(location.hostname)){
+  $('manageSub').hidden=false;
+  const q=new URLSearchParams(location.search);
+  if(q.has('welcome')){
+    const w=document.createElement('div'); w.className='welcome'; w.setAttribute('role','status');
+    w.textContent='Welcome to Boxing Flow. Your free week has started.'; document.body.appendChild(w);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.add('show')));
+    setTimeout(()=>w.classList.remove('show'),5200); setTimeout(()=>w.remove(),6000);
+    history.replaceState(null,'',location.pathname);
+  }
+}
 $('againBtn').onclick=start;
 $('gfAgain').onclick=()=>{ window.Coach3D?.endFinale?.(); start(); };
 $('gfChange').onclick=()=>{ window.Coach3D?.endFinale?.(); show('setup'); };

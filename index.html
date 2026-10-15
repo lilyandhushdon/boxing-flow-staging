@@ -7,7 +7,11 @@
 <meta name="theme-color" content="#0f161d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
-<!-- the 3D coach preview: fetch three.js and the coach's files the moment the page opens, all at once -->
+<!-- the 3D coach preview: fetch three.js and the coach's files the moment the page opens, all at once.
+     The import map has to come first: some browsers ignore one that arrives after module loading has started. -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js">
@@ -21,7 +25,9 @@
 // start downloading the coach and his four moves straight away; the 3D script picks these up when it is ready
 (function(){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const get=name=>fetch('models/'+name).then(r=>r.ok?r.arrayBuffer():null).catch(()=>null).then(b=>(b&&b.byteLength>1024)?b:new Promise((res,rej)=>{
+  const real=(name,b)=>{ if(!b || b.byteLength<1024) return false; const h=String.fromCharCode(...new Uint8Array(b,0,20)); return name.endsWith('.glb') ? h.startsWith('glTF') : (h.startsWith('Kaydara') || h.includes('FBX')); };
+  window.__realModel=real;
+  const get=name=>fetch('models/'+name).then(r=>r.ok?r.arrayBuffer():null).catch(()=>null).then(b=>real(name,b)?b:new Promise((res,rej)=>{
     // hosts that cannot serve these file types get the packaged copy (models/<name>.js)
     const sc=document.createElement('script'); sc.src='models/'+name+'.js';
     sc.onload=()=>{ const bin=atob(window.__assets[name]), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); delete window.__assets[name]; res(out.buffer); };
@@ -103,6 +109,31 @@ h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;l
 .back-tag{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:2;max-width:80%;padding:4px 12px;border-radius:999px;
   background:var(--c);color:#14110a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 @media (prefers-reduced-motion:reduce){.ring-in{transition:none}}
+/* the preview also shows interactive mode: a double-tap on the timer, then the circle opens out into the whole 3D gym */
+.demo{position:relative;overflow:hidden}
+.tap-hint{position:absolute;inset:0;z-index:3;pointer-events:none;display:grid;place-items:center}
+.tap-hint i{position:absolute;width:64px;height:64px;border-radius:50%;border:2.5px solid #fff;opacity:0;box-shadow:0 0 18px rgba(255,255,255,.5)}
+.tap-hint span{position:absolute;top:-4px;left:50%;transform:translate(-50%,-6px);padding:5px 12px;border-radius:999px;white-space:nowrap;
+  background:rgba(12,14,18,.85);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity .3s,transform .3s}
+.tap-hint.go span{opacity:1;transform:translate(-50%,0)}
+.tap-hint.go i{animation:tapR .42s ease-out 2}
+.tap-hint.go i+i{animation-delay:.07s}
+@keyframes tapR{0%{transform:scale(.45);opacity:.95}100%{transform:scale(1.45);opacity:0}}
+.demo-gym{position:absolute;inset:0;z-index:5;display:none;background:#0c0e12;
+  clip-path:circle(var(--gr,0px) at var(--gx,50%) var(--gy,40%));transition:clip-path .9s cubic-bezier(.6,0,.2,1)}
+.demo-gym.on{display:block}
+.demo-gym canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.dg-top{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;opacity:0;transform:translateY(-6px);transition:opacity .4s .15s,transform .4s .15s}
+.dg-hud{position:absolute;left:14px;right:14px;bottom:14px;display:flex;gap:8px;align-items:stretch;opacity:0;transform:translateY(8px);transition:opacity .4s .25s,transform .4s .25s}
+.demo-gym.hud .dg-top,.demo-gym.hud .dg-hud{opacity:1;transform:none}
+.dg-chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:rgba(12,14,18,.75);border:1px solid color-mix(in srgb,var(--gold) 50%,transparent);
+  color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.dg-chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);animation:blink 1.4s infinite}
+.dg-back{padding:6px 12px;border-radius:999px;background:rgba(12,14,18,.75);border:1px solid var(--line);color:var(--fg);font-size:12px;font-weight:600;white-space:nowrap}
+.dg-time{font-family:var(--display);font-weight:700;font-size:26px;line-height:1;padding:8px 12px;border-radius:12px;background:rgba(12,14,18,.78);border:1.5px solid var(--c,var(--gold));font-variant-numeric:tabular-nums;display:grid;place-items:center}
+.dg-now{flex:1;min-width:0;padding:7px 12px;border-radius:12px;background:rgba(12,14,18,.78);border-left:3px solid var(--c,var(--gold))}
+.dg-now small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dg-now b{display:block;font-family:var(--display);font-size:19px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .r-lab{font-family:var(--display);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .r-time{font-family:var(--display);font-weight:700;font-size:clamp(52px,14vw,68px);line-height:1;font-variant-numeric:tabular-nums;margin:2px 0}
 .r-cap{font-family:var(--display);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600;transition:color .5s}
@@ -148,6 +179,16 @@ section{padding-block:72px}
 .round span{color:var(--muted);font-size:14px}
 .round small{color:var(--gold);font-weight:600;font-size:13px;margin-top:6px}
 .note{color:var(--muted);font-size:14px;margin:16px 0 0}
+.prices{display:grid;gap:14px;max-width:680px}
+@media (min-width:640px){.prices{grid-template-columns:1fr 1fr}}
+.price-card{position:relative;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:22px;text-decoration:none;transition:border-color .2s,transform .15s}
+.price-card:hover{border-color:color-mix(in srgb,var(--gold) 55%,var(--line));transform:translateY(-2px)}
+.price-card.best{border-color:var(--gold)}
+.price-card .tag{position:absolute;top:-11px;right:16px;background:var(--gold);color:var(--gold-ink);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.price-card .pname{font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.price-card b{font-family:var(--display);font-size:42px;line-height:1.05;font-variant-numeric:tabular-nums}
+.price-card b small{font-family:var(--body);font-size:16px;font-weight:500;color:var(--muted)}
+.price-card>span:last-child{color:var(--muted);font-size:15px}
 
 .final{text-align:center;padding-block:96px}
 .final h2{font-size:clamp(56px,10vw,110px);line-height:.9;text-transform:uppercase}
@@ -173,7 +214,8 @@ footer p{margin:0;max-width:70ch}
       <a href="#how">How it works</a>
       <a href="#features">Features</a>
       <a href="#skills">Skills</a>
-      <a class="btn small" href="app.html">Start training</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn small" href="app.html">Start free week</a>
     </nav>
   </div>
 </header>
@@ -185,7 +227,7 @@ footer p{margin:0;max-width:70ch}
       <h1>Every round,<br><em>called for you.</em></h1>
       <p class="lede">Pick what you want to work on and how many rounds. Boxing Flow builds the workout and talks you through a new drill every 30 seconds, with bells, a countdown, music and a crowd behind you.</p>
       <div class="cta-row">
-        <a class="btn" href="app.html">Start a workout
+        <a class="btn" href="app.html">Start your free week
           <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn ghost" href="#how">How it works</a>
       </div>
@@ -211,9 +253,14 @@ footer p{margin:0;max-width:70ch}
           </div>
           <div class="face back" aria-hidden="true"><canvas id="coach3d"></canvas><div class="back-tag" id="dTag"></div></div>
         </div>
+        <div class="tap-hint" id="dTap" aria-hidden="true"><i></i><i></i><span>Double-tap: interactive mode</span></div>
       </div>
       <div class="now"><small>Now</small><strong id="dNow">Jab, Jab, Cross</strong><div class="bar" id="dBar"></div></div>
       <div class="mini-next" id="dNext"></div>
+      <div class="demo-gym" id="dGym" aria-hidden="true">
+        <div class="dg-top"><span class="dg-chip">Interactive mode</span><span class="dg-back">Back to timer</span></div>
+        <div class="dg-hud"><div class="dg-time" id="dgTime">01:24</div><div class="dg-now"><small>Now</small><b id="dgNow">Jab, Jab, Cross</b></div></div>
+      </div>
     </div>
   </div>
 
@@ -240,7 +287,7 @@ footer p{margin:0;max-width:70ch}
       </div>
       <div class="features">
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>
-          <div><h3>3D coach</h3><p>The timer flips over to a 3D coach who shows you every drill: jabs, crosses, hooks, uppercuts, body shots and footwork.</p></div></div>
+          <div><h3>3D coach</h3><p>The timer flips over to a 3D coach who shows you every drill. Double-tap it to step into interactive mode and watch him work the ring from ringside in a full 3D gym.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
           <div><h3>Bells and countdown</h3><p>A spinning five-second countdown and a "Fight!" burst before every round, bells at the start and end.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
@@ -288,11 +335,25 @@ footer p{margin:0;max-width:70ch}
     </div>
   </section>
 
-  <section class="final band">
+  <section id="pricing" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Pricing</div>
+        <h2>Seven days free</h2>
+        <p>Try everything for a week. You won't be charged until the trial ends, and you can cancel any time.</p>
+      </div>
+      <div class="prices">
+        <a class="price-card best" href="subscribe.html"><span class="tag">Best value</span><span class="pname">Yearly</span><b>NZ$69<small> / year</small></b><span>NZ$5.75 a month. Save 42%.</span></a>
+        <a class="price-card" href="subscribe.html"><span class="pname">Monthly</span><b>NZ$9.99<small> / month</small></b><span>Flexible. Cancel any time.</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
     <div class="wrap">
       <h2>Gloves on.</h2>
-      <p>Your first round is three taps away.</p>
-      <a class="btn" href="app.html">Start a workout
+      <p>Your first week is free. Your first round is three taps away.</p>
+      <a class="btn" href="app.html">Start your free week
         <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
   </section>
@@ -335,9 +396,6 @@ footer p{margin:0;max-width:70ch}
   },250);
 })();
 </script>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
-</script>
 <script type="module">
 /* The preview timer turns over now and again to show the 3D coach throwing that drill, like the app.
    It loads once the preview is on screen: a light copy of the coach (coach-lite.glb, no face shapes, small textures)
@@ -366,8 +424,8 @@ const SIDE={'jab.fbx':'L','hook-lead.fbx':'L'};
 const SPEED={'1-2-3-2':1.8,'1-2-3':1.9};          // drills thrown faster than normal (same as the app)
 const FILES=['stance.fbx',...new Set(Object.values(DRILLS).flat())];
 async function asset(name){
-  if(window.__coachFiles && window.__coachFiles[name]) return window.__coachFiles[name];
-  try{ const r=await fetch('models/'+name); if(r.ok){ const b=await r.arrayBuffer(); if(b.byteLength>1024) return b; } }catch(e){}
+  if(window.__coachFiles && window.__coachFiles[name]){ try{ return await window.__coachFiles[name]; }catch(e){} }   // early download; if it failed, try again here
+  try{ const r=await fetch('models/'+name); if(r.ok){ const b=await r.arrayBuffer(); if(window.__realModel ? window.__realModel(name,b) : b.byteLength>1024) return b; } }catch(e){}
   await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='models/'+name+'.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
   const bin=atob(window.__assets[name]), out=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i);
@@ -650,6 +708,21 @@ async function boot(){
 
 
   let last=performance.now(), shownAt=-1e9, az=.3;
+  // interactive mode, shown in the card: the circle opens out into the gym, a look from above, then ringside
+  const demo=document.querySelector('.demo'), gymEl=document.getElementById('dGym'), backFace=canvas.parentElement, tap=document.getElementById('dTap');
+  const dgTime=document.getElementById('dgTime'), dgNow=document.getElementById('dgNow'), dTime=document.getElementById('dTime');
+  let inGym=false, gymAt=0, fovNow=28; const cp=new THREE.Vector3(0,2.2,5.4), cl=new THREE.Vector3(0,.8,0), gP=new THREE.Vector3(), gL=new THREE.Vector3();
+  function circleAtRing(){ const d=demo.getBoundingClientRect(), r=ringIn.getBoundingClientRect();
+    gymEl.style.setProperty('--gx',(r.left-d.left+r.width/2)+'px'); gymEl.style.setProperty('--gy',(r.top-d.top+r.height/2)+'px'); gymEl.style.setProperty('--gr',(r.width/2)+'px'); return d; }
+  function enterGym(){
+    if(inGym || !demo || !gymEl) return; inGym=true; gymAt=performance.now(); tap?.classList.remove('go');
+    const d=circleAtRing(); gymEl.style.transition='none'; gymEl.classList.add('on'); gymEl.prepend(canvas); gymEl.getBoundingClientRect(); gymEl.style.transition='';
+    requestAnimationFrame(()=>{ gymEl.style.setProperty('--gr',Math.hypot(d.width,d.height)+'px'); gymEl.classList.add('hud'); });
+  }
+  function exitGym(){
+    if(!inGym) return; gymEl.classList.remove('hud'); circleAtRing();
+    setTimeout(()=>{ gymEl.classList.remove('on'); backFace.prepend(canvas); inGym=false; showing=false; ringIn.classList.remove('flipped'); },950);
+  }
   const hip=new THREE.Vector3();
   function size(){ const w=canvas.clientWidth||240, h=canvas.clientHeight||240; if(canvas.width!==Math.round(w*renderer.getPixelRatio())){ renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); } }
   function frame(now){
@@ -660,9 +733,18 @@ async function boot(){
     size(); mixer.update(dt);
     if(FEET.length){ model.updateMatrixWorld(true); const lo=lowest(); if(isFinite(lo)) model.position.y+=(model.position.y+TOE_REST-lo-model.position.y)*Math.min(1,dt*16); }
     if(bones.Hips) bones.Hips.getWorldPosition(hip); else hip.set(0,1,0);
-    const a=az+Math.sin(now/2600)*.12;                                    // a slow, gentle drift round him
-    camera.position.set(hip.x+Math.sin(a)*5.4,rest.y+1.15,hip.z+Math.cos(a)*5.4);
-    camera.lookAt(hip.x,rest.y-.2,hip.z);
+    if(inGym){                                                             // interactive mode: from above the gym, then down to ringside, circling
+      const t=(now-gymAt)/1000;
+      if(t<2.3){ const a=.4+t*.16; gP.set(Math.sin(a)*6.4,6.8,Math.cos(a)*6.4); gL.set(0,-.4,0); }
+      else { const u=t-2.3, a=.4+2.3*.16+u*.2, r=5.9+Math.sin(u*.45)*.6; gP.set(hip.x+Math.sin(a)*r,2.4+Math.sin(u*.35)*.35,hip.z+Math.cos(a)*r); gL.set(hip.x,.7,hip.z); }
+      const k=1-Math.exp(-dt*2.4); cp.lerp(gP,k); cl.lerp(gL,k);
+      if(dgTime && dTime && dgTime.textContent!==dTime.textContent) dgTime.textContent=dTime.textContent;
+    } else {
+      const a=az+Math.sin(now/2600)*.12;                                  // a slow, gentle drift round him
+      cp.set(hip.x+Math.sin(a)*5.4,rest.y+1.15,hip.z+Math.cos(a)*5.4); cl.set(hip.x,rest.y-.2,hip.z);
+    }
+    const fovT=inGym?50:28; if(Math.abs(fovNow-fovT)>.05){ fovNow+=(fovT-fovNow)*Math.min(1,dt*3); camera.fov=fovNow; camera.updateProjectionMatrix(); }
+    camera.position.copy(cp); camera.lookAt(cl);
     if(gym) gym.update(now,dt,camera.position,{x:hip.x,z:hip.z,feet:0,head:1.85});
     renderer.render(scene,camera);
   }
@@ -670,15 +752,21 @@ async function boot(){
   try{ size(); camera.position.set(0,2.2,5.4); camera.lookAt(0,.8,0); if(renderer.compileAsync) await renderer.compileAsync(scene,camera); renderer.render(scene,camera); }catch(e){}
   requestAnimationFrame(frame);
 
-  let hideT=0;
+  // straight away, then every third drill: the double-tap, and the circle opens into interactive mode for that drill and the next
+  let hideT=0, tapT=0, inT=0, shows=0;
   api.show=name=>{
     const list=DRILLS[name]; if(!list) return;
-    seq=list.map(f=>CLIPS[f]).filter(Boolean); if(!seq.length) return;
-    si=0; showing=true; pace=SPEED[name]||1; az=(Math.random()<.5?-1:1)*(.15+Math.random()*.45);
-    tag.textContent=name; ringIn.classList.add('flipped');
+    const s=list.map(f=>CLIPS[f]).filter(Boolean); if(!s.length) return;
+    const step=shows++%3; clearTimeout(hideT); clearTimeout(tapT); clearTimeout(inT);
+    seq=s; si=0; pace=SPEED[name]||1; tag.textContent=name; if(dgNow) dgNow.textContent=name;
+    if(inGym){ showing=true; hideT=setTimeout(exitGym,4200); return; }    // the next drill, still in the gym: he carries straight on
+    showing=true; az=(Math.random()<.5?-1:1)*(.15+Math.random()*.45);
+    ringIn.classList.add('flipped');
     setTimeout(playNext,350);
-    clearTimeout(hideT);
-    hideT=setTimeout(()=>{ showing=false; ringIn.classList.remove('flipped'); },4600);
+    if(step===0 && demo && gymEl){
+      tapT=setTimeout(()=>{ tap?.classList.remove('go'); void tap?.offsetWidth; tap?.classList.add('go'); },900);
+      inT=setTimeout(enterGym,2000);
+    } else hideT=setTimeout(()=>{ showing=false; ringIn.classList.remove('flipped'); },4600);
   };
   api.ready=true;
 }

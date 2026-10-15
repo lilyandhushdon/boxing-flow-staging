@@ -1,0 +1,13 @@
+# Netlify settings for Boxing Flow.
+# The site is plain files (no build step). Payments run in netlify/functions (Stripe) and the
+# app is guarded by netlify/edge-functions/gate.mjs. See README.md for the Stripe setup.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
+
+# the app page must never be cached by the browser, so a lapsed subscription is always re-checked
+[[headers]]
+  for = "/app.html"
+  [headers.values]
+    Cache-Control = "no-store"

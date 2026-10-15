@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Start your free week of Boxing Flow: a 3D coach, a new drill every 30 seconds, bells, music and a crowd.">
+<meta name="theme-color" content="#0f161d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Start your free week · Boxing Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* The paywall. Same navy and gold as the app and home page. One column on phones, plans side by side from 640px.
+   Prices shown here are display text: the amounts actually charged are the two Stripe prices (PRICE_MONTHLY, PRICE_YEARLY). */
+:root{
+  --bg:#0f161d; --bg-2:#131c25; --surface:#1b2631; --surface-2:#243240; --line:#2f3e4e;
+  --fg:#eef2f6; --muted:#93a3b4; --gold:#f5c95a; --gold-ink:#1d1606; --bad:#ff8a7a;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+a{color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;letter-spacing:.005em;text-wrap:balance}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:22px}
+.logo svg{width:28px;height:28px}
+.top a.back{color:var(--muted);text-decoration:none;font-size:15px}
+.top a.back:hover{color:var(--fg)}
+header.hero{text-align:center;padding:28px 0 26px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--gold)}
+.hero h1{font-size:clamp(44px,9vw,72px);line-height:.95;text-transform:uppercase;margin:10px 0 14px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero p{color:var(--muted);max-width:46ch;margin:0 auto;font-size:17px}
+.note{border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:15px;background:var(--surface);border:1px solid var(--line)}
+.note.bad{border-color:color-mix(in srgb,var(--bad) 55%,transparent);color:#ffd6cf}
+.plans{display:grid;gap:12px;margin:0;padding:0;border:0}
+@media (min-width:640px){.plans{grid-template-columns:1fr 1fr}}
+.plan{position:relative;display:block;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;transition:border-color .2s,background .2s}
+.plan:hover{border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
+.plan input{position:absolute;opacity:0;pointer-events:none}
+.plan:has(input:checked){border-color:var(--gold);background:color-mix(in srgb,var(--gold) 7%,var(--surface))}
+.plan:has(input:focus-visible){outline:2px solid var(--gold);outline-offset:3px}
+.plan .name{font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.plan .price{font-family:var(--display);font-weight:700;font-size:44px;line-height:1.05;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.plan .price small{font-family:var(--body);font-size:16px;font-weight:500;color:var(--muted)}
+.plan .sub{color:var(--muted);font-size:14px}
+.plan .tag{position:absolute;top:-11px;right:16px;background:var(--gold);color:var(--gold-ink);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.plan .tick{position:absolute;top:18px;right:18px;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.plan:has(input:checked) .tick{border-color:var(--gold);background:var(--gold)}
+.plan:has(input:checked) .tick::after{content:"";width:9px;height:5px;border:2.5px solid var(--gold-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+.go{display:flex;width:100%;justify-content:center;align-items:center;gap:8px;margin:18px 0 10px;border:0;border-radius:999px;padding:16px 26px;
+  background:var(--gold);color:var(--gold-ink);font:700 18px var(--body);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.go:hover{transform:translateY(-1px);box-shadow:0 8px 24px color-mix(in srgb,var(--gold) 30%,transparent)}
+.go[disabled]{opacity:.65;cursor:progress;transform:none;box-shadow:none}
+.fine{text-align:center;color:var(--muted);font-size:14px;margin:0}
+.fine b{color:var(--fg);font-weight:600}
+.err{color:var(--bad);text-align:center;font-size:15px;min-height:1.5em;margin:8px 0 0}
+section.incl{margin:36px 0 0;background:var(--bg-2);border:1px solid var(--line);border-radius:18px;padding:22px}
+.incl h2{font-size:26px;text-transform:uppercase;margin-bottom:12px}
+.incl ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+@media (min-width:640px){.incl ul{grid-template-columns:1fr 1fr}}
+.incl li{display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.incl li svg{flex:none;width:20px;height:20px;margin-top:2px;stroke:var(--gold);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+details.restore{margin:22px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 16px}
+details.restore summary{cursor:pointer;padding:12px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.restore summary::-webkit-details-marker{display:none}
+details.restore summary::after{content:"+";font-size:22px;color:var(--gold);line-height:1}
+details.restore[open] summary::after{content:"–"}
+.restore p{color:var(--muted);margin:0 0 12px;font-size:15px}
+.row{display:grid;gap:10px;margin-bottom:14px}
+@media (min-width:560px){.row{grid-template-columns:1fr 150px auto}}
+.row label{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.row input{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--fg);font:500 16px var(--body)}
+.row input:focus{border-color:var(--gold);outline:none}
+.row button{align-self:end;border:1.5px solid var(--gold);background:transparent;color:var(--gold);border-radius:10px;padding:11px 18px;font:700 16px var(--body);cursor:pointer}
+.row button[disabled]{opacity:.6;cursor:progress}
+.rerr{color:var(--bad);font-size:14px;margin:-6px 0 12px;min-height:1.2em}
+footer{color:var(--muted);font-size:13px;text-align:center;padding:30px 0 40px;display:grid;gap:6px}
+footer .lock{display:inline-flex;align-items:center;gap:6px;justify-content:center}
+footer svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="logo" href="index.html" aria-label="Boxing Flow home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="#2f3e4e" stroke-width="4"/><path d="M16 3a13 13 0 1 1-12.4 9" fill="none" stroke="#f5c95a" stroke-width="4" stroke-linecap="round"/></svg>
+      Boxing Flow
+    </a>
+    <a class="back" href="index.html">&larr; Back</a>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">7 days free</div>
+    <h1>Your corner,<br><em>every round.</em></h1>
+    <p>Train with the full app free for a week. Pick a plan now and you won't be charged until your trial ends. Cancel any time before then and you pay nothing.</p>
+  </header>
+
+  <div class="note bad" id="msg" hidden></div>
+
+  <form id="buy">
+    <fieldset class="plans">
+      <legend class="eyebrow" style="position:absolute;left:-9999px">Choose a plan</legend>
+      <label class="plan">
+        <input type="radio" name="plan" value="yearly" checked>
+        <span class="tag">Best value</span><span class="tick" aria-hidden="true"></span>
+        <span class="name">Yearly</span>
+        <div class="price">NZ$69 <small>/ year</small></div>
+        <div class="sub">NZ$5.75 a month. Save 42%.</div>
+      </label>
+      <label class="plan">
+        <input type="radio" name="plan" value="monthly">
+        <span class="tick" aria-hidden="true"></span>
+        <span class="name">Monthly</span>
+        <div class="price">NZ$9.99 <small>/ month</small></div>
+        <div class="sub">Flexible. Cancel any time.</div>
+      </label>
+    </fieldset>
+    <button class="go" type="submit" id="goBtn">Start my free week
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    <p class="fine" id="fine">Free for 7 days, then <b>NZ$69 a year</b>. Cancel before then and you pay nothing.</p>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+
+  <section class="incl" aria-labelledby="inclH">
+    <h2 id="inclH">Everything included</h2>
+    <ul>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>A 3D coach who shows every drill</li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Interactive mode in a full 3D gym</li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>19 skills and 77 drills, with coaching cues</li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Six round formats, from 9 to 36 minutes</li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Bells, countdown, music and a live crowd</li>
+      <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>A champion's finale after every workout</li>
+    </ul>
+  </section>
+
+  <details class="restore" id="restore">
+    <summary>Already subscribed? Use it on this device</summary>
+    <p>Enter the email you paid with and the last four digits of the card on your subscription.</p>
+    <form id="restoreForm">
+      <div class="row">
+        <label>Email<input type="email" name="email" autocomplete="email" required></label>
+        <label>Card's last 4 digits<input name="last4" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></label>
+        <button type="submit" id="restoreBtn">Continue</button>
+      </div>
+      <p class="rerr" id="rerr" role="alert"></p>
+    </form>
+  </details>
+
+  <footer>
+    <span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secure payment by Stripe. Boxing Flow never sees your card number.</span>
+    <span>Manage or cancel your subscription any time from the app.</span>
+  </footer>
+</div>
+
+<script>
+// Plan choice -> /api/checkout (Stripe Checkout, 7-day trial) ; restore -> /api/restore, then into the app.
+const $=id=>document.getElementById(id);
+const FINE={yearly:'Free for 7 days, then <b>NZ$69 a year</b>. Cancel before then and you pay nothing.',
+            monthly:'Free for 7 days, then <b>NZ$9.99 a month</b>. Cancel before then and you pay nothing.'};
+document.querySelectorAll('input[name=plan]').forEach(r=>r.addEventListener('change',()=>{ $('fine').innerHTML=FINE[r.value]; }));
+
+const q=new URLSearchParams(location.search);
+const msg=q.has('ended') ? 'Your subscription has ended. Pick a plan to keep training.'
+        : q.has('problem') ? 'We couldn’t confirm your payment. If you were charged, use “Already subscribed” below, or try again.'
+        : q.has('cancelled') ? 'No problem, nothing was charged. Pick a plan whenever you’re ready.' : '';
+if(msg){ $('msg').textContent=msg; $('msg').hidden=false; if(q.has('cancelled')) $('msg').classList.remove('bad'); }
+
+$('buy').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const plan=new FormData(e.target).get('plan');
+  $('goBtn').disabled=true; $('err').textContent='';
+  try{
+    const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan})});
+    const j=await r.json().catch(()=>({}));
+    if(j.url){ location.href=j.url; return; }
+    $('err').textContent=j.error||'Could not start checkout. Please try again.';
+  }catch(err){ $('err').textContent='No connection. Check your internet and try again.'; }
+  $('goBtn').disabled=false;
+});
+
+$('restoreForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const f=new FormData(e.target);
+  $('restoreBtn').disabled=true; $('rerr').textContent='';
+  try{
+    const r=await fetch('/api/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:f.get('email'),last4:f.get('last4')})});
+    const j=await r.json().catch(()=>({}));
+    if(r.ok && j.ok){ location.href='/app.html'; return; }
+    $('rerr').textContent=j.error||'Something went wrong. Please try again.';
+  }catch(err){ $('rerr').textContent='No connection. Check your internet and try again.'; }
+  $('restoreBtn').disabled=false;
+});
+</script>
+</body>
+</html>
