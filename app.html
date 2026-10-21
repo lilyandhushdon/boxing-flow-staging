@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Build and run a boxing workout: a 3D coach, drills every 30 seconds, bells, music and crowd.">
 <meta name="theme-color" content="#0f161d">
+<link rel="apple-touch-icon" href="logo-512.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,12 +33,6 @@ h2{font-size:24px}
 .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
 .brand .eyebrow{color:var(--gold)}
-.brand .manage{color:var(--muted);font-size:14px;font-weight:600;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px}
-.brand .manage:hover{color:var(--fg);border-color:var(--muted)}
-.welcome{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);z-index:60;max-width:calc(100% - 32px);
-  background:var(--surface);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);border-radius:14px;padding:12px 16px;font-weight:600;
-  box-shadow:0 12px 32px rgba(0,0,0,.45);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
-.welcome.show{transform:translate(-50%,0)}
 .icon{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* focus grid */
@@ -176,6 +171,57 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .item.just-moved{animation:moved .6s ease}
 @keyframes moved{from{box-shadow:0 0 0 3px var(--c)}to{box-shadow:0 0 0 0 transparent}}
 .more{color:var(--muted);font-size:13px;margin-top:10px}
+
+/* mode picker (the first screen) and the setup for the basic workout and the round timer */
+.modes{display:grid;gap:12px;margin-top:8px}
+@media (min-width:640px){.modes{grid-template-columns:1fr 1fr}}
+/* the coach workout card shows the home page's live preview (index.html?preview): the timer turning over to the 3D coach */
+.mode-card.feature{grid-column:1/-1;display:grid;gap:0;padding:0;overflow:hidden;cursor:pointer}
+@media (min-width:640px){.mode-card.feature{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}}
+.mode-preview{position:relative;display:block;height:560px;background:linear-gradient(160deg,var(--surface) 0%,#131c25 100%)}
+.mode-preview iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+.mode-body{display:flex;flex-direction:column;gap:6px;padding:18px}
+.mode-body .go{background:none;border:0;padding:8px 0 0;text-align:left}
+.mode-card{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px;transition:border-color .15s,background .15s}
+.mode-card:hover{border-color:var(--gold);background:var(--surface-2)}
+.mode-card .badge{width:46px;height:46px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;margin-bottom:6px}
+.mode-card strong{font-family:var(--display);font-size:24px;line-height:1.1}
+.mode-card p{color:var(--muted);font-size:14px;margin:0}
+.mode-card .go{margin-top:auto;padding-top:8px;color:var(--gold);font-weight:700;font-size:14px}
+.back-link{background:none;border:0;padding:0}
+.rest-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rest-opts .round-opt{justify-content:center;padding:14px 10px}
+/* boxing IQ: a list of topics, then one question card at a time */
+.iq-row .badge{font-family:var(--display);font-weight:700;font-size:20px;color:var(--gold)}
+.iq-row em{margin-left:auto;flex:none;font-style:normal;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.iq-row em.done{color:var(--gold)}
+.iq-card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:14px}
+.iq-card .q{font-size:19px;line-height:1.4;margin:0;font-weight:500}
+.iq-meta{display:flex;justify-content:space-between;gap:10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.iq-bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.iq-bar i{display:block;height:100%;background:var(--gold);transition:width .25s}
+.iq-opt:disabled{cursor:default;opacity:1}
+.iq-opt.right{border-color:#4fd1b5;background:color-mix(in srgb,#4fd1b5 16%,var(--surface))}
+.iq-opt.wrong{border-color:#ff7f6e;background:color-mix(in srgb,#ff7f6e 16%,var(--surface))}
+.iq-ans{border-left:3px solid var(--gold);padding:2px 0 2px 14px;display:grid;gap:6px}
+.iq-ans b{display:block;font-size:17px}
+.iq-ans span{color:var(--muted)}
+.iq-actions{display:flex;gap:10px;flex-wrap:wrap}
+.iq-missed{display:grid;gap:10px;margin:22px 0 0;text-align:left}
+.iq-missed div{background:var(--surface);border-radius:12px;padding:12px 14px}
+.iq-missed strong{display:block;font-size:15px}
+.iq-missed span{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+.brief{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:14px;display:grid;gap:12px}
+.brief h3{margin:0 0 2px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.brief p{margin:0}
+.review{text-align:left;max-width:520px;margin:0 auto 26px;background:var(--surface);border-radius:16px;padding:16px 18px}
+.review h3{margin:0 0 4px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.review p{margin:0 0 12px}.review p:last-child{margin:0}
+.iq-note{color:var(--muted);font-size:13px;margin-top:18px}
+/* basic workout and round timer: no coach on the back of the timer, no quotes, no interactive mode */
+#timer.plain .face.back,#timer.plain .ia-prompt,#timer.plain .now-line{display:none!important}
+#timer.clock-only .upnext,#timer.clock-only .r-div,#timer.clock-only .r-next,#timer.clock-only .r-next-val{display:none}
+@media (min-width:760px){#timer.clock-only .timer-grid{grid-template-columns:minmax(0,520px);justify-content:center}}
 
 .done{text-align:center;padding-top:40px}
 .done .big{font-family:var(--display);font-size:56px;font-weight:700;color:var(--gold);line-height:1}
@@ -353,9 +399,64 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 </head>
 <body>
 
+<!-- ============ MODES ============ -->
+<section id="modes" class="wrap">
+  <div class="brand"><a class="eyebrow" href="index.html" style="text-decoration:none">&larr; Boxing Flow</a></div>
+  <h1>How do you want to train?</h1>
+  <p class="sub">Pick a mode. You can come back and change it any time.</p>
+  <div class="modes">
+    <div class="mode-card feature" data-mode="coach">
+      <span class="mode-preview"><iframe src="index.html?preview" title="Preview of a coach workout" tabindex="-1" aria-hidden="true"></iframe></span>
+      <span class="mode-body">
+        <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M4 20c1-3 4-5 8-5s7 2 8 5M3 9h2M19 9h2"/></svg></span>
+        <strong>Coach workout</strong>
+        <p>Choose your focus areas. A 3D coach builds the workout and shows you every drill, with an interactive 3D gym.</p>
+        <button class="go" type="button">Build a workout &rarr;</button>
+      </span>
+    </div>
+    <button class="mode-card" data-mode="basic">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h10M4 12h16M4 17h7"/></svg></span>
+      <strong>Basic workout</strong>
+      <p>A set list of exercises, 30 seconds each. A voice tells you the next one. No coach on screen.</p>
+      <span class="go">Pick a workout &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="timer">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
+      <strong>Round timer</strong>
+      <p>Just rounds and rest, with bells and a countdown. No exercises.</p>
+      <span class="go">Set the rounds &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="scenario">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+      <strong>Fight scenarios</strong>
+      <p>Face a style, like a pressure fighter or a counterpuncher. A coach gives you a tip every 30 seconds on how to beat it.</p>
+      <span class="go">Pick an opponent &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="iq">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+      <strong>Boxing IQ</strong>
+      <p>Real situations from inside the ring across 12 topics. Work out what to do, then see why.</p>
+      <span class="go">Train your head &rarr;</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ BOXING IQ ============ -->
+<section id="iq" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-back>&larr; All modes</button></div>
+  <h1>Boxing IQ</h1>
+  <p class="sub">Pick a topic to work on. Each scenario drops you into a situation as it happens in the ring. Choose your response, then see why it works or doesn't.</p>
+  <div class="rounds" id="iqList"></div>
+  <p class="iq-note">Scores show how you did on the quiz, not how good you are in the ring. Use them to see which topics to work on with your coach.</p>
+</section>
+<section id="iqQuiz" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" id="iqBack">&larr; All topics</button></div>
+  <div id="iqBody"></div>
+</section>
+
 <!-- ============ SETUP ============ -->
-<section id="setup" class="wrap">
-  <div class="brand"><a class="eyebrow" href="index.html" style="text-decoration:none">&larr; Boxing Flow</a><a class="manage" id="manageSub" href="/api/portal" hidden>Manage subscription</a></div>
+<section id="setup" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-back>&larr; All modes</button></div>
   <h1>What do you want to work on?</h1>
   <p class="sub">Choose your focus areas and we'll build your workout automatically.</p>
   <div class="focus-bar">
@@ -371,7 +472,27 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
   <p class="sub">Every round is the same length, with instructions changing every 30 seconds. One minute of rest between rounds.</p>
   <div class="rounds" id="roundList" role="radiogroup" aria-label="Workout length"></div>
 </section>
-<div class="buildbar" id="buildbar">
+<!-- ============ BASIC WORKOUT / ROUND TIMER SETUP ============ -->
+<section id="plainSetup" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-back>&larr; All modes</button></div>
+  <h1 id="pTitle">Basic workout</h1>
+  <p class="sub" id="pSub"></p>
+  <div id="presetBlock">
+    <h2 id="presetH">Choose your workout</h2>
+    <p class="sub" id="presetSub">The exercises run in this order, 30 seconds each, then start again from the top.</p>
+    <div class="rounds" id="presetList" role="radiogroup" aria-label="Workout"></div>
+    <div class="brief" id="scenBrief" hidden></div>
+    <hr>
+  </div>
+  <h2>How many rounds?</h2>
+  <p class="sub" id="pLenSub"></p>
+  <div class="rounds" id="pRoundList" role="radiogroup" aria-label="Workout length"></div>
+  <hr>
+  <h2>Rest between rounds</h2>
+  <p class="sub">With a five-second countdown before every round.</p>
+  <div class="rest-opts" id="restList" role="radiogroup" aria-label="Rest between rounds"></div>
+</section>
+<div class="buildbar" id="buildbar" hidden>
   <div class="inner">
     <div class="summary" id="summary"></div>
     <button class="btn" id="buildBtn">Build workout</button>
@@ -658,6 +779,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
     <div class="eyebrow">Final bell</div>
     <div class="big">Workout complete</div>
     <div class="stats" id="doneStats"></div>
+    <div class="review" id="doneReview" hidden></div>
     <div class="row">
       <button class="btn" id="againBtn">Go again</button>
       <button class="btn ghost" id="changeBtn">Change workout</button>
@@ -665,6 +787,8 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
   </div>
 </section>
 
+<script src="iq-questions.js"></script>
+<script src="scenarios.js"></script>
 <script>
 const ICONS = {
   target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
@@ -871,6 +995,39 @@ const TIPS = {
 };
 const OPTIONS = [{r:3,m:3},{r:5,m:3},{r:6,m:3},{r:12,m:3},{r:3,m:5},{r:5,m:5}];   // rounds x minutes
 const SEG = 30, REST = 60, READY = 5;
+// Basic workout: set lists of exercises, 30 seconds each, called out by the voice. The list carries on from one round
+// into the next and starts again from the top when it runs out. To add a workout, add an entry: a name, then its exercises in order.
+// An exercise is just its name, or [name, a short tip shown under it].
+const BASIC = [
+  {name:'Bag basics', exercises:['Jab','Jab, jab, cross','1-2','1-2-3','Lead hooks','Uppercuts','Body shots','Free punching']},
+  {name:'Combinations', exercises:['1-2','1-1-2','1-2-3','1-2-3-2','Jab, cross, hook, uppercut','Body hook, head hook','1-2, slip, 2','Free combinations']},
+  {name:'Speed and power', exercises:['Fast straights','Power cross','Speed jabs','Power hooks','Non-stop 1-2s','Power uppercuts','Flurry and out','Big shots only']},
+  {name:'Defence', exercises:['Slip and counter','Bob and weave','Block and return','Pull back, cross','Parry the jab','Roll under, hook','Shoulder roll','Hands up, free defence']},
+  {name:'Conditioning', exercises:['Non-stop punches','Squats','Burnout straights','High knees','Hooks and uppercuts','Burpees','Shadow boxing','Everything you’ve got']},
+  {name:'Attacking drill', blurb:'Build attacks, not combinations. 5 rounds of 10 focuses, best with 5 × 5-minute rounds.', exercises:[
+    ...[
+      ['Punching & Volume', ['Jab only, high volume','Double and triple jab','Straight punches only','Hooks, multiple punches','Uppercuts, work in volume','Head punches, sustained attack','Body punches, sustained attack','Head, body, head','Finish with straight punches','Finish with hooks']],
+      ['Entry, Exit & Angles', ['Step in, attack','Step in, combination, continue','Attack, step out, re-enter','Step back, attack again','Attack, lateral exit, re-attack','Attack, angle off, continue','Angle, attack, second phase','Circle, attack, continue','Cut the ring, sustained attack','Change range, multiple-phase attack']],
+      ['Combination Phases & Volume', ['3+ punch combinations','5+ punch combinations','Long combinations','Combination, continue','Combination, go again','Multiple attacking phases','Change target, continue','Change speed, continue','Combination, angle, combination','Continuous multi-phase attack']],
+      ['Creating & Developing Attacks', ['Be first, continue attacking','Feint, attack, continue','Draw a reaction, attack again','Lead-hand control, attack','Hand fighting, attack, continue','Pressure, multiple phases','Opponent retreats, follow, continue','Attack gets blocked, re-attack','Attack misses, recover, attack again','Opponent reacts, adapt, continue']],
+      ['Amateur Attack & Exchange Stealing', ['Be first, build volume','Fast first attack, go again','Straight punches, sustained volume','Long combination, multiple phases','Pressure, sustained attack','Defend, attack, continue','Be last, go again','Steal the exchange, second phase','High-volume finishing attack','Free-flow attack, use everything']]
+    ].flatMap(([theme, names], i) => names.map(n => [n, `Round ${i+1} · ${theme}`]))
+  ]},
+  {name:'Defence drill', blurb:'Fundamentals, head movement, guards, footwork and counters. 5 rounds of 10 techniques, best with 5 × 5-minute rounds.', exercises:[
+    ...[
+      ['Fundamentals', ['High guard','Parry','Catch','Block','Slip','Roll','Pull back','Step back','Lateral step','Pivot']],
+      ['Head Movement', ['Inside slip','Outside slip','Double slip','Roll left','Roll right','Duck','Bob and weave','Lean back','Pull','Slip and pivot']],
+      ['Guards & Blocking', ['Long guard','Peek-a-boo guard','Philly shell','Cross-arm guard','Double-arm block','Hook block','Uppercut block','Elbow block','Forearm block','Cover up']],
+      ['Footwork & Distance', ['Step back','Lateral left','Lateral right','Pivot left','Pivot right','Circle out','L-step','Angle off','Smother','Clinch']],
+      ['Advanced Defence & Counters', ['Catch and counter','Parry and counter','Slip and counter','Roll and counter','Pull counter','Shoulder roll and counter','Check hook','Hand fighting','Smother and exit','Free-flow defence, use anything']]
+    ].flatMap(([theme, names], i) => names.map(n => [n, `Round ${i+1} · ${theme}`]))
+  ]}
+];
+BASIC.sort((a,b)=>a.name.localeCompare(b.name));   // listed A to Z, wherever a new workout is added
+const REST_OPTS =[30, 60, 90];   // seconds of rest between rounds, for the basic workout and the round timer
+const exName = e => Array.isArray(e) ? e[0] : e, exCue = e => Array.isArray(e) ? e[1] : '', exTip = e => Array.isArray(e) ? e[2]||'' : '';
+const restLabel = s => s<60 ? `${s} sec` : s%60 ? `${s/60|0} min ${s%60} sec` : `${s/60} min`;
+const restWords = s => s===60 ? 'One minute' : s===90 ? 'A minute and a half' : s%60 ? `${s} seconds` : `${s/60} minutes`;
 // one colour per drill, cycled so neighbours never match; the ring takes the colour of the current drill
 const PALETTE = ['#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
 const READY_C = '#f5c95a', REST_C = '#7cc0ea';
@@ -897,7 +1054,8 @@ const FINISH = ['Last ten seconds. Empty the tank!', 'Ten seconds left. Everythi
 const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
-const state = {focus:new Set(['jab','speed','power']), opt:0};
+const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0};
+let mode = 'coach';   // 'coach' (the 3D coach), 'basic' (set exercises, no coach), 'scenario' (a coached game plan against one style) or 'timer' (rounds and rest only)
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
 
@@ -917,7 +1075,7 @@ function renderSetup(){
   $('summary').innerHTML = n
     ? `<b>${n} focus area${n>1?'s':''}</b> · ${o.r} × ${o.m} min`
     : 'Pick at least one focus area';
-  $('buildBtn').disabled = !n;
+  $('buildBtn').disabled = !n; $('buildBtn').textContent = 'Build workout';
   $('focusCount').innerHTML = `<b>${n} selected</b> of ${FOCUS.length} · swipe for more`;
   updateFocusScroll();
 }
@@ -941,6 +1099,39 @@ $('roundList').addEventListener('click',e=>{
   const b=e.target.closest('.round-opt'); if(!b) return; state.opt=+b.dataset.i; renderSetup();
 });
 
+/* ---------- basic workout and round timer setup ---------- */
+function renderPlain(){
+  const basic = mode==='basic', scen = mode==='scenario', listy = basic||scen;
+  const opts = scen ? SCEN_OPTS : OPTIONS, oi = scen ? state.sopt : state.opt, o = opts[oi];
+  const lists = scen ? SCENARIOS : BASIC, pi = scen ? state.scen : state.preset;
+  $('pTitle').textContent = scen ? 'Fight scenarios' : basic ? 'Basic workout' : 'Round timer';
+  $('pSub').textContent = scen ? 'Pick an opponent. You get one problem to solve for the whole round, with a coach’s tip every 30 seconds on how to beat that style.'
+    : basic ? 'Set exercises with no coach on screen. A voice tells you when to change and what’s next.' : 'Rounds and rest with bells and a countdown. No exercises, just the clock.';
+  $('pLenSub').textContent = scen ? 'Each round is the full game plan, one tip every 30 seconds. More rounds run it again, so you can sharpen it.'
+    : basic ? 'A new exercise every 30 seconds.' : 'Bells at the start and end of every round.';
+  $('presetBlock').hidden = !listy;
+  $('presetH').textContent = scen ? 'Choose your opponent' : 'Choose your workout';
+  $('presetSub').textContent = scen ? 'Each one is a different style with its own plan to beat it.' : 'The exercises run in this order, 30 seconds each, then start again from the top.';
+  $('presetList').innerHTML = lists.map((w,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${pi===i}">
+      <span class="badge">${svg(scen?'timer':'combo')}</span>
+      <span><strong>${w.name}</strong><span>${w.blurb || w.exercises.map(exName).join(' · ')}</span></span>
+    </button>`).join('');
+  $('scenBrief').hidden = !scen;
+  if(scen) $('scenBrief').innerHTML = `<div><h3>Your opponent</h3><p>${SCENARIOS[pi].opponent}</p></div><div><h3>Your mission</h3><p>${SCENARIOS[pi].mission}</p></div>`;
+  $('pRoundList').innerHTML = opts.map((o,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${oi===i}">
+      <span class="badge">${svg('timer')}</span>
+      <span><strong>${o.r} × ${o.m}-minute round${o.r>1?'s':''}</strong><span>${o.r*o.m} minutes of boxing${basic?` · ${o.r*o.m*2} exercises`:scen?` · ${o.r*o.m*2} coaching tips`:''}</span></span>
+    </button>`).join('');
+  $('restList').innerHTML = REST_OPTS.map((s,i)=>`<button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.rest===i}"><strong>${restLabel(s)}</strong></button>`).join('');
+  $('summary').innerHTML = `<b>${listy ? lists[pi].name : 'Round timer'}</b> · ${o.r} × ${o.m} min${o.r>1?` · ${restLabel(REST_OPTS[state.rest])} rest`:''}`;
+  $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
+}
+$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='scenario'?'scen':'preset']=+b.dataset.i; renderPlain(); } });
+$('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='scenario'?'sopt':'opt']=+b.dataset.i; renderPlain(); } });
+$('restList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state.rest=+b.dataset.i; renderPlain(); } });
+
 /* ---------- workout generation ---------- */
 const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 let steps=[], rounds=0, roundSec=0;
@@ -962,6 +1153,20 @@ function build(){
     if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the arms. Round ${r+1} is next.`,dur:REST,color:REST_C});
   }
   $('wTitle').textContent = areas.length===1 ? areas[0].name : 'Boxing Flow';
+  $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
+}
+// basic workout: the chosen list in order, 30 seconds each; round timer: each round is one long step
+function buildPlain(){
+  const scen = mode==='scenario', o=(scen?SCEN_OPTS[state.sopt]:OPTIONS[state.opt]), rest=REST_OPTS[state.rest]; rounds=o.r; roundSec=o.m*60;
+  const list = mode==='basic' ? BASIC[state.preset].exercises : scen ? SCENARIOS[state.scen].phases : null;
+  steps=[{type:'ready',round:1,name:'Get ready',cue:scen?SCENARIOS[state.scen].mission:'Round 1 is about to start.',dur:READY,color:READY_C}];
+  let w=0;
+  for(let r=1;r<=rounds;r++){
+    if(list) for(let s=0;s<roundSec/SEG;s++){ const e=list[w%list.length]; steps.push({type:'work',round:r,name:exName(e),cue:exCue(e),tip:exTip(e),dur:SEG,color:PALETTE[w++%PALETTE.length]}); }
+    else steps.push({type:'work',round:r,name:`Round ${r}`,cue:`${o.m} minutes. Keep working until the bell.`,tip:'',dur:roundSec,color:PALETTE[0]});
+    if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the arms. Round ${r+1} is next.`,dur:rest,color:REST_C});
+  }
+  $('wTitle').textContent = scen ? SCENARIOS[state.scen].name : list ? BASIC[state.preset].name : 'Round timer';
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
 }
 
@@ -1196,7 +1401,7 @@ function say(text, delay=0){
     u.rate = 1.05;
     u.onstart = () => duck(true);                       // music dips while the coach talks
     u.onend = u.onerror = () => duck(false);
-    Coach.bind(u, text);
+    if(mode==='coach') Coach.bind(u, text);
     synth.speak(u);
   };
   delay ? (sayTimer = setTimeout(go, delay)) : go();
@@ -1554,40 +1759,51 @@ const C=2*Math.PI*120; $('ringProg').style.strokeDasharray=C;
 
 function enter(i,silent){
   idx=i; el=0; readyBeep=-1; midDone=false; lateDone=false;
-  showQuote();
+  showQuote(); bgInfo();
   if(idx>=steps.length){ finish(); return; }
   renderList(true);   // every changeover (timer, skip forward, skip back) rebuilds Up next from the new position
-  Coach.onStep(steps[idx], steps[idx-1]);
+  if(mode==='coach') Coach.onStep(steps[idx], steps[idx-1]);
   if(silent) return;
   const s=steps[idx], prev=steps[idx-1];
   const first = s.type==='work' && (!prev||prev.type!=='work');
   if(s.type==='rest' || first) bell(); else beep();
   if(first) flashFight();
   if(first) cheer(.7, 3); else if(s.type==='rest') cheer(.9, 4);
-  if(s.type==='work') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), first?1000:300);
-  else if(s.type==='rest') say(`Rest. One minute. Round ${s.round+1} is next.`, 1400);
+  if(s.type==='work'){
+    if(mode==='coach') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), first?1000:300);
+    else if(mode==='scenario') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), first?1000:300);
+    else if(mode==='basic') say(first ? `Round ${s.round}. ${spoken(s.name)}.` : `Next exercise. ${spoken(s.name)}.`, first?1000:300);
+    else say(`Round ${s.round}.`, 1000);
+  }
+  else if(s.type==='rest') say(`Rest. ${restWords(s.dur)}. Round ${s.round+1} is next.`, 1400);
 }
-function tick(t){
+// the clock itself. A timer calls it too while the page is hidden, because animation frames stop in the background
+function advance(t){
   if(running){
     el += (t-last)/1000*speed; last=t;
     while(idx<steps.length && el>=steps[idx].dur){ const over=el-steps[idx].dur; enter(idx+1); el=over; }
     // get-ready countdown: one beep per second (5, 4, 3, 2, 1), then the start bell
     const cs=steps[idx];
-    if(cs) Coach.tick(cs, el);
+    if(cs && mode==='coach') Coach.tick(cs, el);
     if(cs && cs.type==='ready'){ const sec=Math.floor(el); if(sec!==readyBeep && sec<READY){ readyBeep=sec; tone(660,0,.15); } }
     // halfway through every drill: a second tip for that drill,
     // then a push in the last 10 seconds of a round, and a quote during each rest
     if(cs && cs.type==='work'){
       const lastInRound = !steps[idx+1] || steps[idx+1].type!=='work';
-      if(!midDone && el>=SEG/2){ midDone=true; if(cs.tip) say(spoken(cs.tip)); }
-      if(!lateDone && lastInRound && el>=SEG-10){ lateDone=true; say(draw('fin',FINISH)); cheer(.6, 4); }
+      // a scenario reads its whole plan first, so the short cue waits until about 21 seconds in, and the last drill of a round keeps its final-ten push
+      const midAt = mode==='scenario' ? SEG*.7 : SEG/2;
+      if(!midDone && el>=midAt){ midDone=true; if(cs.tip && !(mode==='scenario' && lastInRound)) say(spoken(cs.tip)); }
+      if(!lateDone && lastInRound && el>=cs.dur-10){ lateDone=true; say(draw('fin',FINISH)); cheer(.6, 4); }
     }
     if(cs && cs.type==='rest'){
-      if(!lateDone && el>=REST-10){ lateDone=true; say('Ten seconds. Gloves up.'); }
+      if(!lateDone && el>=cs.dur-10){ lateDone=true; say('Ten seconds. Gloves up.'); }
       // same 5-beep countdown going into every round
-      if(el>=REST-READY){ const sec=Math.floor(el-(REST-READY)); if(sec!==readyBeep && sec<READY){ readyBeep=sec; tone(660,0,.15); } }
+      if(el>=cs.dur-READY){ const sec=Math.floor(el-(cs.dur-READY)); if(sec!==readyBeep && sec<READY){ readyBeep=sec; tone(660,0,.15); } }
     }
   }
+}
+function tick(t){
+  advance(t);
   if(idx<steps.length){ render(); raf=requestAnimationFrame(tick); }
 }
 let lastCount=0, fightTimer=0;
@@ -1640,7 +1856,7 @@ function render(){
     frac=cd/READY;
     if(n!==lastCount){ lastCount=n; retrigger($('ringInner'),'spin'); retrigger($('shock'),'go'); retrigger($('shock2'),'go'); }
   } else if(lastCount){ wrap.classList.remove('countdown'); lastCount=0; }
-  const sec=Math.max(0,Math.ceil(left)); $('rNextVal').textContent = `${sec} second${sec===1?'':'s'}`;
+  const sec=Math.max(0,Math.ceil(left)); $('rNextVal').textContent = sec>60 ? fmt(sec) : `${sec} second${sec===1?'':'s'}`;
   $('ringProg').style.strokeDashoffset = C*(1-frac);
   $('nowName').textContent=s.name; $('nowCue').textContent=s.cue;
   $('nowBar').style.width = (el/s.dur*100)+'%';
@@ -1672,11 +1888,12 @@ function renderList(force){
     const grip = n.type==='work' ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
     return `<li class="item ${n.type}${k===movedK?' just-moved':''}" data-k="${k}" style="--c:${n.color}">
       <div class="item-main"><div class="num">${String(i+1).padStart(2,'0')}${i===0?' · Next':''}</div>
-      <strong>${n.name}</strong><div class="dur">${n.type==='rest'?'1 min rest':n.dur+' sec'}</div></div>${tag}${grip}</li>`;
+      <strong>${n.name}</strong><div class="dur">${n.type==='rest'?restLabel(n.dur)+' rest':n.dur+' sec'}</div></div>${tag}${grip}</li>`;
   }).join('') : '<li class="item"><div class="item-main"><div class="num">Last one</div><strong>Final bell</strong><div class="dur">Finish strong</div></div></li>';
   list.scrollTop=keep; movedK=-1;
   const left=next.filter(x=>x.type==='work').length;
-  $('upCount').textContent = left ? `${left} drill${left>1?'s':''} to go` : '';
+  const word = mode==='basic' ? 'exercise' : mode==='scenario' ? 'tip' : 'drill';
+  $('upCount').textContent = left ? `${left} ${word}${left>1?'s':''} to go` : '';
   if(!$('listNote').textContent) $('listNote').textContent=DEFAULT_NOTE;
 }
 // put the upcoming drills into a new order; rests and round lengths stay where they are
@@ -1745,29 +1962,177 @@ function setPlaying(p){
   Coach.pause(!p);
   $('playIcon').innerHTML = p ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>' : '<path d="M7 4l13 8-13 8z"/>';
   $('playBtn').setAttribute('aria-label',p?'Pause':'Play');
+  bgSync();
 }
 async function keepAwake(){ try{ wake = await navigator.wakeLock?.request('screen'); }catch(e){} }
-function show(id){ if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['setup','timer','done'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'; window.scrollTo(0,0); }
+
+/* ---------- phones: keep playing with the screen locked or the app in the background ----------
+   A silent looping <audio> makes the browser treat the page as a media player, so the timer, music and bells carry on and the
+   lock screen gets play/pause and skip controls. Phones only; the wake lock above stops the screen going dark while it is open. */
+const phone = matchMedia('(pointer:coarse)').matches;
+let bgAudio = null, bgReady = false;
+// silence as long as the part of the workout on screen: iPhones draw the lock-screen time bar from this audio's own length
+function silentWav(sec){
+  const n=Math.max(1,Math.round(sec))*8000, buf=new ArrayBuffer(44+n), b=new DataView(buf), w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF'); b.setUint32(4,36+n,true); w(8,'WAVEfmt '); b.setUint32(16,16,true); b.setUint16(20,1,true); b.setUint16(22,1,true);
+  b.setUint32(24,8000,true); b.setUint32(28,8000,true); b.setUint16(32,1,true); b.setUint16(34,8,true); w(36,'data'); b.setUint32(40,n,true);
+  new Uint8Array(buf,44).fill(128);
+  return new Blob([buf],{type:'audio/wav'});
+}
+function bgInit(){
+  if(!phone || bgReady) return; bgReady=true;
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}   // keeps Web Audio going in the background and over the silent switch
+  bgAudio = new Audio(); bgAudio.loop=true;
+  bgAudio.addEventListener('playing',bgInfo);   // the phone can wipe the track details as playback starts, so they are set again then
+  const ms = navigator.mediaSession; if(!ms) return;
+  const on = (a,f) => { try{ ms.setActionHandler(a,f); }catch(e){} };
+  const prev = () => $('prevBtn').click(), next = () => $('nextBtn').click();
+  on('play',()=>{ ac?.resume?.(); setPlaying(true); });
+  on('pause',()=>setPlaying(false));
+  on('previoustrack',prev); on('seekbackward',prev);
+  on('nexttrack',next); on('seekforward',next);
+  on('stop',()=>$('exitBtn').click());
+}
+function bgSync(){
+  if(!bgAudio) return;
+  if(running){ bgPos(); bgAudio.play().catch(()=>{}); } else bgAudio.pause();
+  if(navigator.mediaSession) navigator.mediaSession.playbackState = running ? 'playing' : 'paused';
+}
+// the lock screen shows the logo, the current exercise across the front, and a bar for the time through the round (or the rest)
+// a real file at a normal address: the lock screen can't load images made in the page
+const bgArt = [{src:new URL('logo-512.png',location.href).href, sizes:'512x512', type:'image/png'}];
+function bgInfo(){
+  const s = bgAudio && steps[idx]; if(!s || !navigator.mediaSession || !window.MediaMetadata) return;
+  navigator.mediaSession.metadata = new MediaMetadata({title:s.name, artist:`Round ${s.round} of ${rounds} · ${$('wTitle').textContent}`, album:'Boxing Flow', artwork:bgArt});
+  bgPos();
+}
+let bgKey = '', bgUrl = '';
+function bgPos(){
+  const s = bgAudio && steps[idx]; if(!s) return;
+  const work = s.type==='work', dur = work ? roundSec : s.dur, pos = Math.max(0,Math.min(work?roundElapsed():el,dur-.5)), key = work ? 'w'+dur : s.type+dur;
+  if(key!==bgKey){                                     // a new round, rest or countdown: new silence of that length
+    bgKey = key; if(bgUrl) URL.revokeObjectURL(bgUrl);
+    bgAudio.src = bgUrl = URL.createObjectURL(silentWav(dur));
+    bgAudio.addEventListener('loadedmetadata',()=>{ try{ bgAudio.currentTime=pos; }catch(e){} if(running) bgAudio.play().catch(()=>{}); },{once:true});
+  } else if(Math.abs(bgAudio.currentTime-pos)>1.5) { try{ bgAudio.currentTime=pos; }catch(e){} }
+  bgAudio.playbackRate = speed;
+  try{ navigator.mediaSession?.setPositionState?.({duration:dur, position:pos, playbackRate:speed}); }catch(e){}
+}
+function bgStop(){
+  if(!bgAudio) return; bgAudio.pause(); bgKey='';
+  if(navigator.mediaSession){ navigator.mediaSession.playbackState='none'; navigator.mediaSession.metadata=null; }
+}
+setInterval(()=>{ if(document.hidden && running) advance(performance.now()); }, 500);
+// add ?debug to the address to see what the lock-screen player is being given
+if(/[?&]debug\b/.test(location.search)){
+  const d=document.createElement('pre'); d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99;margin:0;padding:8px;font:11px/1.35 monospace;background:#000c;color:#9f9;white-space:pre-wrap;pointer-events:none';
+  document.body.appendChild(d);
+  setInterval(()=>{ const m=navigator.mediaSession?.metadata, a=bgAudio;
+    d.textContent=`secure:${isSecureContext} phone:${phone} mediaSession:${!!navigator.mediaSession} MediaMetadata:${!!window.MediaMetadata}\n`
+      +`audio:${a?`paused=${a.paused} ready=${a.readyState} dur=${a.duration} t=${a.currentTime|0} err=${a.error?.code||0}`:'none'}\n`
+      +`title:${m?.title} | artist:${m?.artist}\nart:${m?.artwork?.[0]?.src}`; },1000);
+}
+// the live preview in the coach card is told when it is on screen, so it starts clean each time instead of coming back half-way through
+function show(id){ try{ document.querySelector('.mode-preview iframe')?.contentWindow?.postMessage({bfPreview:id==='modes'},location.origin); }catch(e){}
+  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'&&id!=='plainSetup'; window.scrollTo(0,0); }
+const setupScreen = () => mode==='coach' ? 'setup' : 'plainSetup';
+// the 3D coach only loads once someone picks a coach workout, so the basic workout and the round timer stay light
+function want3D(){ window.bfWant3D=true; window.bfBoot3D?.(); }
+function pickMode(m){ if(m==='iq'){ renderIQ(); show('iq'); return; } mode=m; if(m==='coach'){ want3D(); renderSetup(); } else renderPlain(); show(setupScreen()); }
+document.querySelectorAll('.mode-card').forEach(b=>b.onclick=()=>pickMode(b.dataset.mode));   // the coach card is a div (it holds the preview); its button's click bubbles up to it
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show('modes'));
+
+/* ---------- boxing IQ: pick a topic, then flip through its questions and mark each one ---------- */
+const IQ_MIX = 20;
+const iqBand = p => p<50 ? 'Fundamentals to develop' : p<70 ? 'Developing ring awareness' : p<85 ? 'Good tactical understanding' : 'Strong boxing IQ knowledge';
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let iqScores = {};
+try{ iqScores = JSON.parse(localStorage.getItem('bfIQ')||'{}') || {}; }catch(e){}
+const iqSave = () => { try{ localStorage.setItem('bfIQ', JSON.stringify(iqScores)); }catch(e){} };
+let quiz = null;
+function renderIQ(){
+  $('iqList').innerHTML = IQ.map((c,i)=>`
+    <button class="round-opt iq-row" data-id="${c.id}">
+      <span class="badge">${i+1}</span>
+      <span><strong>${c.name}</strong><span>${c.desc}</span></span>
+      <em class="${iqScores[c.id]!=null?'done':''}">${iqScores[c.id]!=null ? `Best ${iqScores[c.id]}%` : `${c.q.length} scenarios`}</em>
+    </button>`).join('')
+    + `<button class="round-opt iq-row" data-id="mix">
+      <span class="badge">&#9733;</span>
+      <span><strong>Mixed quiz</strong><span>${IQ_MIX} random scenarios from every topic</span></span>
+    </button>`;
+}
+$('iqList').addEventListener('click',e=>{ const b=e.target.closest('.iq-row'); if(b) startQuiz(b.dataset.id); });
+$('iqBack').onclick=()=>{ renderIQ(); show('iq'); };
+function startQuiz(id){
+  const cat = IQ.find(c=>c.id===id);
+  const pool = cat ? cat.q.map(q=>({q,cat})) : IQ.flatMap(c=>c.q.map(q=>({q,cat:c})));
+  quiz = {cat, items:shuffle(pool).slice(0, cat ? pool.length : IQ_MIX).map(it=>({...it, order:shuffle([0,1,2,3]), pick:null})), i:0, got:0, missed:[]};
+  renderQuiz(); show('iqQuiz');
+}
+function renderQuiz(){
+  const body = $('iqBody'), n = quiz.items.length;
+  if(quiz.i>=n){
+    const p = Math.round(quiz.got/n*100), title = quiz.cat ? quiz.cat.name : 'Mixed quiz';
+    if(quiz.cat){ iqScores[quiz.cat.id] = Math.max(iqScores[quiz.cat.id]||0, p); iqSave(); }
+    body.innerHTML = `<div class="done" style="padding-top:10px">
+      <div class="eyebrow">${esc(title)}</div>
+      <div class="big">${p}%</div>
+      <p class="sub" style="font-size:18px;color:var(--fg)">${iqBand(p)}</p>
+      <p class="sub">${quiz.got} of ${n} correct</p>
+      <div class="row"><button class="btn" id="iqAgain">Try again</button><button class="btn ghost" id="iqTopics">All topics</button></div>
+      ${quiz.missed.length ? `<h2 style="margin-top:28px;text-align:left">Review these</h2><div class="iq-missed">${quiz.missed.map(m=>`<div><strong>${esc(m.q[0])}</strong><span>${esc(m.q[1][m.q[2]])} ${esc(m.q[3])}</span></div>`).join('')}</div>` : ''}
+    </div>`;
+    $('iqAgain').onclick=()=>startQuiz(quiz.cat?quiz.cat.id:'mix'); $('iqTopics').onclick=()=>$('iqBack').onclick();
+    window.scrollTo(0,0); return;
+  }
+  const it = quiz.items[quiz.i], {q,cat} = it, answered = it.pick!==null;
+  body.innerHTML = `<div class="iq-card">
+    <div class="iq-meta"><span>${esc(cat.name)} · ${esc(q[4])}</span><span>${quiz.i+1} of ${n}</span></div>
+    <div class="iq-bar"><i style="width:${quiz.i/n*100}%"></i></div>
+    <p class="q">${esc(q[0])}</p>
+    <div class="rounds" role="group" aria-label="Answers">${it.order.map(o=>`
+      <button class="round-opt iq-opt${answered ? (o===q[2] ? ' right' : o===it.pick ? ' wrong' : '') : ''}" data-o="${o}" ${answered?'disabled':''}>
+        <span><strong>${esc(q[1][o])}</strong></span>
+      </button>`).join('')}</div>
+    ${answered ? `<div class="iq-ans"><b>${it.pick===q[2] ? 'Correct' : 'Not quite'}</b><span>${esc(q[3])}</span></div>
+      <div class="iq-actions"><button class="btn" id="iqNext">${quiz.i+1<n ? 'Next question' : 'See results'}</button></div>` : ''}
+  </div>`;
+  if(answered) $('iqNext').onclick=()=>{ quiz.i++; renderQuiz(); };
+  else body.querySelectorAll('.iq-opt').forEach(b=>b.onclick=()=>{
+    it.pick=+b.dataset.o; if(it.pick===q[2]) quiz.got++; else quiz.missed.push(it);
+    renderQuiz(); window.scrollTo(0,document.body.scrollHeight);
+  });
+}
 // the interactive-mode prompt: a small tooltip while the coach is demonstrating (the timer turned over to him)
 function iaPrompt(on){ const el=$('iaPrompt'); if(!el) return; el.classList.toggle('show',!!on && !window.gymMode); }
 window.iaPrompt=iaPrompt;
 if($('iaPromptText') && matchMedia('(hover:hover) and (pointer:fine)').matches) $('iaPromptText').textContent='Double-click for interactive';
 function start(){
-  window.bfAutoGym=true;                                          // the first drill of each workout opens interactive mode
+  const coach = mode==='coach';
+  window.bfAutoGym=coach;                                         // the first drill of each coach workout opens interactive mode
+  $('timer').classList.toggle('plain',!coach); $('timer').classList.toggle('clock-only',mode==='timer');
   // the crowd for the finale is fetched and decoded early in the workout, so the celebration never waits for it
-  setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
-  build(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  if(coach) setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
+  else { Coach.pause(true); window.bfWork=false; iaPrompt(false); }   // no coach: make sure he is put away
+  bgInit();   // inside the tap, so the phone lets the audio start
+  coach ? build() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
   cancelAnimationFrame(raf); raf=requestAnimationFrame(tick);
 }
 function finish(){
-  running=false; cancelAnimationFrame(raf); bell(); try{wake?.release()}catch(e){}
+  running=false; cancelAnimationFrame(raf); bell(); try{wake?.release()}catch(e){} bgStop();
   say('Workout complete. Great work.', 1400);
   stopMusic();
-  const o=OPTIONS[state.opt], work=steps.filter(s=>s.type==='work');
-  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${o.r*o.m}<span>Minutes boxed</span></div><div>${work.length}<span>Drills</span></div>`;
+  const o={r:rounds, m:roundSec/60}, work=steps.filter(s=>s.type==='work');
+  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${o.r*o.m}<span>Minutes boxed</span></div>`
+    + (mode==='timer' ? '' : `<div>${work.length}<span>${mode==='basic'?'Exercises':mode==='scenario'?'Coaching tips':'Drills'}</span></div>`);
+  const sc = mode==='scenario' && SCENARIOS[state.scen];
+  $('doneReview').hidden = !sc;
+  if(sc) $('doneReview').innerHTML = `<h3>${sc.name}</h3><p>${sc.mission}</p><h3>Key lesson</h3><p>${sc.lesson}</p><h3>Next time</h3><p>Run it again and pick one tip from this round to nail. Spend the whole round on that one thing.</p>`;
+  if(mode!=='coach'){ show('done'); return; }
   // the finale: every drill on the wall, crushed one by one, then the fighter is celebrated (needs the 3D coach)
   const seen=new Map(); work.forEach(s=>{ const d=seen.get(s.name); if(d) d.n++; else { let play=null; try{ play=s.moves?{keys:s.moves,pace:s.speed||1}:window.bfParseStep?.(s); }catch(e){} seen.set(s.name,{name:s.name,n:1,color:s.color,play}); } });
   const data={drills:[...seen.values()], stats:{rounds:o.r, minutes:o.r*o.m, drills:work.length}};
@@ -1783,26 +2148,14 @@ window.bfFx={ thud:()=>{ try{ tone(78,0,.18,.5); tone(52,.02,.22,.35); }catch(e)
               cheer:(l,len)=>cheer(l,len), quiet:ms=>setTimeout(()=>{ if(crowd) stopCrowd(); },ms) };
 
 $('buildBtn').onclick=start;
-// subscriptions (only where the payment functions run, i.e. the Netlify site): manage link, and a hello after checkout
-if(location.protocol==='https:' && !/claude|usercontent/.test(location.hostname)){
-  $('manageSub').hidden=false;
-  const q=new URLSearchParams(location.search);
-  if(q.has('welcome')){
-    const w=document.createElement('div'); w.className='welcome'; w.setAttribute('role','status');
-    w.textContent='Welcome to Boxing Flow. Your free week has started.'; document.body.appendChild(w);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.add('show')));
-    setTimeout(()=>w.classList.remove('show'),5200); setTimeout(()=>w.remove(),6000);
-    history.replaceState(null,'',location.pathname);
-  }
-}
 $('againBtn').onclick=start;
 $('gfAgain').onclick=()=>{ window.Coach3D?.endFinale?.(); start(); };
 $('gfChange').onclick=()=>{ window.Coach3D?.endFinale?.(); show('setup'); };
-$('changeBtn').onclick=()=>{show('setup');};
-$('exitBtn').onclick=()=>{ window.bfAutoGym=false; iaPrompt(false); hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} show('setup'); };
+$('changeBtn').onclick=()=>{show(setupScreen());};
+$('exitBtn').onclick=()=>{ window.bfAutoGym=false; iaPrompt(false); hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} bgStop(); show(setupScreen()); };
 $('playBtn').onclick=()=>setPlaying(!running);
 $('nextBtn').onclick=()=>{ if(idx<steps.length-1){ enter(idx+1); render(); } else { idx=steps.length; finish(); } };
-$('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; } else enter(idx-1); render(); };
+$('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; bgPos(); } else enter(idx-1); render(); };
 $('speedBtn').onclick=e=>{ speed=speed===1?10:1; e.currentTarget.setAttribute('aria-pressed',speed>1); };
 $('musicBtn').onclick=()=>{ music ? stopMusic() : startMusic(); };
 $('beatBtn').onclick=e=>{ e.stopPropagation(); setBeat(!beatOn); };
@@ -3346,7 +3699,7 @@ async function boot(avKey,opts={}){
   // double-tap (or double-click) the timer at any time
   let lastTap=0;
   inner.addEventListener('pointerup',e=>{
-    if(gen!==bootGen || gymMode || e.target.closest('button')) return;
+    if(gen!==bootGen || gymMode || e.target.closest('button') || document.getElementById('timer').classList.contains('plain')) return;
     const t=performance.now();
     if(t-lastTap<380){ lastTap=0; api.enterGym(); } else lastTap=t;
   });
@@ -3424,7 +3777,10 @@ api.setAvatar=async key=>{
 };
 if(swapBtn){ showSwap(); swapBtn.addEventListener('click',()=>api.setAvatar(avatarKey==='her'?'coach':'her')); }
 
-if(document.readyState==='complete') setTimeout(start,300); else window.addEventListener('load',()=>setTimeout(start,300));
+// loads only once a coach workout is picked (the mode screen calls this; see want3D)
+let booted=false;
+window.bfBoot3D=()=>{ if(booted) return; booted=true; if(document.readyState==='complete') setTimeout(start,300); else window.addEventListener('load',()=>setTimeout(start,300)); };
+if(window.bfWant3D) window.bfBoot3D();
 </script>
 
 </body>

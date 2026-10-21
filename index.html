@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#0f161d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
+<!-- index.html?preview shows only the live preview card, filling the window: the app's mode screen embeds it in the Coach workout card -->
+<script>if(/[?&]preview(=|&|$)/.test(location.search)) document.documentElement.classList.add('embed');</script>
 <!-- the 3D coach preview: fetch three.js and the coach's files the moment the page opens, all at once.
      The import map has to come first: some browsers ignore one that arrives after module loading has started. -->
 <script type="importmap">
@@ -58,6 +60,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offse
 .wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
 h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:.005em}
 .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--gold)}
+html.embed,html.embed body{overflow:hidden;height:100%;background:transparent;margin:0}
+html.embed body{visibility:hidden}
+html.embed .demo{visibility:visible;position:fixed;inset:0;max-width:none;border:0;border-radius:0;box-shadow:none;background:transparent;align-content:center}
 .icon{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* nav */
@@ -179,16 +184,6 @@ section{padding-block:72px}
 .round span{color:var(--muted);font-size:14px}
 .round small{color:var(--gold);font-weight:600;font-size:13px;margin-top:6px}
 .note{color:var(--muted);font-size:14px;margin:16px 0 0}
-.prices{display:grid;gap:14px;max-width:680px}
-@media (min-width:640px){.prices{grid-template-columns:1fr 1fr}}
-.price-card{position:relative;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:22px;text-decoration:none;transition:border-color .2s,transform .15s}
-.price-card:hover{border-color:color-mix(in srgb,var(--gold) 55%,var(--line));transform:translateY(-2px)}
-.price-card.best{border-color:var(--gold)}
-.price-card .tag{position:absolute;top:-11px;right:16px;background:var(--gold);color:var(--gold-ink);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
-.price-card .pname{font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.price-card b{font-family:var(--display);font-size:42px;line-height:1.05;font-variant-numeric:tabular-nums}
-.price-card b small{font-family:var(--body);font-size:16px;font-weight:500;color:var(--muted)}
-.price-card>span:last-child{color:var(--muted);font-size:15px}
 
 .final{text-align:center;padding-block:96px}
 .final h2{font-size:clamp(56px,10vw,110px);line-height:.9;text-transform:uppercase}
@@ -214,8 +209,7 @@ footer p{margin:0;max-width:70ch}
       <a href="#how">How it works</a>
       <a href="#features">Features</a>
       <a href="#skills">Skills</a>
-      <a href="#pricing">Pricing</a>
-      <a class="btn small" href="/api/checkout?plan=yearly">Start free week</a>
+      <a class="btn small" href="app.html">Start training</a>
     </nav>
   </div>
 </header>
@@ -227,7 +221,7 @@ footer p{margin:0;max-width:70ch}
       <h1>Every round,<br><em>called for you.</em></h1>
       <p class="lede">Pick what you want to work on and how many rounds. Boxing Flow builds the workout and talks you through a new drill every 30 seconds, with bells, a countdown, music and a crowd behind you.</p>
       <div class="cta-row">
-        <a class="btn" href="/api/checkout?plan=yearly">Start your free week
+        <a class="btn" href="app.html">Start a workout
           <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn ghost" href="#how">How it works</a>
       </div>
@@ -335,25 +329,11 @@ footer p{margin:0;max-width:70ch}
     </div>
   </section>
 
-  <section id="pricing" class="band">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="eyebrow">Pricing</div>
-        <h2>Seven days free</h2>
-        <p>Try everything for a week. You won't be charged until the trial ends, and you can cancel any time.</p>
-      </div>
-      <div class="prices">
-        <a class="price-card best" href="/api/checkout?plan=yearly"><span class="tag">Best value</span><span class="pname">Yearly</span><b>NZ$69.99<small> / year</small></b><span>NZ$5.83 a month. Save 42%.</span></a>
-        <a class="price-card" href="/api/checkout?plan=monthly"><span class="pname">Monthly</span><b>NZ$9.99<small> / month</small></b><span>Flexible. Cancel any time.</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="final">
+  <section class="final band">
     <div class="wrap">
       <h2>Gloves on.</h2>
-      <p>Your first week is free. Your first round is three taps away.</p>
-      <a class="btn" href="/api/checkout?plan=yearly">Start your free week
+      <p>Your first round is three taps away.</p>
+      <a class="btn" href="app.html">Start a workout
         <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
   </section>
@@ -753,9 +733,9 @@ async function boot(){
   requestAnimationFrame(frame);
 
   // straight away, then every third drill: the double-tap, and the circle opens into interactive mode for that drill and the next
-  let hideT=0, tapT=0, inT=0, shows=0;
+  let hideT=0, tapT=0, inT=0, shows=0, off=false;
   api.show=name=>{
-    const list=DRILLS[name]; if(!list) return;
+    const list=DRILLS[name]; if(!list || off) return;
     const s=list.map(f=>CLIPS[f]).filter(Boolean); if(!s.length) return;
     const step=shows++%3; clearTimeout(hideT); clearTimeout(tapT); clearTimeout(inT);
     seq=s; si=0; pace=SPEED[name]||1; tag.textContent=name; if(dgNow) dgNow.textContent=name;
@@ -768,6 +748,18 @@ async function boot(){
       inT=setTimeout(enterGym,2000);
     } else hideT=setTimeout(()=>{ showing=false; ringIn.classList.remove('flipped'); },4600);
   };
+  // The app hides this page while another mode is open, and stops it drawing. Anything half-way through (the gym opening out, the
+  // coach turned over) would come back stuck as a black circle, so put it all back to the start and begin again when it is shown.
+  function resetView(){
+    clearTimeout(hideT); clearTimeout(tapT); clearTimeout(inT);
+    if(inGym){ gymEl.classList.remove('on','hud'); backFace.prepend(canvas); inGym=false; }
+    tap?.classList.remove('go'); showing=false; ringIn.classList.remove('flipped'); shownAt=-1e9; fovNow=28; camera.fov=28; camera.updateProjectionMatrix();
+  }
+  addEventListener('message',e=>{
+    if(e.origin!==location.origin || !e.data || typeof e.data.bfPreview!=='boolean') return;
+    off=!e.data.bfPreview; resetView();
+    if(!off && window.demoDrill) setTimeout(()=>api.show(window.demoDrill()),300);
+  });
   api.ready=true;
 }
 // start straight away (the files began downloading in the page head) and turn over to him as soon as he is ready
