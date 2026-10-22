@@ -115,7 +115,13 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .ring-wrap svg{transition:filter .3s}
 .ring-inner{transform-style:preserve-3d;will-change:transform}
 .countdown svg{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--c) 70%,transparent))}
-.countdown .ring-inner{box-shadow:0 0 0 2px var(--c),0 0 50px color-mix(in srgb,var(--c) 40%,transparent),inset 0 0 40px color-mix(in srgb,var(--c) 18%,transparent)}
+/* The circle spins a full 360 on every second, as it always did. The square on iPhones was a box-shadow glow: a layer made for 3D is cut off at its
+   own square edge, and the glow around a round box shows up as a gold square. So nothing here uses box-shadow. The glow is a gradient painted inside a
+   layer as big as the whole ring, with the gold rim line in it, and the soft edge inside the circle is a gradient too. */
+.countdown::before,.fighting::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle closest-side,transparent 72%,rgba(245,201,90,.95) 73.4%,rgba(245,201,90,.9) 74.2%,rgba(245,201,90,.38) 76%,rgba(245,201,90,.14) 82%,transparent 90%)}
+.countdown .face.front{background:radial-gradient(circle closest-side,#1b2631 62%,#3e4038 100%)}
+.countdown .face.back{display:none}
 .countdown .r-time{font-size:clamp(100px,30vw,150px);color:var(--c);margin:0;text-shadow:0 0 30px color-mix(in srgb,var(--c) 55%,transparent)}
 .countdown .r-div,.countdown .r-next,.countdown .r-next-val{display:none}
 .countdown .r-label{color:var(--fg)}
@@ -130,7 +136,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 @keyframes fight{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.18)}65%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
 .fighting .ring-inner>*{opacity:0;transition:opacity .2s}
 .fighting .ring-inner{animation:fightPop 1.2s ease-out}
-@keyframes fightPop{0%{transform:scale(1.2);box-shadow:0 0 90px var(--c)}100%{transform:scale(1);box-shadow:0 0 0 transparent}}
+@keyframes fightPop{0%{transform:scale(1.2)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.ring-inner.spin,.shock.go,.fight-text.go,.fighting .ring-inner{animation:none}}
 .now{background:var(--surface);border-radius:14px;padding:16px;text-align:center;margin-top:20px;position:relative;overflow:hidden}
 .now .eyebrow{font-size:11px}
@@ -217,6 +223,17 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .review{text-align:left;max-width:520px;margin:0 auto 26px;background:var(--surface);border-radius:16px;padding:16px 18px}
 .review h3{margin:0 0 4px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .review p{margin:0 0 12px}.review p:last-child{margin:0}
+.rest-opts.four{grid-template-columns:repeat(4,1fr)}.rest-opts.two{grid-template-columns:repeat(2,1fr)}
+.read h2{font-size:20px;margin:24px 0 8px}.read p{margin:0 0 10px}.read ol{margin:0;padding-left:20px;display:grid;gap:10px}
+.bx{display:grid;gap:18px;justify-items:center;text-align:center;padding-top:10px}
+.bx-box{position:relative;width:min(78vw,340px);aspect-ratio:1}
+.bx-box svg{width:100%;height:100%;display:block;overflow:visible}
+.bx-side{fill:none;stroke-width:6;stroke-linecap:round;stroke-dasharray:1 1;stroke-dashoffset:1}
+#bxDot{filter:drop-shadow(0 0 8px var(--gold))}
+.bx-mid{position:absolute;inset:0;display:grid;place-content:center;gap:2px}
+.bx-phase{font-family:var(--display);font-size:clamp(24px,7vw,32px);text-transform:uppercase;letter-spacing:.06em}
+.bx-count{font-family:var(--display);font-size:clamp(64px,20vw,96px);font-weight:700;line-height:1;color:var(--gold)}
+.bx-time{color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums}
 .iq-note{color:var(--muted);font-size:13px;margin-top:18px}
 /* basic workout and round timer: no coach on the back of the timer, no quotes, no interactive mode */
 #timer.plain .face.back,#timer.plain .ia-prompt,#timer.plain .now-line{display:none!important}
@@ -235,6 +252,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .ring-inner{background:none;display:block;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
 .ring-inner.flipped{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;border-radius:50%;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.face.back{clip-path:circle(50%)}   /* iPhones ignore the rounded corners of a turned-over face, so clip it to a circle */
 .face.front{background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .face.back{transform:rotateY(180deg);overflow:hidden;
   background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--c,var(--gold)) 30%,var(--surface)) 0%,var(--surface) 58%,#0b1117 100%)}
@@ -399,14 +417,111 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 </head>
 <body>
 
-<!-- ============ MODES ============ -->
-<section id="modes" class="wrap">
+<!-- ============ HOME: BOXING OR STRENGTH AND CONDITIONING ============ -->
+<section id="home" class="wrap">
   <div class="brand"><a class="eyebrow" href="index.html" style="text-decoration:none">&larr; Boxing Flow</a></div>
+  <h1>What are you training today?</h1>
+  <p class="sub">Pick a section. You can come back and change it any time.</p>
+  <div class="modes">
+    <button class="mode-card" data-section="modes">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M5 11c0-4 3-7 7-7s7 3 7 7v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M8 21h8"/></svg></span>
+      <strong>Boxing</strong>
+      <p>Coach workouts, set exercises, round timer, fight scenarios, output rounds and boxing IQ.</p>
+      <span class="go">Open boxing &rarr;</span>
+    </button>
+    <button class="mode-card" data-section="sc">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg></span>
+      <strong>Strength &amp; conditioning</strong>
+      <p>Explosive and conditioning work to build the power, speed and fitness behind your boxing.</p>
+      <span class="go">Open strength &amp; conditioning &rarr;</span>
+    </button>
+    <button class="mode-card" data-section="mind">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+      <strong>Mental skills</strong>
+      <p>Box breathing, reframing, self-talk and more. Train the calm, focus and confidence behind your boxing.</p>
+      <span class="go">Train your mind &rarr;</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ STRENGTH AND CONDITIONING ============ -->
+<section id="sc" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-home>&larr; Back</button></div>
+  <h1>Strength &amp; conditioning</h1>
+  <p class="sub">Pick a workout.</p>
+  <div class="modes">
+    <button class="mode-card" data-mode="plyo">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/><path d="M5 20h14"/></svg></span>
+      <strong>Plyometrics</strong>
+      <p>Explosive bodyweight work, plus medicine ball power for boxers. Work and rest intervals with a coach calling each move.</p>
+      <span class="go">Pick a workout &rarr;</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ MENTAL SKILLS ============ -->
+<section id="mind" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="home">&larr; Back</button></div>
+  <h1>Mental skills</h1>
+  <p class="sub">Train your mind like you train your body. Short, regular practice is what works.</p>
+  <div class="rounds" id="mindList"></div>
+</section>
+<section id="skill" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
+  <div id="skillBody"></div>
+</section>
+<section id="reframe" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
+  <div id="rfBody"></div>
+</section>
+<section id="breath" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
+  <h1>Box breathing</h1>
+  <div id="bxSetup">
+    <p class="sub">Breathe in, hold, breathe out, hold, all for the same count, tracing the sides of a box. Slow, even breathing can help settle nerves and sharpen your focus before a fight, between rounds or after a hard exchange. Breathe through your nose if you can, and go back to normal breathing if you feel dizzy.</p>
+    <h2>Count</h2>
+    <p class="sub">Seconds for each side of the box.</p>
+    <div class="rest-opts four" id="bxN" role="radiogroup" aria-label="Seconds for each side"></div>
+    <hr>
+    <h2>How long?</h2>
+    <div class="rest-opts four" id="bxMins" role="radiogroup" aria-label="Minutes"></div>
+    <hr>
+    <h2>Voice</h2>
+    <p class="sub">A voice can count it for you: in, two, three, four, hold.</p>
+    <div class="rest-opts two" id="bxVoice" role="radiogroup" aria-label="Voice"></div>
+    <button class="btn" id="bxStart" style="margin-top:24px">Start</button>
+  </div>
+  <div id="bxRun" class="bx" hidden>
+    <div class="bx-box">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <rect x="50" y="50" width="200" height="200" rx="8" fill="none" stroke="var(--line)" stroke-width="6"/>
+        <line class="bx-side" x1="50" y1="250" x2="50" y2="50" pathLength="1"/>
+        <line class="bx-side" x1="50" y1="50" x2="250" y2="50" pathLength="1"/>
+        <line class="bx-side" x1="250" y1="50" x2="250" y2="250" pathLength="1"/>
+        <line class="bx-side" x1="250" y1="250" x2="50" y2="250" pathLength="1"/>
+        <circle id="bxDot" r="11" cx="50" cy="250" fill="var(--gold)"/>
+      </svg>
+      <div class="bx-mid"><div class="bx-phase" id="bxPhase" aria-live="off"></div><div class="bx-count" id="bxCount"></div></div>
+    </div>
+    <div class="bx-time" id="bxTime"></div>
+    <div class="iq-actions"><button class="btn ghost" id="bxPause">Pause</button><button class="btn ghost" id="bxStop">Stop</button></div>
+  </div>
+  <div id="bxDone" class="done" hidden>
+    <div class="eyebrow">Session complete</div>
+    <div class="big">Well done</div>
+    <p class="sub" id="bxDoneText"></p>
+    <div class="row"><button class="btn" id="bxAgain">Go again</button><button class="btn ghost" id="bxBack">Back</button></div>
+  </div>
+</section>
+
+<!-- ============ MODES ============ -->
+<section id="modes" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-home>&larr; Back</button></div>
   <h1>How do you want to train?</h1>
   <p class="sub">Pick a mode. You can come back and change it any time.</p>
   <div class="modes">
     <div class="mode-card feature" data-mode="coach">
-      <span class="mode-preview"><iframe src="index.html?preview" title="Preview of a coach workout" tabindex="-1" aria-hidden="true"></iframe></span>
+      <span class="mode-preview"><iframe data-src="index.html?preview" title="Preview of a coach workout" tabindex="-1" aria-hidden="true"></iframe></span>
       <span class="mode-body">
         <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5"/><path d="M4 20c1-3 4-5 8-5s7 2 8 5M3 9h2M19 9h2"/></svg></span>
         <strong>Coach workout</strong>
@@ -429,8 +544,14 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
     <button class="mode-card" data-mode="scenario">
       <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
       <strong>Fight scenarios</strong>
-      <p>Face a style, like a pressure fighter or a counterpuncher. A coach gives you a tip every 30 seconds on how to beat it.</p>
+      <p>Face a style, like a pressure fighter or a counterpuncher. A coach talks you through how to beat it, one point at a time.</p>
       <span class="go">Pick an opponent &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="output">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12h4M10 12h4M17 12h4M5 7l2 2M12 5v3M19 7l-2 2M5 17l2-2M12 19v-3M19 17l-2-2"/></svg></span>
+      <strong>Output rounds</strong>
+      <p>Pick a punch target, like 500 a round. The coach calls every combination, you throw it, and it adds up to the number.</p>
+      <span class="go">Set your target &rarr;</span>
     </button>
     <button class="mode-card" data-mode="iq">
       <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
@@ -789,6 +910,9 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 
 <script src="iq-questions.js"></script>
 <script src="scenarios.js"></script>
+<script src="output.js"></script>
+<script src="plyo.js"></script>
+<script src="mind.js"></script>
 <script>
 const ICONS = {
   target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
@@ -1054,8 +1178,8 @@ const FINISH = ['Last ten seconds. Empty the tank!', 'Ten seconds left. Everythi
 const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
-const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0};
-let mode = 'coach';   // 'coach' (the 3D coach), 'basic' (set exercises, no coach), 'scenario' (a coached game plan against one style) or 'timer' (rounds and rest only)
+const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0, out:0, oopt:0, plyo:0, popt:0};
+let mode = 'coach';   // 'coach' (the 3D coach), 'basic' (set exercises, no coach), 'scenario' (a coached game plan against one style), 'output' (the coach calls combinations to a punch target), 'plyo' (bodyweight plyometric intervals) or 'timer' (rounds and rest only)
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
 
@@ -1101,35 +1225,43 @@ $('roundList').addEventListener('click',e=>{
 
 /* ---------- basic workout and round timer setup ---------- */
 function renderPlain(){
-  const basic = mode==='basic', scen = mode==='scenario', listy = basic||scen;
-  const opts = scen ? SCEN_OPTS : OPTIONS, oi = scen ? state.sopt : state.opt, o = opts[oi];
-  const lists = scen ? SCENARIOS : BASIC, pi = scen ? state.scen : state.preset;
-  $('pTitle').textContent = scen ? 'Fight scenarios' : basic ? 'Basic workout' : 'Round timer';
-  $('pSub').textContent = scen ? 'Pick an opponent. You get one problem to solve for the whole round, with a coach’s tip every 30 seconds on how to beat that style.'
+  const basic = mode==='basic', scen = mode==='scenario', outp = mode==='output', plyo = mode==='plyo', listy = basic||scen||outp||plyo;
+  const opts = scen ? SCEN_OPTS : outp ? OUT_OPTS : plyo ? PLYO_OPTS : OPTIONS, oi = scen ? state.sopt : outp ? state.oopt : plyo ? state.popt : state.opt, o = opts[oi];
+  const lists = scen ? SCENARIOS : outp ? OUTPUT : plyo ? PLYO : BASIC, pi = scen ? state.scen : outp ? state.out : plyo ? state.plyo : state.preset;
+  $('pTitle').textContent = scen ? 'Fight scenarios' : outp ? 'Output rounds' : plyo ? 'Plyometrics' : basic ? 'Basic workout' : 'Round timer';
+  $('pSub').textContent = scen ? 'Pick an opponent. You get one problem to solve for the whole round, with a coach talking you through it, one point at a time.'
+    : outp ? 'Pick how many punches you want in a round. The coach calls one combination after another and you throw each one, so you know exactly what a round adds up to.'
+    : plyo ? 'Explosive bodyweight work. A voice tells you each move, how to do it, and when to rest.'
     : basic ? 'Set exercises with no coach on screen. A voice tells you when to change and what’s next.' : 'Rounds and rest with bells and a countdown. No exercises, just the clock.';
-  $('pLenSub').textContent = scen ? 'Each round is the full game plan, one tip every 30 seconds. More rounds run it again, so you can sharpen it.'
+  $('pLenSub').textContent = scen ? 'A new focus every minute, with three coaching points in it, one every 20 seconds. Every round runs the plan again with a new focus, so you can sharpen it.'
+    : outp ? 'Every round is three minutes, with the same punch target each round.'
+    : plyo ? 'A round is the whole circuit once through. Pick how many rounds, and how long you work and rest on each move.'
     : basic ? 'A new exercise every 30 seconds.' : 'Bells at the start and end of every round.';
   $('presetBlock').hidden = !listy;
-  $('presetH').textContent = scen ? 'Choose your opponent' : 'Choose your workout';
-  $('presetSub').textContent = scen ? 'Each one is a different style with its own plan to beat it.' : 'The exercises run in this order, 30 seconds each, then start again from the top.';
+  $('presetH').textContent = scen ? 'Choose your opponent' : outp ? 'Choose your target' : 'Choose your workout';
+  $('presetSub').textContent = scen ? 'Each one is a different style with its own plan to beat it.' : outp ? 'Punches in each three-minute round. The count is on screen as you go.' : plyo ? 'Each one is a circuit of eight moves.' : 'The exercises run in this order, 30 seconds each, then start again from the top.';
   $('presetList').innerHTML = lists.map((w,i)=>`
     <button class="round-opt" role="radio" data-i="${i}" aria-checked="${pi===i}">
-      <span class="badge">${svg(scen?'timer':'combo')}</span>
+      <span class="badge">${svg(scen||outp?'timer':'combo')}</span>
       <span><strong>${w.name}</strong><span>${w.blurb || w.exercises.map(exName).join(' · ')}</span></span>
     </button>`).join('');
-  $('scenBrief').hidden = !scen;
+  $('scenBrief').hidden = !(scen||plyo);
   if(scen) $('scenBrief').innerHTML = `<div><h3>Your opponent</h3><p>${SCENARIOS[pi].opponent}</p></div><div><h3>Your mission</h3><p>${SCENARIOS[pi].mission}</p></div>`;
+  if(plyo) $('scenBrief').innerHTML = PLYO_BRIEF.map(b => b[0]==='What you need' && PLYO[pi].needs ? [b[0], PLYO[pi].needs] : b).concat(PLYO[pi].safety ? [['Upper-body safety', PLYO[pi].safety]] : []).map(([t,p])=>`<div><h3>${t}</h3><p>${p}</p></div>`).join('');
+  const plyoMin = o => { const n = (PLYO[pi].plan||PLYO[pi].exercises).length; return Math.round((o.r*(n*o.w+(n-1)*o.rs) + (o.r-1)*REST_OPTS[state.rest])/60); };
   $('pRoundList').innerHTML = opts.map((o,i)=>`
     <button class="round-opt" role="radio" data-i="${i}" aria-checked="${oi===i}">
       <span class="badge">${svg('timer')}</span>
-      <span><strong>${o.r} × ${o.m}-minute round${o.r>1?'s':''}</strong><span>${o.r*o.m} minutes of boxing${basic?` · ${o.r*o.m*2} exercises`:scen?` · ${o.r*o.m*2} coaching tips`:''}</span></span>
+      ${plyo ? `<span><strong>${o.r} rounds · ${o.w} sec on, ${o.rs} sec off</strong><span>About ${plyoMin(o)} minutes</span></span>`
+      : `<span><strong>${o.r} × ${o.m}-minute round${o.r>1?'s':''}</strong><span>${o.r*o.m} minutes of boxing${basic?` · ${o.r*o.m*2} exercises`:scen?` · ${o.m} things to focus on each round`:outp?` · ${(o.r*lists[pi].punches).toLocaleString()} punches in all`:''}</span></span>`}
     </button>`).join('');
   $('restList').innerHTML = REST_OPTS.map((s,i)=>`<button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.rest===i}"><strong>${restLabel(s)}</strong></button>`).join('');
-  $('summary').innerHTML = `<b>${listy ? lists[pi].name : 'Round timer'}</b> · ${o.r} × ${o.m} min${o.r>1?` · ${restLabel(REST_OPTS[state.rest])} rest`:''}`;
+  $('summary').innerHTML = plyo ? `<b>${lists[pi].name}</b> · ${o.r} rounds · ${o.w} on, ${o.rs} off`
+    : `<b>${listy ? lists[pi].name : 'Round timer'}</b> · ${o.r} × ${o.m} min${o.r>1?` · ${restLabel(REST_OPTS[state.rest])} rest`:''}`;
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
-$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='scenario'?'scen':'preset']=+b.dataset.i; renderPlain(); } });
-$('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='scenario'?'sopt':'opt']=+b.dataset.i; renderPlain(); } });
+$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'scen',output:'out',plyo:'plyo'}[mode]||'preset']=+b.dataset.i; renderPlain(); } });
+$('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'sopt',output:'oopt',plyo:'popt'}[mode]||'opt']=+b.dataset.i; renderPlain(); } });
 $('restList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state.rest=+b.dataset.i; renderPlain(); } });
 
 /* ---------- workout generation ---------- */
@@ -1155,18 +1287,45 @@ function build(){
   $('wTitle').textContent = areas.length===1 ? areas[0].name : 'Boxing Flow';
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
 }
+// plyometrics: each exercise works for a set time, then a short rest step that names what is next. The rests are steps of their own,
+// so a round is one unbroken run of steps, and the break between rounds is the usual rest.
+function buildPlyo(){
+  const o=PLYO_OPTS[state.popt], ws=PLYO[state.plyo], rest=REST_OPTS[state.rest], n=(ws.plan||ws.exercises).length;
+  rounds=o.r; roundSec=n*o.w+(n-1)*o.rs;
+  // a workout with a plan gets a new move for each slot every round, drawn so none repeats
+  const bags={}, pick=cat=>{ if(!bags[cat]?.length) bags[cat]=shuffle(PLYO_LIB[cat]); const e=bags[cat].pop(); return [e[0],e[1],PLYO_TIPS[cat]]; };
+  steps=[{type:'ready',round:1,name:'Get ready',cue:'Warmed up? Land softly and keep every rep sharp.',dur:READY,color:READY_C}];
+  let w=0;
+  for(let r=1;r<=rounds;r++){
+    const ex = ws.plan ? ws.plan.map(pick) : ws.exercises;
+    ex.forEach((e,i)=>{
+      steps.push({type:'work',round:r,name:exName(e),cue:exCue(e),tip:exTip(e),dur:o.w,color:PALETTE[w++%PALETTE.length]});
+      if(i<ex.length-1) steps.push({type:'work',mini:true,round:r,name:'Rest',cue:`Shake it out. Next up: ${exName(ex[i+1])}.`,next:exName(ex[i+1]),tip:'',dur:o.rs,color:REST_C});
+    });
+    if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the legs. Round ${r+1} is next.`,dur:rest,color:REST_C});
+  }
+  $('wTitle').textContent = ws.name;
+  $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
+}
+// a scenario is a fight in five stages. However many rounds are chosen, they spread across the stages, so the last round is always the finish
+const scenRound = (sc,r) => sc.rounds[Math.round((r-1)*(sc.rounds.length-1)/Math.max(1,rounds-1))];
 // basic workout: the chosen list in order, 30 seconds each; round timer: each round is one long step
 function buildPlain(){
-  const scen = mode==='scenario', o=(scen?SCEN_OPTS[state.sopt]:OPTIONS[state.opt]), rest=REST_OPTS[state.rest]; rounds=o.r; roundSec=o.m*60;
-  const list = mode==='basic' ? BASIC[state.preset].exercises : scen ? SCENARIOS[state.scen].phases : null;
+  const scen = mode==='scenario', outp = mode==='output', o=(scen?SCEN_OPTS[state.sopt]:outp?OUT_OPTS[state.oopt]:OPTIONS[state.opt]), rest=REST_OPTS[state.rest]; rounds=o.r; roundSec=o.m*60;
+  const ot = outp && OUTPUT[state.out], sc = scen && SCENARIOS[state.scen], list = mode==='basic' ? BASIC[state.preset].exercises : null;
   steps=[{type:'ready',round:1,name:'Get ready',cue:scen?SCENARIOS[state.scen].mission:'Round 1 is about to start.',dur:READY,color:READY_C}];
   let w=0;
   for(let r=1;r<=rounds;r++){
-    if(list) for(let s=0;s<roundSec/SEG;s++){ const e=list[w%list.length]; steps.push({type:'work',round:r,name:exName(e),cue:exCue(e),tip:exTip(e),dur:SEG,color:PALETTE[w++%PALETTE.length]}); }
+    if(sc){                                    // a coached round: one phase a minute, each with three points given 20 seconds apart
+      const R = scenRound(sc,r), phases = roundSec/SCEN_SEG===R.phases.length ? R.phases : sc.short.map(i=>R.phases[i]);
+      phases.forEach(p=>steps.push({type:'work',round:r,name:p[0],cue:p[1][0],points:p[1],tip:'',intro:R.intro,dur:SCEN_SEG,color:PALETTE[w++%PALETTE.length]}));
+    }
+    else if(ot) steps.push({type:'work',round:r,name:`Round ${r} · ${ot.punches} punches`,cue:`0 of ${ot.punches} punches`,calls:makeCalls(ot),total:ot.punches,tip:'',dur:roundSec,color:PALETTE[(r-1)%PALETTE.length]});   // the coach calls one combination after another through the round
+    else if(list) for(let s=0;s<roundSec/SEG;s++){ const e=list[w%list.length]; steps.push({type:'work',round:r,name:exName(e),cue:exCue(e),tip:exTip(e),dur:SEG,color:PALETTE[w++%PALETTE.length]}); }
     else steps.push({type:'work',round:r,name:`Round ${r}`,cue:`${o.m} minutes. Keep working until the bell.`,tip:'',dur:roundSec,color:PALETTE[0]});
-    if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the arms. Round ${r+1} is next.`,dur:rest,color:REST_C});
+    if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the arms. Round ${r+1} is next.`+(sc?` ${scenRound(sc,r+1).theme}.`:''),dur:rest,color:REST_C});
   }
-  $('wTitle').textContent = scen ? SCENARIOS[state.scen].name : list ? BASIC[state.preset].name : 'Round timer';
+  $('wTitle').textContent = ot ? 'Output rounds' : sc ? sc.name : list ? BASIC[state.preset].name : 'Round timer';
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
 }
 
@@ -1391,16 +1550,18 @@ function pickVoice(){
   return vs.find(v=>/en-NZ/i.test(v.lang)) || vs.find(v=>/en-(AU|GB)/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
 }
 const spoken = t => t.replace(/(\d)-(?=\d)/g,'$1, ');   // "1-2-3" → "1, 2, 3"
-function say(text, delay=0){
+function say(text, delay=0, rate=1.05){
   if(!voice || !synth) return;
   clearTimeout(sayTimer); synth.cancel();
   const go = () => {
     const u = new SpeechSynthesisUtterance(text);
     voiceObj = voiceObj || pickVoice();
     if(voiceObj){ u.voice = voiceObj; u.lang = voiceObj.lang; }
-    u.rate = 1.05;
-    u.onstart = () => duck(true);                       // music dips while the coach talks
-    u.onend = u.onerror = () => duck(false);
+    u.rate = rate;
+    if(mode!=='output'){                                // output rounds keep the music low all round, since the coach never stops talking
+      u.onstart = () => duck(true);                     // music dips while the coach talks
+      u.onend = u.onerror = () => duck(false);
+    }
     if(mode==='coach') Coach.bind(u, text);
     synth.speak(u);
   };
@@ -1753,12 +1914,12 @@ const Coach=(()=>{
 
 /* ---------- clock ---------- */
 let idx=0, el=0, running=false, last=0, speed=1, raf=0, wake=null, readyBeep=-1;
-let midDone=false, lateDone=false, lastPepIdx=-9;
+let midDone=false, lateDone=false, lastPepIdx=-9, pointAt=0, callAt=0;
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return String(s/60|0).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
 const C=2*Math.PI*120; $('ringProg').style.strokeDasharray=C;
 
 function enter(i,silent){
-  idx=i; el=0; readyBeep=-1; midDone=false; lateDone=false;
+  idx=i; el=0; readyBeep=-1; midDone=false; lateDone=false; pointAt=0; callAt=0; if(steps[i]?.calls){ steps[i].shown=''; steps[i].cue=`0 of ${steps[i].total} punches`; } if(mode==='output') duck(steps[i]?.type==='work'); if(steps[i]?.points) steps[i].cue=steps[i].points[0];
   showQuote(); bgInfo();
   if(idx>=steps.length){ finish(); return; }
   renderList(true);   // every changeover (timer, skip forward, skip back) rebuilds Up next from the new position
@@ -1771,8 +1932,10 @@ function enter(i,silent){
   if(first) cheer(.7, 3); else if(s.type==='rest') cheer(.9, 4);
   if(s.type==='work'){
     if(mode==='coach') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), first?1000:300);
-    else if(mode==='scenario') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), first?1000:300);
+    else if(mode==='scenario') say((first?`Round ${s.round}. ${s.intro} `:draw('scenenc',SCEN_ENC)+' ') + spoken(s.points[0]), first?1000:300);
     else if(mode==='basic') say(first ? `Round ${s.round}. ${spoken(s.name)}.` : `Next exercise. ${spoken(s.name)}.`, first?1000:300);
+    else if(mode==='plyo') say(s.mini ? `Rest. Next up, ${spoken(s.next)}.` : (first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), s.mini?300:first?1000:300);
+    else if(mode==='output') say(`Round ${s.round}. ${s.total} punches. Here we go.`, 1000);
     else say(`Round ${s.round}.`, 1000);
   }
   else if(s.type==='rest') say(`Rest. ${restWords(s.dur)}. Round ${s.round+1} is next.`, 1400);
@@ -1790,10 +1953,14 @@ function advance(t){
     // then a push in the last 10 seconds of a round, and a quote during each rest
     if(cs && cs.type==='work'){
       const lastInRound = !steps[idx+1] || steps[idx+1].type!=='work';
-      // a scenario reads its whole plan first, so the short cue waits until about 21 seconds in, and the last drill of a round keeps its final-ten push
-      const midAt = mode==='scenario' ? SEG*.7 : SEG/2;
-      if(!midDone && el>=midAt){ midDone=true; if(cs.tip && !(mode==='scenario' && lastInRound)) say(spoken(cs.tip)); }
-      if(!lateDone && lastInRound && el>=cs.dur-10){ lateDone=true; say(draw('fin',FINISH)); cheer(.6, 4); }
+      if(cs.mini && el>=cs.dur-3){ const sec=Math.floor(el-(cs.dur-3)); if(sec!==readyBeep){ readyBeep=sec; tone(660,0,.15); } }   // three beeps out of a rest
+      // an output round: whichever call is due is shown and said (after a long gap, only the latest, so it never reads out a backlog)
+      if(cs.calls){ let j=callAt; while(j<cs.calls.length && el>=cs.calls[j].t) j++;
+        if(j>callAt){ const c=cs.calls[j-1]; callAt=j; cs.shown=c.display; cs.cue=`${c.cum} of ${cs.total} punches`; say(c.speech, 0, cs.total>=360?1.3:1.2); } }
+      // a coached minute gives its next point every 20 seconds: the fighter does one thing, then hears the next
+      if(cs.points){ const k=Math.min(cs.points.length-1, Math.floor(el/(cs.dur/cs.points.length))); if(k>pointAt){ pointAt=k; cs.cue=cs.points[k]; say(draw('scenenc',SCEN_ENC)+' '+spoken(cs.points[k])); } }
+      else if(!midDone && el>=SEG/2){ midDone=true; if(cs.tip) say(spoken(cs.tip)); }
+      if(!lateDone && lastInRound && el>=cs.dur-10){ lateDone=true; if(!cs.calls) say(draw('fin',FINISH)); cheer(.6, 4); }
     }
     if(cs && cs.type==='rest'){
       if(!lateDone && el>=cs.dur-10){ lateDone=true; say('Ten seconds. Gloves up.'); }
@@ -1858,7 +2025,7 @@ function render(){
   } else if(lastCount){ wrap.classList.remove('countdown'); lastCount=0; }
   const sec=Math.max(0,Math.ceil(left)); $('rNextVal').textContent = sec>60 ? fmt(sec) : `${sec} second${sec===1?'':'s'}`;
   $('ringProg').style.strokeDashoffset = C*(1-frac);
-  $('nowName').textContent=s.name; $('nowCue').textContent=s.cue;
+  $('nowName').textContent=s.shown||s.name; $('nowCue').textContent=s.cue;
   $('nowBar').style.width = (el/s.dur*100)+'%';
   // round pips
   [...$('pips').children].forEach((p,i)=>{
@@ -1885,16 +2052,17 @@ function renderList(force){
   const next=steps.slice(idx+1);
   list.innerHTML = next.length ? next.map((n,i)=>{
     const k=idx+1+i, tag = n.type==='work' && n.round!==cur.round ? `<span class="tag">Round ${n.round}</span>` : '';
-    const grip = n.type==='work' ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
+    const grip = n.type==='work' && mode!=='plyo' ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
     return `<li class="item ${n.type}${k===movedK?' just-moved':''}" data-k="${k}" style="--c:${n.color}">
       <div class="item-main"><div class="num">${String(i+1).padStart(2,'0')}${i===0?' · Next':''}</div>
       <strong>${n.name}</strong><div class="dur">${n.type==='rest'?restLabel(n.dur)+' rest':n.dur+' sec'}</div></div>${tag}${grip}</li>`;
   }).join('') : '<li class="item"><div class="item-main"><div class="num">Last one</div><strong>Final bell</strong><div class="dur">Finish strong</div></div></li>';
   list.scrollTop=keep; movedK=-1;
-  const left=next.filter(x=>x.type==='work').length;
-  const word = mode==='basic' ? 'exercise' : mode==='scenario' ? 'tip' : 'drill';
-  $('upCount').textContent = left ? `${left} ${word}${left>1?'s':''} to go` : '';
-  if(!$('listNote').textContent) $('listNote').textContent=DEFAULT_NOTE;
+  const left=next.filter(x=>x.type==='work' && !x.mini).length;
+  const word = mode==='basic' ? 'exercise' : mode==='scenario' ? 'focus' : mode==='output' ? 'round' : mode==='plyo' ? 'exercise' : 'drill';
+  const wordPl = word==='focus' ? 'focus areas' : word+'s';
+  $('upCount').textContent = left ? `${left} ${left>1?wordPl:word} to go` : '';
+  if(!$('listNote').textContent) $('listNote').textContent = mode==='plyo' ? '' : DEFAULT_NOTE;
 }
 // put the upcoming drills into a new order; rests and round lengths stay where they are
 function applyOrder(keys){
@@ -2033,14 +2201,123 @@ if(/[?&]debug\b/.test(location.search)){
       +`title:${m?.title} | artist:${m?.artist}\nart:${m?.artwork?.[0]?.src}`; },1000);
 }
 // the live preview in the coach card is told when it is on screen, so it starts clean each time instead of coming back half-way through
-function show(id){ try{ document.querySelector('.mode-preview iframe')?.contentWindow?.postMessage({bfPreview:id==='modes'},location.origin); }catch(e){}
-  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'&&id!=='plainSetup'; window.scrollTo(0,0); }
+function show(id){ if(id!=='breath') breathStop(); const pv=document.querySelector('.mode-preview iframe'); if(pv && id==='modes' && !pv.getAttribute('src')) pv.src=pv.dataset.src;
+  try{ pv?.contentWindow?.postMessage({bfPreview:id==='modes'},location.origin); }catch(e){}
+  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['home','sc','mind','skill','reframe','breath','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id); $('buildbar').hidden=id!=='setup'&&id!=='plainSetup'; window.scrollTo(0,0); }
 const setupScreen = () => mode==='coach' ? 'setup' : 'plainSetup';
 // the 3D coach only loads once someone picks a coach workout, so the basic workout and the round timer stay light
 function want3D(){ window.bfWant3D=true; window.bfBoot3D?.(); }
 function pickMode(m){ if(m==='iq'){ renderIQ(); show('iq'); return; } mode=m; if(m==='coach'){ want3D(); renderSetup(); } else renderPlain(); show(setupScreen()); }
-document.querySelectorAll('.mode-card').forEach(b=>b.onclick=()=>pickMode(b.dataset.mode));   // the coach card is a div (it holds the preview); its button's click bubbles up to it
-document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show('modes'));
+document.querySelectorAll('.mode-card[data-mode]').forEach(b=>b.onclick=()=>pickMode(b.dataset.mode));
+document.querySelectorAll('[data-section]').forEach(b=>b.onclick=()=>show(b.dataset.section));
+document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('home'));   // the coach card is a div (it holds the preview); its button's click bubbles up to it
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(mode==='plyo'?'sc':'modes'));
+
+/* ---------- mental skills: box breathing, reframing, and short read-throughs ---------- */
+function renderMind(){
+  $('mindList').innerHTML = MIND.map((m,i)=>`
+    <button class="round-opt iq-row" data-id="${m.id}"><span class="badge">${i+1}</span><span><strong>${m.name}</strong><span>${m.blurb}</span></span></button>`).join('');
+}
+$('mindList').addEventListener('click',e=>{
+  const b=e.target.closest('.iq-row'); if(!b) return;
+  const m=MIND.find(x=>x.id===b.dataset.id); m.kind==='breath' ? openBreath() : m.kind==='reframe' ? openReframe() : openSkill(m);
+});
+function openSkill(m){
+  $('skillBody').innerHTML = `<h1>${m.name}</h1><p class="sub">${m.intro}</p>
+    <div class="read"><h2>Why it works</h2><p>${m.why}</p><h2>How to do it</h2><ol>${m.steps.map(s=>`<li>${s}</li>`).join('')}</ol><h2>Try it</h2><p>${m.tryIt}</p></div>
+    ${m.cta==='breath' ? '<div class="iq-actions" style="margin-top:22px"><button class="btn" id="skillCta">Practise box breathing</button></div>' : ''}`;
+  if(m.cta==='breath') $('skillCta').onclick=openBreath;
+  show('skill');
+}
+
+// reframing: see the thought, think of a better one yourself, then see one
+let rf = null;
+function openReframe(){ rf={items:null,i:0,shown:false}; renderReframe(); show('reframe'); }
+function renderReframe(){
+  const body=$('rfBody');
+  if(!rf.items){
+    body.innerHTML = `<h1>Cognitive reframing</h1>
+      <p class="sub">Reframing is changing how you see a situation so it helps you instead of hurting you. The situation stays the same, but what it means to you changes: “I’m nervous” becomes “I’m ready.” It isn’t pretending everything is fine. It’s choosing the true and useful way to look at it.</p>
+      <div class="read"><h2>How to reframe</h2><ol>${REFRAME_STEPS.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <h2>Practise it</h2><p>You’ll see a thought a fighter might have in a real moment. Think of a more helpful way to see it first, then check it against the reframe.</p></div>
+      <div class="iq-actions" style="margin-top:22px"><button class="btn" id="rfStart">Start practising</button></div>`;
+    $('rfStart').onclick=()=>{ rf.items=shuffle(REFRAMES); rf.i=0; rf.shown=false; renderReframe(); };
+    return;
+  }
+  const n=rf.items.length;
+  if(rf.i>=n){
+    body.innerHTML = `<div class="done" style="padding-top:10px"><div class="eyebrow">Cognitive reframing</div><div class="big">Nice work</div>
+      <p class="sub">You went through ${n} reframes. Pick the one that felt most useful and say it in your next session.</p>
+      <div class="row"><button class="btn" id="rfAgain">Go again</button><button class="btn ghost" id="rfBack">Back</button></div></div>`;
+    $('rfAgain').onclick=()=>{ rf.items=shuffle(REFRAMES); rf.i=0; rf.shown=false; renderReframe(); }; $('rfBack').onclick=()=>show('mind');
+    window.scrollTo(0,0); return;
+  }
+  const it=rf.items[rf.i];
+  body.innerHTML = `<div class="iq-card">
+    <div class="iq-meta"><span>${esc(it.when)}</span><span>${rf.i+1} of ${n}</span></div>
+    <div class="iq-bar"><i style="width:${rf.i/n*100}%"></i></div>
+    <p class="sub" style="margin:0">The thought</p>
+    <p class="q">“${esc(it.thought)}”</p>
+    ${rf.shown ? `<div class="iq-ans"><b>A more helpful way to see it</b><span style="color:var(--fg)">${esc(it.reframe)}</span><span>${esc(it.why)}</span></div>
+      <div class="iq-actions"><button class="btn" id="rfNext">${rf.i+1<n?'Next':'Finish'}</button></div>`
+    : `<p class="sub" style="margin:0">Take a moment. What is a more helpful way to see this?</p><div class="iq-actions"><button class="btn" id="rfShow">Show the reframe</button></div>`}
+  </div>`;
+  if(rf.shown) $('rfNext').onclick=()=>{ rf.i++; rf.shown=false; renderReframe(); };
+  else $('rfShow').onclick=()=>{ rf.shown=true; renderReframe(); };
+}
+
+// box breathing: a dot goes round the sides of a box, up for the breath in, across, down for the breath out, across; the voice counts it
+const bset = {n:4, mins:3, voice:true};
+const BX = [{word:'In',label:'Breathe in',color:'#f5c95a',pitch:523},{word:'Hold',label:'Hold',color:'#7cc0ea',pitch:440},
+            {word:'Out',label:'Breathe out',color:'#4fd1b5',pitch:392},{word:'Hold',label:'Hold',color:'#7cc0ea',pitch:440}];
+const BX_NUM = ['','one','two','three','four','five','six'], BX_PTS = [[50,250],[50,50],[250,50],[250,250],[50,250]];
+let br = null;
+function renderBreath(){
+  const opt=(id,vals,cur,label)=>{ $(id).innerHTML=vals.map(v=>`<button class="round-opt" role="radio" data-v="${v}" aria-checked="${cur===v}"><strong>${label(v)}</strong></button>`).join(''); };
+  opt('bxN',[3,4,5,6],bset.n,v=>v+' sec'); opt('bxMins',[2,3,5,10],bset.mins,v=>v+' min'); opt('bxVoice',[true,false],bset.voice,v=>v?'Voice counts':'Silent');
+}
+[['bxN',b=>bset.n=+b.dataset.v],['bxMins',b=>bset.mins=+b.dataset.v],['bxVoice',b=>bset.voice=b.dataset.v==='true']].forEach(([id,set])=>
+  $(id).addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ set(b); renderBreath(); } }));
+function breathReset(){ $('bxSetup').hidden=false; $('bxRun').hidden=true; $('bxDone').hidden=true; }
+function openBreath(){ mode='mind'; renderBreath(); breathReset(); show('breath'); }
+function breathStop(){ if(!br) return; cancelAnimationFrame(br.raf); br=null; hush(); try{wake?.release()}catch(e){} }
+function breathCue(side,count){
+  if(count===1) tone(BX[side].pitch,0,.3,.07);
+  if(bset.voice) say(count===1 ? BX[side].word : BX_NUM[count], 0, 1.15);        // "In, two, three, four. Hold, two, three, four."
+}
+function breathTick(now){
+  if(!br) return;
+  br.raf=requestAnimationFrame(breathTick);
+  if(!br.paused) br.acc += Math.min(.5,(now-br.last)/1000);
+  br.last=now;
+  const n=bset.n, cyc=4*n, total=bset.mins*60;
+  if(br.acc>=total){ breathEnd(); return; }
+  const c=br.acc%cyc, side=Math.floor(c/n), within=c-side*n, count=Math.floor(within)+1, f=within/n, key=side+':'+count;
+  if(key!==br.key){ br.key=key; if(!br.paused) breathCue(side,count); }
+  const [x0,y0]=BX_PTS[side], [x1,y1]=BX_PTS[side+1], dot=$('bxDot');
+  dot.setAttribute('cx',x0+(x1-x0)*f); dot.setAttribute('cy',y0+(y1-y0)*f);
+  document.querySelectorAll('.bx-side').forEach((l,i)=>{ l.style.stroke=BX[i].color; l.style.strokeDashoffset = i<side ? 0 : i===side ? 1-f : 1; l.style.opacity = i<side ? .45 : 1; });
+  $('bxPhase').textContent=BX[side].label; $('bxCount').textContent=count; $('bxTime').textContent=fmt(total-br.acc)+' left';
+}
+function breathEnd(){
+  cancelAnimationFrame(br.raf); br=null; try{wake?.release()}catch(e){}
+  say('Well done. Breathe normally.');
+  const breaths=Math.floor(bset.mins*60/(4*bset.n));
+  $('bxDoneText').textContent=`${breaths} full breath${breaths===1?'':'s'} of box breathing, ${bset.mins} minutes. Notice how you feel.`;
+  $('bxRun').hidden=true; $('bxDone').hidden=false;
+}
+$('bxStart').onclick=()=>{
+  br={acc:0,last:performance.now(),paused:false,key:'0:1',raf:0};
+  $('bxSetup').hidden=true; $('bxDone').hidden=true; $('bxRun').hidden=false; $('bxPause').textContent='Pause';
+  keepAwake();
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
+  breathCue(0,1);                                    // said inside the tap, so phones allow the voice for the rest of the session
+  br.raf=requestAnimationFrame(breathTick);
+};
+$('bxPause').onclick=()=>{ if(!br) return; br.paused=!br.paused; br.last=performance.now(); $('bxPause').textContent=br.paused?'Resume':'Pause'; if(br.paused) hush(); };
+$('bxStop').onclick=()=>{ breathStop(); breathReset(); };
+$('bxAgain').onclick=breathReset; $('bxBack').onclick=()=>show('mind');
+renderMind();
 
 /* ---------- boxing IQ: pick a topic, then flip through its questions and mark each one ---------- */
 const IQ_MIX = 20;
@@ -2116,7 +2393,7 @@ function start(){
   if(coach) setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
   else { Coach.pause(true); window.bfWork=false; iaPrompt(false); }   // no coach: make sure he is put away
   bgInit();   // inside the tap, so the phone lets the audio start
-  coach ? build() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  coach ? build() : mode==='plyo' ? buildPlyo() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
@@ -2127,8 +2404,9 @@ function finish(){
   say('Workout complete. Great work.', 1400);
   stopMusic();
   const o={r:rounds, m:roundSec/60}, work=steps.filter(s=>s.type==='work');
-  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${o.r*o.m}<span>Minutes boxed</span></div>`
-    + (mode==='timer' ? '' : `<div>${work.length}<span>${mode==='basic'?'Exercises':mode==='scenario'?'Coaching tips':'Drills'}</span></div>`);
+  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${Math.round(o.r*o.m)}<span>${mode==='plyo'?'Minutes trained':'Minutes boxed'}</span></div>`
+    + (mode==='timer' ? '' : `<div>${mode==='plyo' ? work.filter(s=>!s.mini).length : work.length}<span>${mode==='basic'||mode==='plyo'?'Exercises':mode==='scenario'?'Focus areas':mode==='output'?'Rounds of output':'Drills'}</span></div>`)
+    + (mode==='output' ? `<div>${(rounds*(work[0]?.total||0)).toLocaleString()}<span>Punches called</span></div>` : '');
   const sc = mode==='scenario' && SCENARIOS[state.scen];
   $('doneReview').hidden = !sc;
   if(sc) $('doneReview').innerHTML = `<h3>${sc.name}</h3><p>${sc.mission}</p><h3>Key lesson</h3><p>${sc.lesson}</p><h3>Next time</h3><p>Run it again and pick one tip from this round to nail. Spend the whole round on that one thing.</p>`;
@@ -2155,7 +2433,7 @@ $('changeBtn').onclick=()=>{show(setupScreen());};
 $('exitBtn').onclick=()=>{ window.bfAutoGym=false; iaPrompt(false); hush(); stopMusic(); stopCrowd(); running=false; cancelAnimationFrame(raf); try{wake?.release()}catch(e){} bgStop(); show(setupScreen()); };
 $('playBtn').onclick=()=>setPlaying(!running);
 $('nextBtn').onclick=()=>{ if(idx<steps.length-1){ enter(idx+1); render(); } else { idx=steps.length; finish(); } };
-$('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; bgPos(); } else enter(idx-1); render(); };
+$('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; callAt=0; if(steps[idx]?.calls){ steps[idx].shown=''; steps[idx].cue=`0 of ${steps[idx].total} punches`; } bgPos(); } else enter(idx-1); render(); };
 $('speedBtn').onclick=e=>{ speed=speed===1?10:1; e.currentTarget.setAttribute('aria-pressed',speed>1); };
 $('musicBtn').onclick=()=>{ music ? stopMusic() : startMusic(); };
 $('beatBtn').onclick=e=>{ e.stopPropagation(); setBeat(!beatOn); };
