@@ -8,7 +8,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f161d'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%232f3e4e' stroke-width='4'/%3E%3Cpath d='M16 6a10 10 0 1 1-9.5 7' fill='none' stroke='%23f5c95a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Boxing Flow</title>
 <!-- index.html?preview shows only the live preview card, filling the window: the app's mode screen embeds it in the Coach workout card -->
-<script>if(/[?&]preview(=|&|$)/.test(location.search)) document.documentElement.classList.add('embed');</script>
+<script>if(/[?&]preview(=|&|$)/.test(location.search)){ document.documentElement.classList.add('embed');
+  // a heartbeat to the app: the card shows as soon as this page is running, and the app can tell if the page was dropped while it was hidden
+  const beat=()=>{ try{ parent.postMessage({bfAlive:true},'*'); }catch(e){} }; beat(); setInterval(beat,1000);
+}</script>
 <!-- the 3D coach preview: fetch three.js and the coach's files the moment the page opens, all at once.
      The import map has to come first: some browsers ignore one that arrives after module loading has started. -->
 <script type="importmap">
@@ -40,7 +43,7 @@
 })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap"></noscript>
 <style>
 /* Layout: sticky slim nav; hero = headline left, live timer demo right (stacks on phones);
    then how-it-works (a real 3-step sequence), corner features, skills, round options, closing call to action.
@@ -70,6 +73,25 @@ html.embed .demo{visibility:visible;position:fixed;inset:0;max-width:none;border
 .nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.02em}
 .logo svg{width:28px;height:28px}
+
+/* menu: a burger button and a slide-in list of every training area */
+.menu-btn{position:static;width:44px;height:44px;flex:none;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+.menu-btn:hover{background:var(--surface-2)}
+.menu-scrim{position:fixed;inset:0;z-index:70;background:rgba(5,9,13,.6);opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.menu-scrim.open{opacity:1;visibility:visible;transition:opacity .25s}
+.menu{position:fixed;z-index:80;top:0;right:0;bottom:0;width:min(88vw,340px);background:var(--surface);border-left:1px solid var(--line);padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:2px;transform:translateX(100%);visibility:hidden;transition:transform .25s,visibility 0s .25s}
+.menu.open{transform:none;visibility:visible;transition:transform .25s}
+.menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.menu-head strong{font-family:var(--display);font-size:22px;letter-spacing:.02em}
+.menu button,.menu a{font:inherit;color:inherit;text-align:left;text-decoration:none;background:none;border:0;border-radius:10px;padding:10px 12px;display:block;width:100%;cursor:pointer}
+.menu button:hover,.menu a:hover,.menu button:focus-visible,.menu a:focus-visible{background:var(--surface-2);outline:none}
+.menu .m-group{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:14px;padding-bottom:4px}
+.menu .m-sub{padding-left:22px;color:var(--fg)}
+.menu .m-close{width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
+.menu div.m-group{padding:4px 12px}
+.menu a.btn,.menu a.btn:hover{background:var(--gold);color:var(--gold-ink);text-align:center;margin-top:8px;font-weight:700}
+.menu hr{border:0;border-top:1px solid var(--line);margin:14px 0 6px;width:100%}
+
 .nav-links{display:flex;align-items:center;gap:22px}
 .nav-links a:not(.btn){text-decoration:none;color:var(--muted);font-weight:500;font-size:15px}
 .nav-links a:not(.btn):hover{color:var(--fg)}
@@ -116,6 +138,10 @@ html.embed .demo{visibility:visible;position:fixed;inset:0;max-width:none;border
 @media (prefers-reduced-motion:reduce){.ring-in{transition:none}}
 /* the preview also shows interactive mode: a double-tap on the timer, then the circle opens out into the whole 3D gym */
 .demo{position:relative;overflow:hidden}
+/* on the landing page the coach card is a link into the app, straight to How do you want to train? (not in the embedded preview) */
+html:not(.embed) .demo{cursor:pointer;transition:border-color .2s,box-shadow .2s}
+html:not(.embed) .demo:hover,html:not(.embed) .demo:focus-visible{border-color:var(--gold);box-shadow:0 30px 80px rgba(0,0,0,.35),0 0 0 1px var(--gold)}
+html:not(.embed) .demo:focus-visible{outline:none}
 .tap-hint{position:absolute;inset:0;z-index:3;pointer-events:none;display:grid;place-items:center}
 .tap-hint i{position:absolute;width:64px;height:64px;border-radius:50%;border:2.5px solid #fff;opacity:0;box-shadow:0 0 18px rgba(255,255,255,.5)}
 .tap-hint span{position:absolute;top:-4px;left:50%;transform:translate(-50%,-6px);padding:5px 12px;border-radius:999px;white-space:nowrap;
@@ -174,6 +200,20 @@ section{padding-block:72px}
 .feature p{margin:0;color:var(--muted);font-size:15px}
 
 .skills{display:flex;flex-wrap:wrap;gap:10px}
+/* whole-card links: the heading is the link, stretched over its card */
+.stretch{color:inherit;text-decoration:none}
+.stretch::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.stretch:focus-visible{outline:none}
+.steps li,.feature{position:relative}
+.steps li{transition:background .2s}
+.steps li:hover,.steps li:focus-within{background:var(--surface-2)}
+.feature h3 a{transition:color .2s}
+.feature:hover h3 a,.feature:focus-within h3 a,.steps li:hover h3 a{color:var(--gold)}
+.skills a{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px;color:inherit;text-decoration:none;transition:border-color .2s,color .2s}
+.skills a:nth-child(-n+6){border-color:color-mix(in srgb,var(--gold) 50%,var(--line))}
+.skills a:hover,.skills a:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+a.round{color:inherit;text-decoration:none;transition:background .2s}
+a.round:hover,a.round:focus-visible{background:var(--surface-2);outline:none}
 .skills span{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px}
 .skills span:nth-child(-n+6){border-color:color-mix(in srgb,var(--gold) 50%,var(--line))}
 
@@ -210,10 +250,39 @@ footer p{margin:0;max-width:70ch}
       <a href="#features">Features</a>
       <a href="#skills">Skills</a>
       <a class="btn small" href="app.html">Start training</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </nav>
   </div>
 </header>
 
+<div class="menu-scrim" id="menuScrim"></div>
+<nav class="menu" id="menu" aria-label="Menu" aria-hidden="true">
+  <div class="menu-head"><strong>Boxing Flow</strong><button class="m-close" id="menuClose" aria-label="Close menu"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <a class="" href="app.html">Dashboard</a>
+  <a class="" href="app.html?go=explore">Explore all training</a>
+  <a class="m-group" href="app.html?go=modes">Boxing</a>
+  <a class="m-sub" href="app.html?go=coach">Coach workout</a>
+  <a class="m-sub" href="app.html?go=basic">Basic workout</a>
+  <a class="m-sub" href="app.html?go=timer">Round timer</a>
+  <a class="m-sub" href="app.html?go=scenario">Fight scenarios</a>
+  <a class="m-sub" href="app.html?go=output">Output rounds</a>
+  <a class="m-sub" href="app.html?go=iq">Boxing IQ</a>
+  <a class="m-group" href="app.html?go=strength">Strength &amp; conditioning</a>
+  <a class="m-sub" href="app.html?go=plyo">Plyometrics</a>
+  <a class="m-sub" href="app.html?go=shoulder">Shoulder conditioning</a>
+  <a class="m-group" href="app.html?go=calendar">Training calendar</a>
+  <a class="m-group" href="app.html?go=camp">Training camp</a>
+  <a class="m-group" href="app.html?go=mind">Mental skills</a>
+  <a class="m-sub" href="app.html?go=breath">Box breathing</a>
+  <a class="m-sub" href="app.html?go=reframe">Cognitive reframing</a>
+  <hr>
+  <div class="m-group">On this page</div>
+  <a class="m-sub" href="#how">How it works</a>
+  <a class="m-sub" href="#features">Features</a>
+  <a class="m-sub" href="#more">More ways to train</a>
+  <a class="m-sub" href="#skills">Skills</a>
+  <a class="btn" href="app.html" style="text-align:center;color:var(--gold-ink)">Start training</a>
+</nav>
 <main id="top">
   <div class="wrap hero">
     <div>
@@ -265,9 +334,9 @@ footer p{margin:0;max-width:70ch}
         <h2>Three taps to the first bell</h2>
       </div>
       <ol class="steps">
-        <li><span class="n">01</span><h3>Pick your focus</h3><p>Choose from 19 skill areas, from jab technique and footwork to body shots, feints and conditioning. Pick one or mix several.</p></li>
-        <li><span class="n">02</span><h3>Choose your rounds</h3><p>From three to twelve rounds of three or five minutes, with a minute of rest between each.</p></li>
-        <li><span class="n">03</span><h3>Follow the coach</h3><p>A five-second countdown, the bell, then a new drill every 30 seconds. The voice tells you what to throw and how to throw it.</p></li>
+        <li><span class="n">01</span><h3><a class="stretch" href="app.html#coach">Pick your focus</a></h3><p>Choose from 19 skill areas, from jab technique and footwork to body shots, feints and conditioning. Pick one or mix several.</p></li>
+        <li><span class="n">02</span><h3><a class="stretch" href="app.html#coach?opt=0">Choose your rounds</a></h3><p>From three to twelve rounds of three or five minutes, with a minute of rest between each.</p></li>
+        <li><span class="n">03</span><h3><a class="stretch" href="app.html#coach">Follow the coach</a></h3><p>A five-second countdown, the bell, then a new drill every 30 seconds. The voice tells you what to throw and how to throw it.</p></li>
       </ol>
     </div>
   </section>
@@ -281,17 +350,41 @@ footer p{margin:0;max-width:70ch}
       </div>
       <div class="features">
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>
-          <div><h3>3D coach</h3><p>The timer flips over to a 3D coach who shows you every drill. Double-tap it to step into interactive mode and watch him work the ring from ringside in a full 3D gym.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#coach">3D coach</a></h3><p>The timer flips over to a 3D coach who shows you every drill. Double-tap it to step into interactive mode and watch him work the ring from ringside in a full 3D gym.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></span>
-          <div><h3>Bells and countdown</h3><p>A spinning five-second countdown and a "Fight!" burst before every round, bells at the start and end.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#timer">Bells and countdown</a></h3><p>A spinning five-second countdown and a "Fight!" burst before every round, bells at the start and end.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></span>
-          <div><h3>Music, mixed like a set</h3><p>Workout tracks blend into each other with DJ-style crossfades, and dip whenever the coach speaks.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#basic">Music, mixed like a set</a></h3><p>Workout tracks blend into each other with DJ-style crossfades, and dip whenever the coach speaks.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.1a5 5 0 0 1 5 4.9"/></svg></span>
-          <div><h3>Crowd on your side</h3><p>An arena crowd that roars on the bell and lifts in the final ten seconds, and never loops the same way twice.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#coach">Crowd on your side</a></h3><p>An arena crowd that roars on the bell and lifts in the final ten seconds, and never loops the same way twice.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></span>
-          <div><h3>Change it mid-round</h3><p>Scroll everything that's coming up and drag drills into a new order without stopping the clock.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#coach">Change it mid-round</a></h3><p>Scroll everything that's coming up and drag drills into a new order without stopping the clock.</p></div></div>
         <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span>
-          <div><h3>Nothing to install</h3><p>Runs in the browser on your phone or laptop. No account and no sign-up. Open it and train.</p></div></div>
+          <div><h3><a class="stretch" href="app.html#modes">Nothing to install</a></h3><p>Runs in the browser on your phone or laptop. No account and no sign-up. Open it and train.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="more">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">More ways to train</div>
+        <h2>Beyond the bag</h2>
+        <p>Fight scenarios, punch-output rounds, strength and conditioning, and the mental side of boxing. Pick one and you are in.</p>
+      </div>
+      <div class="features">
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#scenario">Fight scenarios</a></h3><p>Face a pressure fighter, a counterpuncher or an outfighter. A coach talks you through how to beat that style, one point at a time.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12h4M10 12h4M17 12h4M5 7l2 2M12 5v3M19 7l-2 2M5 17l2-2M12 19v-3M19 17l-2-2"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#output">Output rounds</a></h3><p>Pick a punch target, from 90 to 500 a round. The coach calls every combination and you throw it, until you hit the number.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20V5M6 11l6-6 6 6"/><path d="M5 20h14"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#plyo">Plyometrics</a></h3><p>Explosive jumps, bounds, push-ups and medicine ball throws, with a different set of moves every round.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9h3M17 9h3M7 9a5 5 0 0 1 10 0M12 9v11M8 14l4-2 4 2"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#shoulder">Shoulder conditioning</a></h3><p>Build the endurance to keep your hands up through the last round, with a drill you can do at the end of any session.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#mind">Mental skills</a></h3><p>Box breathing, reframing, self-talk and visualisation. Train the calm and focus behind your boxing.</p></div></div>
+        <div class="feature"><span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M5 11c0-4 3-7 7-7s7 3 7 7v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M8 21h8"/></svg></span>
+          <div><h3><a class="stretch" href="app.html#iq">Boxing IQ</a></h3><p>Ring situations as they happen, and what to do about them. Work out the answer, then see why it works.</p></div></div>
       </div>
     </div>
   </section>
@@ -304,9 +397,9 @@ footer p{margin:0;max-width:70ch}
         <p>Every skill comes with its own drills and coaching cues. Pick a few and the workout mixes them so no two rounds feel the same.</p>
       </div>
       <div class="skills">
-        <span>Jab technique</span><span>Speed</span><span>Punching power</span><span>Combinations</span><span>Footwork</span><span>Defence</span>
-        <span>Head movement</span><span>Counter-punching</span><span>Body shots</span><span>Hooks</span><span>Inside fighting</span><span>Cross technique</span>
-        <span>Angles</span><span>Feints</span><span>Switch stance</span><span>Pressure fighting</span><span>Out-boxing</span><span>Conditioning</span><span>Shadow flow</span>
+        <a href="app.html#coach?focus=jab">Jab technique</a><a href="app.html#coach?focus=speed">Speed</a><a href="app.html#coach?focus=power">Punching power</a><a href="app.html#coach?focus=combo">Combinations</a><a href="app.html#coach?focus=foot">Footwork</a><a href="app.html#coach?focus=def">Defence</a>
+        <a href="app.html#coach?focus=headmove">Head movement</a><a href="app.html#coach?focus=counter">Counter-punching</a><a href="app.html#coach?focus=body">Body shots</a><a href="app.html#coach?focus=hooks">Hooks</a><a href="app.html#coach?focus=inside">Inside fighting</a><a href="app.html#coach?focus=cross">Cross technique</a>
+        <a href="app.html#coach?focus=angles">Angles</a><a href="app.html#coach?focus=feints">Feints</a><a href="app.html#coach?focus=switch">Switch stance</a><a href="app.html#coach?focus=pressure">Pressure fighting</a><a href="app.html#coach?focus=outbox">Out-boxing</a><a href="app.html#coach?focus=engine">Conditioning</a><a href="app.html#coach?focus=flow">Shadow flow</a>
       </div>
     </div>
   </section>
@@ -318,12 +411,12 @@ footer p{margin:0;max-width:70ch}
         <h2>From a quick nine to a full thirty-six</h2>
       </div>
       <div class="rounds">
-        <div class="round"><b>3 × 3</b><span>three-minute rounds</span><small>9 min of boxing</small></div>
-        <div class="round"><b>5 × 3</b><span>three-minute rounds</span><small>15 min of boxing</small></div>
-        <div class="round"><b>6 × 3</b><span>three-minute rounds</span><small>18 min of boxing</small></div>
-        <div class="round"><b>12 × 3</b><span>three-minute rounds</span><small>36 min of boxing</small></div>
-        <div class="round"><b>3 × 5</b><span>five-minute rounds</span><small>15 min of boxing</small></div>
-        <div class="round"><b>5 × 5</b><span>five-minute rounds</span><small>25 min of boxing</small></div>
+        <a class="round" href="app.html#coach?opt=0"><b>3 × 3</b><span>three-minute rounds</span><small>9 min of boxing</small></a>
+        <a class="round" href="app.html#coach?opt=1"><b>5 × 3</b><span>three-minute rounds</span><small>15 min of boxing</small></a>
+        <a class="round" href="app.html#coach?opt=2"><b>6 × 3</b><span>three-minute rounds</span><small>18 min of boxing</small></a>
+        <a class="round" href="app.html#coach?opt=3"><b>12 × 3</b><span>three-minute rounds</span><small>36 min of boxing</small></a>
+        <a class="round" href="app.html#coach?opt=4"><b>3 × 5</b><span>five-minute rounds</span><small>15 min of boxing</small></a>
+        <a class="round" href="app.html#coach?opt=5"><b>5 × 5</b><span>five-minute rounds</span><small>25 min of boxing</small></a>
       </div>
       <p class="note">Every round has one minute of rest after it, and the drill changes every 30 seconds.</p>
     </div>
@@ -347,6 +440,23 @@ footer p{margin:0;max-width:70ch}
 </footer>
 
 <script>
+// the menu: a burger in the header opens a list of every training area
+(function(){
+  const m=document.getElementById('menu'), b=document.getElementById('menuBtn'), s=document.getElementById('menuScrim');
+  const set=o=>{ m.classList.toggle('open',o); s.classList.toggle('open',o); b.setAttribute('aria-expanded',o); m.setAttribute('aria-hidden',!o); document.body.style.overflow=o?'hidden':''; if(o) m.querySelector('a')?.focus(); else b.focus({preventScroll:true}); };
+  b.onclick=()=>set(true); s.onclick=()=>set(false); document.getElementById('menuClose').onclick=()=>set(false);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && m.classList.contains('open')) set(false); });
+  m.addEventListener('click',e=>{ if(e.target.closest('a')) set(false); });   // in-page links close it too
+})();
+// the coach card is a link: it opens the app on "How do you want to train?" (the preview inside the app itself stays a picture)
+(function(){
+  if(document.documentElement.classList.contains('embed')) return;
+  const d=document.querySelector('.demo'); if(!d) return;
+  const go=()=>{ location.href='app.html#modes'; };
+  d.tabIndex=0; d.setAttribute('role','link'); d.setAttribute('aria-label','Open Boxing Flow: how do you want to train?');
+  d.addEventListener('click',go);
+  d.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+})();
 // live preview: a small version of the real timer, running four times faster than real time
 (function(){
   const D=[['Jab, Jab, Cross','#f5c95a'],['Hook off the jab','#ff7f6e'],['Power cross','#4fd1b5'],['1-2-3','#a58bff'],
