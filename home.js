@@ -6,7 +6,7 @@
    A log entry: { id, date 'YYYY-MM-DD', ts, type (a mode id), cfg (the choices, as the calendar saves them), label, minutes }. */
 (function(){
   const C = window.bfCal, LKEY = 'bfLog', GKEY = 'bfGoal', OKEY = 'bfWidgets';
-  const DEFAULT_ORDER = ['today','camp','quick','live','film','minical','week','progress','suggest','recent','explore'];
+  const DEFAULT_ORDER = ['today','camp','nutri','quick','live','film','minical','week','progress','suggest','recent','explore'];
   let log = []; try{ log = JSON.parse(localStorage.getItem(LKEY) || '[]') || []; }catch(e){}
   let goal = 3; try{ goal = Math.min(7, Math.max(1, +localStorage.getItem(GKEY) || 3)); }catch(e){}
   let saved = []; try{ saved = JSON.parse(localStorage.getItem(OKEY) || '[]') || []; }catch(e){}
@@ -100,6 +100,19 @@
     W.quick = {cls:'quick', html:`<p class="t-big">${esc(qNames.slice(0,3).join(', ') || 'Jab technique')}</p>
       <p class="t-note">${C.optL(OPTIONS[q.opt||0])}, with the 3D coach. Starts straight away.</p>
       <div class="t-row"><button class="btn small" data-quick>Start now</button></div>`};
+
+    // nutrition: calories left today and the macros, or a prompt to sign in. The numbers come from window.bfNutri, which keeps the last ones so this paints at once.
+    if(window.bfNutri){
+      const ns = window.bfNutri.summary(), head = '<div class="q-top"><h2>Nutrition</h2><button class="linkbtn" data-nutri-open>Open &rsaquo;</button></div>', kj = ns.unit === 'kj', e = k => (kj ? Math.round(k * 4.184) : Math.round(k)).toLocaleString(), u = kj ? 'kJ' : 'kcal';
+      const mac = (l, v, m, c) => `<div class="nu-macro"><span>${l}</span><div class="nu-bar ${c}"><i style="width:${m ? Math.min(100, v / m * 100) : 0}%"></i></div><small>${Math.round(v)}${m ? ' / ' + m : ''} g</small></div>`;
+      W.nutri = {cls:'nutriw', html: ns.state === 'out'
+        ? `${head}<p class="t-big" style="font-size:20px">Track your food</p><p class="t-note">Log meals, see your calories and macros, and keep your food diary saved to your account.</p><div class="t-row"><button class="btn small" data-nutri-open>Sign in to start</button></div>`
+        : ns.state === 'wait' ? `${head}<p class="t-note">Loading…</p>`
+        : `${head}${ns.target ? `<div class="nu-left ${ns.kcal > ns.target.kcal ? 'over' : ''}"><b>${e(Math.abs(ns.target.kcal - ns.kcal))}</b><span>${u} ${ns.kcal > ns.target.kcal ? 'over' : 'left today'}</span></div><div class="nu-bar ${ns.kcal > ns.target.kcal ? 'over' : ''}"><i style="width:${Math.min(100, ns.kcal / ns.target.kcal * 100)}%"></i></div>`
+            : `<div class="nu-left"><b>${e(ns.kcal)}</b><span>${u} eaten today</span></div><p class="t-note"><button class="linkbtn" data-nutri-open>Set your daily targets</button> to see what is left.</p>`}
+          <div class="nu-macros">${mac('Protein', ns.protein, ns.target && ns.target.protein, 'p')}${mac('Carbs', ns.carbs, ns.target && ns.target.carbs, 'c')}${mac('Fat', ns.fat, ns.target && ns.target.fat, 'f')}</div>
+          <div class="t-row"><button class="btn small" data-nutri-add>Add food</button></div>`};
+    }
 
     // film study: a fight to watch (a new one each day, or tap Another), and the study they were last in
     const FB = window.bfFilm; filmPick = FB && FB.featured(filmOffset); const lastStudy = FB && FB.latest();
@@ -204,6 +217,8 @@
     if(!b){ if(mini) C.openDay(todayK(), 'month'); return; }
     const d = b.dataset;
     if(d.startPlan){ const ev = C.plan.find(x => x.id === d.startPlan); if(ev) C.start(ev); }
+    else if('nutriOpen' in d) show('nutrition');
+    else if('nutriAdd' in d) window.bfNutri.addFood();
     else if('filmOpen' in d) show('film');
     else if('filmFight' in d){ if(filmPick) window.bfFilm.startFight(filmPick); }
     else if('filmNext' in d){ filmOffset++; renderToday(); }
@@ -222,5 +237,6 @@
     else if('resetLayout' in d){ saved = []; try{ localStorage.removeItem(OKEY); }catch(err){} renderToday(); }
   });
   $('todayBody').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-w="minical"]')){ e.preventDefault(); C.openDay(todayK(), 'month'); } });
+  if(window.bfNutri) window.bfNutri.onChange(() => { if(!$('today').hidden) renderToday(); });   // the widget follows the diary
   if(!$('today').hidden){ renderToday(); window.syncPreviews?.('today'); }
 })();

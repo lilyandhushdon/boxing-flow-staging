@@ -3,7 +3,10 @@
 Boxing round timer and coach.
 
 - `index.html`: home page (free to everyone, with the live preview and pricing)
-- `app.html`: the workout app (subscribers only, see Payments below)
+- `app.html`: the app (dashboard, workouts, calendar, training camp, nutrition, film study, heart rate). Open to anyone while payments are paused (see Payments below)
+- `docs/index.html`: **the full project documentation**: architecture, every feature, the data and sync, services, how to run and deploy, the testing plan and the roadmap. Start there. Keep it updated with each change
+- `cloud.js`, `nutrition.js`, `film.js`, `home.js` and the other `.js` files: the app's features, one file each (see the repository map in the docs)
+- `supabase/`: the database (migrations) and sign-in settings; `netlify/functions/foods.mjs`: the food search
 - `subscribe.html`: the paywall: monthly or yearly plan, 7-day free trial
 - `netlify/`: the payment code that runs on Netlify (Stripe checkout, access checks)
 - `models/`: the 3D coaches (`coach.glb`, black and gold; `coach-her.glb`, black and gold, picked with the coach button in interactive mode; `coach-lite.glb`, a lighter copy for the landing page preview) and their moves (Mixamo, all orthodox)
@@ -52,6 +55,8 @@ To change a drill, edit its moves in the drill list. To change how a move looks,
 
 
 ## Payments (Stripe + Netlify)
+
+> **Paused since 16 Oct 2026.** The paywall (the edge gate, pricing and sign-up buttons) was removed so the app is open while more features are built. The code below is still in the repo; commit `1f140a1` has the whole working paywall. The notes that follow describe how it worked and how to switch it back on.
 
 Visitors get the home page and live preview for free. Opening the app needs a subscription: NZ$9.99 a month or NZ$69.99 a year, each with a 7-day free trial (card taken at sign-up, first charge when the trial ends).
 

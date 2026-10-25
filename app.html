@@ -364,6 +364,50 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .hr-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;border:2px solid var(--c,var(--muted));color:var(--c,var(--muted));font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .hr-pill svg{width:16px;height:16px;fill:currentColor;stroke:none}
 .hr-pill[hidden]{display:none}
+/* sync */
+.sync-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surface-2);border:1px solid var(--gold);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:15px}
+/* nutrition */
+.nu-card{margin:14px 0 0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.nu-card .c-label{display:block;margin-top:12px}
+.nu-card input,.nu-card select,.nu-search{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--fg);padding:11px 12px;font:inherit;font-size:16px;margin-top:6px}
+.nu-search{margin:12px 0 0;border-radius:12px;padding:13px 14px}
+.nu-ok{color:var(--fg);margin-top:12px}
+.nu-day{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0 0}
+.nu-day b{min-width:110px;text-align:center;font-size:18px}
+.nu-nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--gold);font-size:24px;line-height:1}
+.nu-sum{text-align:center}
+.nu-left b{display:block;font-family:var(--display);font-size:46px;line-height:1;color:var(--gold)}
+.nu-left span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nu-left.over b{color:#ff7f6e}
+.nu-bar{height:8px;border-radius:99px;background:var(--bg);overflow:hidden;margin:10px 0 6px}
+.nu-bar i{display:block;height:100%;background:var(--gold);border-radius:99px}
+.nu-bar.over i{background:#ff7f6e}.nu-bar.p i{background:#4fd1b5}.nu-bar.c i{background:#f5c95a}.nu-bar.f i{background:#a58bff}
+.nu-macros{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.nu-macro span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.nu-macro small{font-size:13px;color:var(--fg)}
+.nu-macro .nu-bar{margin:6px 0 4px}
+.nu-meal{margin-top:18px}
+.nu-mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:6px}
+.nu-mh h2{margin:0;font-size:20px}.nu-mh span{color:var(--muted);font-size:14px}
+.nu-row{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 2px;color:var(--fg);text-align:left;font:inherit;cursor:pointer}
+.nu-row strong{display:block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.nu-row small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.nu-row b{flex:none;font-size:15px;font-weight:600}
+.nu-foot{margin-top:22px}
+.nu-meals{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.nu-tools{margin:12px 0 4px}
+.nu-fname{margin:0;font-size:22px;overflow-wrap:anywhere}
+.nu-amt{display:grid;grid-template-columns:1fr 1.6fr;gap:12px}
+.nu-three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.nu-three .c-label{margin-top:12px}
+.nu-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 6px;text-align:center}
+.nu-totals b{display:block;font-family:var(--display);font-size:26px;color:var(--gold);line-height:1.1}
+.nu-totals span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.nu-check{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px}
+.nu-check input{width:20px;height:20px;margin:0}
+.nu-err{margin:12px 0 0}
+.nu-scan{position:fixed;inset:0;z-index:60;background:#000;display:grid;grid-template-rows:1fr auto auto;gap:12px;padding:16px;color:#fff;text-align:center}
+.nu-scan video{width:100%;height:100%;object-fit:cover;border-radius:14px;min-height:0}
 /* film study widget */
 .fw-row{display:flex;gap:12px;align-items:center}
 .fw-thumb{position:relative;flex:0 0 42%;border:0;padding:0;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;cursor:pointer}
@@ -708,6 +752,7 @@ button.fs-t{cursor:pointer}
   <button class="m-sub" data-go="shoulder">Shoulder conditioning</button>
   <button class="m-group" data-go="calendar">Training calendar</button>
   <button class="m-group" data-go="camp">Training camp</button>
+  <button class="m-group" data-go="nutrition">Nutrition</button>
   <button class="m-group" data-go="film">Film study</button>
   <button class="m-group" data-go="hr">Heart rate</button>
   <button class="m-group" data-go="mind">Mental skills</button>
@@ -968,6 +1013,9 @@ button.fs-t{cursor:pointer}
 
 <!-- ============ HEART RATE ============ -->
 <section id="hr" class="wrap" hidden><div id="hrBody"></div></section>
+
+<!-- ============ NUTRITION ============ -->
+<section id="nutrition" class="wrap" hidden><div id="nutriBody"></div></section>
 
 <!-- ============ FILM STUDY ============ -->
 <section id="film" class="wrap" hidden><div id="filmBody"></div></section>
@@ -1261,6 +1309,8 @@ button.fs-t{cursor:pointer}
   </div>
 </section>
 
+<script src="supabase-config.js"></script>
+<script src="cloud.js"></script>
 <script src="iq-questions.js"></script>
 <script src="scenarios.js"></script>
 <script src="output.js"></script>
@@ -2608,11 +2658,12 @@ addEventListener('message', e => {
 const planCtx = {id:null};   // the planned session being done right now, so finishing it can tick it off the calendar
 function show(id){ if(id!=='breath') breathStop(); document.body.classList.toggle('has-menu', id!=='timer');   // no menu during a workout
   syncPreviews(id);
-  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
+  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','nutrition','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
   if(id!=='today') window.liveStop?.();   // stop the live channel when leaving the dashboard
   if(id!=='film') window.filmLeave?.();   // stop the video when leaving film study
-  if(['today','home','modes','sc','mind','cal','camp','hr','film'].includes(id)) planCtx.id=null;
+  if(['today','home','modes','sc','mind','cal','camp','hr','film','nutrition'].includes(id)) planCtx.id=null;
   if(id==='film') window.renderFilm?.();
+  if(id==='nutrition') window.renderNutrition?.();
   if(id==='hr') window.renderHR?.();   // back at a menu: no longer working on a planned session
   if(id==='cal') window.renderCal?.();
   if(id==='camp') window.renderCamp?.();
@@ -2880,7 +2931,7 @@ function route(){
   const sp=new URLSearchParams(location.search), [hname,hq]=location.hash.slice(1).split('?'), p=new URLSearchParams(hq||'');
   sp.forEach((v,k)=>{ if(k!=='go') p.set(k,v); });
   const name=sp.get('go')||hname; if(!name) return;
-  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
+  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
   if(sections[name]) return sections[name]();
   applyParams(p);
   if(['coach','basic','timer','scenario','output','plyo','shoulder','iq'].includes(name)) pickMode(name);
@@ -2908,6 +2959,7 @@ menuEl.addEventListener('click',e=>{
 <script src="calendar.js"></script>
 <script src="camp.js"></script>
 <script src="hr.js"></script>
+<script src="nutrition.js"></script>
 <script src="fighters.js"></script>
 <script src="film.js"></script>
 <script src="home.js"></script>

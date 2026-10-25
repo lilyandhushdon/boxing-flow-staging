@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Boxing Flow documentation</title>
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f5; --line:#d9dee6; --fg:#16202b; --muted:#566475;
+  --accent:#9a6b00; --accent-bg:#fff4d6; --ok:#17734a; --ok-bg:#e3f5ea; --warn:#a1331f; --warn-bg:#fde8e4; --info:#1c5f9a; --info-bg:#e5f0fb;
+  --code-bg:#eef1f5; --node:#ffffff; --node-line:#9aa7b8; --arrow:#6b7a8d;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f161d; --surface:#17212b; --surface-2:#1e2b37; --line:#2b3a49; --fg:#e9eef3; --muted:#9bacbd;
+    --accent:#f5c95a; --accent-bg:#2b2410; --ok:#6fd7a3; --ok-bg:#12281f; --warn:#ff9c8c; --warn-bg:#331a16; --info:#7cc0ea; --info-bg:#122a3d;
+    --code-bg:#1e2b37; --node:#17212b; --node-line:#4a5d70; --arrow:#8ea1b5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f161d; --surface:#17212b; --surface-2:#1e2b37; --line:#2b3a49; --fg:#e9eef3; --muted:#9bacbd;
+  --accent:#f5c95a; --accent-bg:#2b2410; --ok:#6fd7a3; --ok-bg:#12281f; --warn:#ff9c8c; --warn-bg:#331a16; --info:#7cc0ea; --info-bg:#122a3d;
+  --code-bg:#1e2b37; --node:#17212b; --node-line:#4a5d70; --arrow:#8ea1b5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--info)}
+code,pre,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+code{background:var(--code-bg);padding:.1em .35em;border-radius:5px}
+pre{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.5;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+.top{padding:28px 16px 20px;border-bottom:1px solid var(--line);background:var(--surface)}
+.top-in{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.top h1{margin:0;font-size:clamp(26px,4vw,36px);letter-spacing:-.01em}
+.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.badge.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.badge.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.badge.info{background:var(--info-bg);color:var(--info);border-color:transparent}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:1fr;gap:0 40px}
+@media(min-width:980px){.wrap{grid-template-columns:250px minmax(0,1fr)}}
+nav.toc{padding:20px 0}
+@media(min-width:980px){nav.toc{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:28px 0}}
+nav.toc details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:8px 14px}
+@media(min-width:980px){nav.toc details{border:0;background:none;padding:0}nav.toc summary{display:none}}
+nav.toc summary{cursor:pointer;font-weight:600}
+nav.toc ol{list-style:none;margin:8px 0 0;padding:0;font-size:14.5px}
+nav.toc li a{display:block;padding:4px 8px;border-radius:6px;color:var(--muted);text-decoration:none}
+nav.toc li a:hover{background:var(--surface-2);color:var(--fg)}
+nav.toc li.sub a{padding-left:22px;font-size:13.5px}
+main{padding:12px 0 80px;min-width:0}
+section{padding-top:36px;scroll-margin-top:12px}
+h2{font-size:26px;margin:0 0 6px;letter-spacing:-.01em;border-bottom:1px solid var(--line);padding-bottom:8px}
+h3{font-size:19px;margin:28px 0 6px}
+h4{font-size:15px;margin:18px 0 4px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+p,li{max-width:78ch}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td:first-child{white-space:nowrap}
+.call{border-left:4px solid var(--info);background:var(--info-bg);padding:10px 14px;border-radius:0 10px 10px 0;margin:14px 0}
+.call.warn{border-color:var(--warn);background:var(--warn-bg)}
+.call.ok{border-color:var(--ok);background:var(--ok-bg)}
+.call.todo{border-color:var(--accent);background:var(--accent-bg)}
+.call b:first-child{display:block;margin-bottom:2px}
+.call p{margin:4px 0}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin:14px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h4{margin:0 0 6px}
+.card p{margin:4px 0;font-size:15px}
+figure{margin:16px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{color:var(--muted);font-size:14px;margin-top:6px}
+.node{fill:var(--node);stroke:var(--node-line);stroke-width:1.5}
+.node.hot{stroke:var(--accent);stroke-width:2}
+.node.cloud{stroke:var(--info);stroke-dasharray:5 3}
+.node.off{stroke-dasharray:2 4;opacity:.7}
+.lbl{fill:var(--fg);font:600 13px system-ui,sans-serif}
+.sml{fill:var(--muted);font:12px system-ui,sans-serif}
+.edge{stroke:var(--arrow);stroke-width:1.5;fill:none;marker-end:url(#ah)}
+.edge.dash{stroke-dasharray:5 4}
+.tag{font-size:12px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--surface-2);color:var(--muted);vertical-align:2px}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.info{background:var(--info-bg);color:var(--info)}
+footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center;color:var(--muted);font-size:14px}
+.theme{background:var(--surface-2);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+@media print{.toc,.theme{display:none}.wrap{display:block}section{break-inside:avoid-page}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="top-in">
+  <div>
+    <h1>Boxing Flow documentation</h1>
+    <p>What the app is, how every part works and fits together, where the data lives, how to run and deploy it, and what is planned. Written so a new developer can pick the project up.</p>
+  </div>
+  <div class="badges">
+    <span class="badge">Last updated 25 Oct 2026</span>
+    <span class="badge ok">Single user (personal use)</span>
+    <span class="badge warn">Payments paused</span>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch between light and dark">Light / dark</button>
+  </div>
+</div></header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents"><details open><summary>Contents</summary><ol>
+  <li><a href="#overview">1. Overview</a></li>
+  <li><a href="#architecture">2. Architecture</a></li>
+  <li><a href="#repo">3. Repository map</a></li>
+  <li><a href="#app">4. How the app is built</a></li>
+  <li class="sub"><a href="#screens">Screens and routing</a></li>
+  <li class="sub"><a href="#loading">Script load order</a></li>
+  <li class="sub"><a href="#globals">Shared globals</a></li>
+  <li><a href="#features">5. Features</a></li>
+  <li class="sub"><a href="#f-dashboard">Dashboard</a></li>
+  <li class="sub"><a href="#f-boxing">Boxing training</a></li>
+  <li class="sub"><a href="#f-sc">Strength and mental skills</a></li>
+  <li class="sub"><a href="#f-calendar">Calendar</a></li>
+  <li class="sub"><a href="#f-camp">Training camp</a></li>
+  <li class="sub"><a href="#f-nutrition">Nutrition</a></li>
+  <li class="sub"><a href="#f-film">Film study</a></li>
+  <li class="sub"><a href="#f-hr">Heart rate</a></li>
+  <li class="sub"><a href="#f-live">Live channel</a></li>
+  <li class="sub"><a href="#f-landing">Landing page</a></li>
+  <li class="sub"><a href="#f-pay">Payments (paused)</a></li>
+  <li><a href="#data">6. Data and sync</a></li>
+  <li><a href="#integrations">7. External services</a></li>
+  <li><a href="#config">8. Configuration and secrets</a></li>
+  <li><a href="#run">9. Run, test, deploy</a></li>
+  <li><a href="#cicd">10. Testing and CI/CD plan</a></li>
+  <li><a href="#security">11. Security and privacy</a></li>
+  <li><a href="#limits">12. Known limits</a></li>
+  <li><a href="#roadmap">13. Roadmap</a></li>
+  <li><a href="#decisions">14. Decisions</a></li>
+  <li><a href="#changelog">15. Change log</a></li>
+  <li><a href="#maintain">16. Keeping this up to date</a></li>
+</ol></details></nav>
+
+<main>
+
+<!-- ============================================================ 1 -->
+<section id="overview">
+<h2>1. Overview</h2>
+<p><b>Boxing Flow</b> is a boxing training web app. It began as a round timer with a 3D coach who demonstrates combinations, and has grown into a training companion: guided boxing and conditioning sessions, mental skills, a training calendar, a fight-camp planner, a nutrition diary, film study, and heart-rate monitoring. Everything is remembered in the person's own account and follows them across devices.</p>
+<div class="grid">
+  <div class="card"><h4>Who it is for</h4><p>Boxers and boxing fans training alone or alongside a coach. At the moment it has one user (the owner) and is not public.</p></div>
+  <div class="card"><h4>What it is made of</h4><p>A static website of plain HTML and JavaScript (no build step), a few Netlify Functions, and a Supabase project (Postgres and sign-in) for accounts and saved data.</p></div>
+  <div class="card"><h4>Where it runs</h4><p>Any modern browser, phone first. Hosted on Netlify at <code>heroic-jalebi-e2e04b.netlify.app</code>. Source on GitHub at <code>lilyandhushdon/boxing-flow-staging</code> (branch <code>main</code>).</p></div>
+</div>
+<div class="call warn"><b>Status of the live site</b>
+  <p>The Netlify site is <b>not connected to the GitHub repository</b>: its last deploy was on 10 Oct 2026 and pushing to GitHub does not update it. To publish, run <code>netlify deploy --prod</code> from the project folder, or link the repository in Netlify (Site configuration, Build and deploy). See <a href="#run">section 9</a>.</p></div>
+<h3>Feature list</h3>
+<table>
+<tr><th>Area</th><th>Features</th></tr>
+<tr><td>Dashboard</td><td>Draggable widgets: today's session, training camp, nutrition, quick coach workout (live preview), live boxing channel, film study, month calendar, week strip, progress, suggestions, do-it-again, explore. Fight countdown badge.</td></tr>
+<tr><td>Boxing</td><td>Coach workout (3D coach), basic workouts, round timer, fight scenarios, output rounds, Boxing IQ quiz.</td></tr>
+<tr><td>Strength and conditioning</td><td>Plyometrics (bodyweight, lower body, upper body, medicine ball), shoulder conditioning.</td></tr>
+<tr><td>Mental skills</td><td>Box breathing, cognitive reframing, read-through skills.</td></tr>
+<tr><td>Planning</td><td>Training calendar (week and month, repeat, move, tick off, .ics export) and the training camp (phases and two-week focus blocks).</td></tr>
+<tr><td>Tracking</td><td>Nutrition diary with free food databases, heart rate monitor with zones, session log, streaks and weekly goal.</td></tr>
+<tr><td>Learning</td><td>Film study: YouTube player with timestamped notes, plus a library of 45 fighters and 336 full fights.</td></tr>
+<tr><td>Accounts</td><td>Email sign-in, and automatic sync of everything the app remembers.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="architecture">
+<h2>2. Architecture</h2>
+<p>The app is <b>local first</b>. Every screen reads and writes the browser's own storage, so it is fast and works offline. A sync layer copies those saves to the person's Supabase account and brings changes from other devices back. Food search goes through one Netlify Function so the USDA key never reaches the browser.</p>
+<figure>
+<svg viewBox="0 0 920 540" role="img" aria-label="Architecture diagram: the browser app, its storage and sync, Supabase, the foods function and the outside services">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--arrow)"/></marker></defs>
+  <rect class="node hot" x="20" y="150" width="400" height="300" rx="14"/>
+  <text class="lbl" x="36" y="176">The app in the browser (app.html and its scripts)</text>
+  <rect class="node" x="40" y="192" width="170" height="52" rx="8"/><text class="lbl" x="52" y="214">Screens</text><text class="sml" x="52" y="232">dashboard, workouts, camp...</text>
+  <rect class="node" x="230" y="192" width="170" height="52" rx="8"/><text class="lbl" x="242" y="214">Feature modules</text><text class="sml" x="242" y="232">calendar, camp, nutrition...</text>
+  <rect class="node" x="40" y="268" width="360" height="56" rx="8"/><text class="lbl" x="52" y="290">localStorage (keys starting "bf")</text><text class="sml" x="52" y="310">plan, log, camp, widgets, film, goals...</text>
+  <rect class="node hot" x="40" y="348" width="360" height="86" rx="8"/><text class="lbl" x="52" y="370">cloud.js: sign-in and sync</text><text class="sml" x="52" y="390">watches saves to "bf" keys, pushes to the account,</text><text class="sml" x="52" y="406">pulls changes from other devices, keeps the newest</text><text class="sml" x="52" y="422">change per key</text>
+  <rect class="node cloud" x="520" y="30" width="380" height="150" rx="14"/>
+  <text class="lbl" x="536" y="56">Supabase project "boxing-flow" (Sydney)</text>
+  <rect class="node" x="540" y="72" width="160" height="90" rx="8"/><text class="lbl" x="552" y="94">Auth</text><text class="sml" x="552" y="112">email sign-in link</text><text class="sml" x="552" y="128">one account per person</text>
+  <rect class="node" x="716" y="72" width="164" height="90" rx="8"/><text class="lbl" x="728" y="94">Postgres + row rules</text><text class="sml" x="728" y="112">app_data, food_entries,</text><text class="sml" x="728" y="128">custom_foods, profile</text>
+  <rect class="node cloud" x="520" y="214" width="380" height="104" rx="14"/>
+  <text class="lbl" x="536" y="240">Netlify</text>
+  <rect class="node" x="540" y="254" width="160" height="50" rx="8"/><text class="lbl" x="552" y="276">Static hosting</text><text class="sml" x="552" y="294">the HTML, JS, models, audio</text>
+  <rect class="node" x="716" y="254" width="164" height="50" rx="8"/><text class="lbl" x="728" y="276">Function /api/foods</text><text class="sml" x="728" y="294">holds the USDA key</text>
+  <rect class="node off" x="520" y="350" width="170" height="60" rx="10"/><text class="lbl" x="534" y="374">Stripe (paused)</text><text class="sml" x="534" y="392">checkout, trial, portal</text>
+  <rect class="node" x="710" y="350" width="190" height="60" rx="10"/><text class="lbl" x="724" y="374">USDA + Open Food Facts</text><text class="sml" x="724" y="392">food data (read only)</text>
+  <rect class="node" x="40" y="480" width="190" height="44" rx="10"/><text class="lbl" x="54" y="506">YouTube player (film study)</text>
+  <rect class="node" x="250" y="480" width="190" height="44" rx="10"/><text class="lbl" x="264" y="506">Boxing World TV (embed)</text>
+  <rect class="node" x="460" y="480" width="190" height="44" rx="10"/><text class="lbl" x="474" y="506">three.js on jsDelivr (3D)</text>
+  <rect class="node" x="670" y="480" width="230" height="44" rx="10"/><text class="lbl" x="684" y="506">Chest strap (Web Bluetooth)</text>
+  <path class="edge" d="M400 390 H460 Q500 390 500 340 V130 Q500 117 520 117"/><text class="sml" x="470" y="228" transform="rotate(-90 470 228)">saves and loads</text>
+  <path class="edge" d="M420 290 H500 Q510 290 520 285"/><text class="sml" x="430" y="282">loads the site</text>
+  <path class="edge" d="M880 304 V350"/><text class="sml" x="800" y="334">food search</text>
+  <path class="edge dash" d="M230 450 V480"/><path class="edge dash" d="M330 450 V480" /><path class="edge dash" d="M470 450 L540 480"/><path class="edge dash" d="M400 430 H620 Q700 430 770 480"/>
+</svg>
+<figcaption>Solid arrows are the app's own traffic; dashed arrows are things the browser loads or connects to directly. Stripe is built but switched off.</figcaption>
+</figure>
+<h3>Key ideas</h3>
+<ul>
+<li><b>No build step.</b> The files in the repo are the files that are served (<code>publish = "."</code>). Scripts are classic scripts sharing global names, not modules (except the 3D coach script).</li>
+<li><b>Local first, sync second.</b> Modules never talk to the database for settings or progress: they call <code>localStorage</code> as before, and <code>cloud.js</code> notices. Only the nutrition diary talks to Supabase tables directly.</li>
+<li><b>One server function.</b> <code>/api/foods</code> merges two food databases and keeps the USDA key private.</li>
+<li><b>The database protects itself.</b> Every table has row level security, so even though the Supabase key in the page is public, one person's rows cannot be read or changed by anyone else.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="repo">
+<h2>3. Repository map</h2>
+<table>
+<tr><th>Path</th><th>What it is</th></tr>
+<tr><td><code>index.html</code></td><td>The public landing page: hero with a live preview of the coach, features, menu that mirrors the app's, links into the app with <code>app.html?go=...</code>.</td></tr>
+<tr><td><code>app.html</code></td><td>The app itself (about 340 KB). Contains all screens, the styles, the workout engine (timer, steps, audio, voice, lock screen, wake lock), the router, the 3D coach script and the menu.</td></tr>
+<tr><td><code>cloud.js</code></td><td>Supabase client, sign-in state and the sync of everything the app remembers. Loads first.</td></tr>
+<tr><td><code>supabase-config.js</code></td><td>The project address and the <i>public</i> anon key. Safe to publish; never put a secret here.</td></tr>
+<tr><td><code>drag.js</code></td><td><code>holdDrag</code>: press-and-hold dragging used by the calendar and the dashboard.</td></tr>
+<tr><td><code>calendar.js</code></td><td>Training calendar, session plan, <code>.ics</code> export, <code>sessionDone</code>. Exposes <code>bfCal</code>.</td></tr>
+<tr><td><code>camp.js</code></td><td>Training camp planner. Exposes <code>bfCamp</code>.</td></tr>
+<tr><td><code>hr.js</code></td><td>Heart-rate strap connection, zones and the live pill. Exposes <code>bfHR</code>.</td></tr>
+<tr><td><code>nutrition.js</code></td><td>Nutrition diary, targets, barcode scan. Exposes <code>bfNutri</code>.</td></tr>
+<tr><td><code>fighters.js</code>, <code>film.js</code></td><td>The fighter and fight list (data) and the film study screen. Expose <code>FILM_FIGHTERS</code> and <code>bfFilm</code>.</td></tr>
+<tr><td><code>home.js</code></td><td>The dashboard and its widgets, the fight countdown, the live channel widget.</td></tr>
+<tr><td><code>iq-questions.js</code>, <code>scenarios.js</code>, <code>output.js</code>, <code>plyo.js</code>, <code>shoulder.js</code>, <code>mind.js</code></td><td>Content data for Boxing IQ, fight scenarios, output rounds, plyometrics, shoulder conditioning and mental skills.</td></tr>
+<tr><td><code>netlify/functions/</code></td><td><code>foods.mjs</code> (food search, live) and the paused payment functions: <code>checkout</code>, <code>welcome</code>, <code>refresh</code>, <code>portal</code>, <code>restore</code>. Shared code in <code>netlify/lib/access.mjs</code>.</td></tr>
+<tr><td><code>supabase/</code></td><td><code>config.toml</code> (project settings pushed with the CLI) and <code>migrations/</code> (the database, in order).</td></tr>
+<tr><td><code>subscribe.html</code></td><td>The paywall page (monthly or yearly plan, 7 day trial). Not linked from anywhere while payments are paused.</td></tr>
+<tr><td><code>models/</code>, <code>music/</code>, <code>crowd/</code></td><td>3D coaches (<code>.glb</code>) and Mixamo move clips (<code>.fbx</code>), music tracks, crowd sound.</td></tr>
+<tr><td><code>netlify.toml</code></td><td>Netlify settings: publish directory, functions folder, no-cache header for <code>app.html</code>, and the rule that hides <code>/docs/</code> on the live site.</td></tr>
+<tr><td><code>docs/index.html</code></td><td>This documentation.</td></tr>
+<tr><td><code>.env</code></td><td>Local secrets (git-ignored). See <a href="#config">section 8</a>.</td></tr>
+<tr><td><code>README.md</code>, <code>STRIPE_INTEGRATION_TODO.md</code></td><td>Notes from the original build, including the table of which animation file shows each boxing move, and the Stripe checkout notes.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="app">
+<h2>4. How the app is built</h2>
+
+<h3 id="screens">Screens and routing</h3>
+<p>The app is one page. Each screen is a <code>&lt;section id="..."&gt;</code> and <code>show(id)</code> hides all the others, stops anything that should not keep running (breathing animation, the live channel, the film study video, the 3D gym), and calls the screen's render hook.</p>
+<table>
+<tr><th>Screen id</th><th>What it is</th><th>Render hook</th></tr>
+<tr><td><code>today</code></td><td>Dashboard (the home screen)</td><td><code>renderToday</code></td></tr>
+<tr><td><code>home</code></td><td>Explore all training</td><td>none</td></tr>
+<tr><td><code>modes</code>, <code>sc</code>, <code>mind</code></td><td>Hubs for Boxing, Strength and conditioning, Mental skills</td><td>none</td></tr>
+<tr><td><code>setup</code>, <code>plainSetup</code></td><td>Choose options for the coach workout / for the other workouts</td><td>none</td></tr>
+<tr><td><code>timer</code>, <code>done</code></td><td>The running workout and its finish screen</td><td>none</td></tr>
+<tr><td><code>iq</code>, <code>iqQuiz</code>, <code>skill</code>, <code>reframe</code>, <code>breath</code></td><td>Boxing IQ and the mental skills screens</td><td>none</td></tr>
+<tr><td><code>cal</code>, <code>camp</code></td><td>Calendar, training camp</td><td><code>renderCal</code>, <code>renderCamp</code></td></tr>
+<tr><td><code>nutrition</code>, <code>film</code>, <code>hr</code></td><td>Nutrition diary, film study, heart rate</td><td><code>renderNutrition</code>, <code>renderFilm</code>, <code>renderHR</code></td></tr>
+</table>
+<h4>Deep links</h4>
+<p>Open <code>app.html?go=NAME</code> or <code>app.html#NAME?params</code>. The router (<code>route()</code>) understands:</p>
+<ul>
+<li><b>Screens:</b> <code>today</code> (or <code>dashboard</code>), <code>explore</code>, <code>modes</code> (or <code>boxing</code>), <code>strength</code>, <code>mind</code>, <code>calendar</code>, <code>camp</code>, <code>film</code>, <code>nutrition</code>, <code>hr</code> (or <code>heartrate</code>), <code>breath</code>, <code>reframe</code>.</li>
+<li><b>Workouts:</b> <code>coach</code>, <code>basic</code>, <code>timer</code>, <code>scenario</code>, <code>output</code>, <code>plyo</code>, <code>shoulder</code>, <code>iq</code>.</li>
+<li><b>Choices</b> (numbers pick an entry in that list, checked against its length): <code>focus</code> (comma list of drill ids), <code>opt</code>, <code>preset</code>, <code>scen</code>, <code>sopt</code>, <code>out</code>, <code>oopt</code>, <code>plyo</code>, <code>popt</code>, <code>shd</code>, <code>shopt</code>.</li>
+</ul>
+<h4>Navigation rule</h4>
+<p>Back links show only when someone arrived through a hub page (<code>hubClick</code> sets the body class <code>from-hub</code>); the Boxing and Strength hubs have no back link; other screens link back to the Dashboard. The logo in the top bar always goes to the Dashboard. The top bar and burger menu are hidden during a workout.</p>
+<h4>Preview iframes</h4>
+<p>The dashboard's quick workout widget and the Boxing card embed <code>index.html?preview</code> in an iframe to show the live coach. Each iframe has a <code>data-on</code> screen, is loaded only while that screen is visible (<code>syncPreviews</code>), sends a <code>bfAlive</code> heartbeat, and is reloaded if the heartbeat stops. A static ring placeholder shows until it is ready.</p>
+
+<h3 id="loading">Script load order</h3>
+<p>Order matters because scripts share globals. In <code>app.html</code>:</p>
+<pre><code>supabase-config.js   the project address and public key
+cloud.js             FIRST: watches saves to "bf" keys, so no save is missed
+iq-questions.js, scenarios.js, output.js, plyo.js, shoulder.js, mind.js     content data
+(inline main script) show(), route(), the workout engine, menu
+drag.js              holdDrag
+calendar.js          bfCal   (needs the main script's WAYS data)
+camp.js              bfCamp  (needs bfCal)
+hr.js                bfHR
+nutrition.js         bfNutri (needs bfCal for dates, bfCloud for the account)
+fighters.js          FILM_FIGHTERS (data)
+film.js              bfFilm  (needs fighters.js)
+home.js              the dashboard: reads bfCal, bfCamp, bfNutri, bfFilm
+importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre>
+<div class="call"><b>Watch out</b><p><code>route()</code> runs at the end of the main script, before the later scripts load. Screens whose render hook lives in a later script therefore also render themselves when that script loads (each such file ends with <code>if(!$('screen').hidden) renderX()</code>).</p></div>
+
+<h3 id="globals">Shared globals</h3>
+<table>
+<tr><th>Global</th><th>Defined in</th><th>What it offers</th></tr>
+<tr><td><code>bfCloud</code></td><td>cloud.js</td><td><code>init()</code>, <code>sb</code> (Supabase client), <code>user</code>, <code>onAuth(fn)</code>, <code>onStatus(fn)</code>, <code>status</code>, <code>last</code>, <code>syncNow()</code>, <code>signOut()</code></td></tr>
+<tr><td><code>bfCal</code></td><td>calendar.js</td><td>Plan and date helpers (<code>plan</code>, <code>dkey</code>, <code>fromKey</code>, <code>addDays</code>, <code>weekStart</code>), session labels and <code>start(event)</code>, <code>openDay</code>, <code>addFor</code></td></tr>
+<tr><td><code>bfCamp</code></td><td>camp.js</td><td><code>camp</code>, <code>current()</code>, <code>phaseOn(date)</code>, <code>toggle</code>, <code>counts</code>, <code>showInfo()</code></td></tr>
+<tr><td><code>bfNutri</code></td><td>nutrition.js</td><td><code>summary()</code> for the widget, <code>addFood()</code>, <code>onChange(fn)</code>, <code>ensure()</code></td></tr>
+<tr><td><code>bfFilm</code></td><td>film.js</td><td><code>studies</code>, <code>featured(offset)</code>, <code>latest()</code>, <code>startFight(fight)</code>, <code>openStudy(id)</code>, <code>parseLink</code></td></tr>
+<tr><td><code>bfHR</code></td><td>hr.js</td><td><code>state</code>, <code>bpm</code>, <code>zone</code>, <code>zones()</code>, <code>maxHR()</code>, <code>connect()</code>, <code>on(fn)</code></td></tr>
+<tr><td><code>holdDrag</code></td><td>drag.js</td><td><code>holdDrag(root, {item, target, onDrop})</code></td></tr>
+<tr><td><code>show</code>, <code>route</code>, <code>pickMode</code>, <code>start</code>, <code>finish</code></td><td>main script</td><td>Navigation and the workout engine</td></tr>
+<tr><td><code>sessionDone</code>, <code>logSession</code>, <code>renderToday</code>, <code>liveStop</code>, <code>filmLeave</code></td><td>calendar / home / film</td><td>Hooks called by the engine when a session finishes and when a screen is left</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="features">
+<h2>5. Features</h2>
+
+<h3 id="f-dashboard">Dashboard</h3>
+<p><b>Code:</b> <code>home.js</code>. <b>Screen:</b> <code>today</code>, the app's home.</p>
+<ul>
+<li><b>Widgets</b> in default order: <code>today</code>, <code>camp</code>, <code>nutri</code>, <code>quick</code>, <code>live</code>, <code>film</code>, <code>minical</code>, <code>week</code>, <code>progress</code>, <code>suggest</code>, <code>recent</code>, <code>explore</code>. Each widget is a persistent element refreshed in place and positioned with CSS <code>order</code>, so the live coach preview and the live channel never reload when the dashboard refreshes.</li>
+<li><b>Rearranging:</b> press and hold a widget and drop it on another to swap places. The order is saved in <code>bfWidgets</code> (and so syncs). "Reset layout" removes the key.</li>
+<li><b>Header badge:</b> days until the fight (from the training camp), with weeks and days beneath. For the starter camp (no fight date) it counts to the end of the camp and says "days of camp left". After the camp ends it shows the day streak.</li>
+<li><b>Progress</b> comes from the session log (<code>bfLog</code>, last 500 sessions): streak, sessions and minutes this week, a weekly goal (<code>bfGoal</code>, 1 to 7).</li>
+<li><b>Suggestions</b> pick the area (boxing, strength, mind) done least in the last two weeks and the way to train in it done least recently.</li>
+</ul>
+
+<h3 id="f-boxing">Boxing training</h3>
+<p><b>Code:</b> the main script in <code>app.html</code> plus the content data files. All workouts run through one engine: a list of <i>steps</i> (round, rest, warm-up...) with durations, played by a timer loop with Web Audio tones, spoken callouts (speech synthesis), optional music and crowd sound, and the ring display.</p>
+<table>
+<tr><th>Mode</th><th>What it does</th></tr>
+<tr><td>Coach workout (<code>coach</code>)</td><td>The 3D coach demonstrates drills round by round. Pick skills (<code>FOCUS</code> list) and the round format. Includes interactive gym mode, a male and a female coach, and a finale where the drills are celebrated.</td></tr>
+<tr><td>Basic workouts (<code>basic</code>)</td><td>Fixed workouts without the 3D coach, including the Attacking and Defence drills, sorted A to Z.</td></tr>
+<tr><td>Round timer (<code>timer</code>)</td><td>Plain rounds and rests.</td></tr>
+<tr><td>Fight scenarios (<code>scenario</code>)</td><td>Five opponent styles, each a five-round plan. Every round is five one-minute phases with three coaching points at 20 second intervals, plus encouragement phrases. Three-minute and five-minute round options.</td></tr>
+<tr><td>Output rounds (<code>output</code>)</td><td>Punch-volume targets of 90, 135, 210, 270, 360, 400 and 500 punches, plus 540 "three-punch blocks", called out like a coach would ("x2", "x3").</td></tr>
+<tr><td>Boxing IQ (<code>iq</code>)</td><td>96 scenario questions (four options, one answer, an explanation, a difficulty) in 12 topics. Scores in <code>bfIQ</code>.</td></tr>
+</table>
+<h4>3D coach: single source of truth</h4>
+<p>Two tables in <code>app.html</code> decide everything the coach shows. The drill list (<code>FOCUS</code>) lists each drill's moves in order; the move library (<code>MOVE_LIBRARY</code>) names the one animation file for each move. The README holds the move-to-file table. The 3D coach is three.js 0.160 loaded from jsDelivr; if WebGL or a file fails, an illustrated coach remains.</p>
+<h4>Phone behaviour</h4>
+<p>A silent looping audio element of matching length plus the Media Session API gives lock screen controls and a correct progress bar on iPhone, and keeps audio alive in the background. A wake lock keeps the screen on. The iPhone gold-square countdown bug (a compositing glitch) was fixed; the 360-degree spin was kept.</p>
+<h4>Finishing a session</h4>
+<p><code>finish()</code> (and the breathing, reframing and quiz endings) call <code>sessionDone({type, minutes})</code>, which ticks the planned session off the calendar and writes a log entry through <code>logSession</code>.</p>
+
+<h3 id="f-sc">Strength and conditioning, and mental skills</h3>
+<ul>
+<li><b>Plyometrics</b> (<code>plyo.js</code>): bodyweight, lower-body, upper-body and medicine-ball libraries with a different set of moves each round, with coaching tips.</li>
+<li><b>Shoulder conditioning</b> (<code>shoulder.js</code>): a drill and an 8-minute shoulder burner.</li>
+<li><b>Mental skills</b> (<code>mind.js</code>): box breathing with an animated guide and adjustable minutes, cognitive reframing, and read-through skills.</li>
+</ul>
+
+<h3 id="f-calendar">Training calendar</h3>
+<p><b>Code:</b> <code>calendar.js</code>. <b>Data:</b> <code>bfPlan</code>.</p>
+<ul>
+<li>Week and month views. Add, edit and delete a planned session (any way of training from the <code>WAYS</code> table: coach, basic, timer, scenario, output, IQ, plyo, shoulder, breathing, reframing, rest day). Repeat options.</li>
+<li>Press and hold a session to move it to another day (<code>holdDrag</code>). Tap to start it; finishing ticks it off.</li>
+<li>Export to <code>.ics</code> for any calendar app.</li>
+<li>If a training camp exists, the calendar shows which phase and focus block each day is in (coloured strip and tints).</li>
+</ul>
+
+<h3 id="f-camp">Training camp</h3>
+<p><b>Code:</b> <code>camp.js</code>. <b>Data:</b> <code>bfCamp</code>, <code>bfCampInfoSeen</code>.</p>
+<ul>
+<li>A camp is split into four phases, <b>Base, Build, Peak, Fight week</b>, and each phase into two-week focus blocks. Each block has a goal (written by the app, editable) and tasks with subtasks that can be ticked, added and deleted. Many tasks link straight into a workout ("Practise").</li>
+<li><b>Starter camp:</b> an 8-week camp from today is created automatically, so there is nothing to set up. "Change length or fight date" rebuilds it, keeping ticks, edited goals and custom tasks where the new camp has the same task.</li>
+<li><b>Lengths:</b> 6, 8, 10 or 12 weeks (<code>SHARES</code> gives the weeks per phase). If the fight is sooner than the camp, the camp shrinks proportionally and low-priority tasks are trimmed (<code>allocate</code> uses largest-remainder rounding with minimums).</li>
+<li>The camp does <b>not</b> schedule workouts. It gives a two-week focus (coach feedback, the person's own ideas) to keep in mind when planning sessions. A "how your training camp works" explainer opens the first time.</li>
+<li>The dashboard widget shows the current phase, the focus goal and the next open tasks, with ticks.</li>
+</ul>
+
+<h3 id="f-nutrition">Nutrition</h3>
+<p><b>Code:</b> <code>nutrition.js</code>, <code>netlify/functions/foods.mjs</code>. <b>Data:</b> Supabase tables (not localStorage).</p>
+<h4>What the person can do</h4>
+<ul>
+<li>Sign in with an email link. Pick a day (previous, next), add food to Breakfast, Lunch, Dinner or Snacks: search by name, choose an amount in grams or a serving ("1 large banana"), and add. Edit the amount or delete an entry. "Copy yesterday's meals".</li>
+<li>Scan a barcode (Chrome on Android and desktop; elsewhere a typed barcode), quick-add calories and macros, create their own foods, see recent foods and their own foods before typing.</li>
+<li>Daily summary: calories left (or over), and protein, carbohydrate and fat bars against targets. Targets are worked out from sex, age, height, weight, training level and goal with the Mifflin-St Jeor formula; the pace of weight change is capped (never more than 20% below maintenance, never below a minimum). Protein is 2.0 g per kg (2.2 when cutting), fat 25% of calories, carbohydrate the rest. The person can override every target. Energy can be shown in kcal or kJ.</li>
+<li>A weight-cut warning is shown: this is a guide, not medical advice.</li>
+</ul>
+<h4>The food search function</h4>
+<table>
+<tr><th>Request</th><th>Result</th></tr>
+<tr><td><code>/api/foods?q=weetbix</code></td><td>Up to about 25 foods in one shape: <code>{id, source, generic, name, brand, per100:{kcal,protein,carbs,fat,fibre,sugar,sodium_mg}, serving:{label,grams}|null, nz}</code>, nutrients per 100 g. <code>partial:true</code> means one database failed. <code>searchedAs</code> tells the page that a New Zealand word was translated.</td></tr>
+<tr><td><code>/api/foods?barcode=9400...</code></td><td>One packaged product, or <code>item:null</code>.</td></tr>
+<tr><td><code>/api/foods?usda=173944</code></td><td>The serving sizes for one USDA food (1 large banana = 136 g...).</td></tr>
+</table>
+<ul>
+<li><b>Order:</b> everyday USDA foods first, then New Zealand products from Open Food Facts, then packaged USDA, then other Open Food Facts products.</li>
+<li><b>New Zealand:</b> Open Food Facts is searched twice, once limited to New Zealand products, so NZ items always appear. NZ words are mapped for USDA (mince is ground beef, kumara is sweet potato, capsicum, courgette, coriander, prawns, biscuits, crisps, silverbeet, beetroot, yoghurt, porridge, lollies, and so on). USDA's own branded list also contains some NZ products.</li>
+<li><b>Ranking:</b> USDA everyday foods and packaged foods are searched separately (or packaged ones crowd out plain ones), then ranked by how many search words match, whether the name looks unusual (dried, powder...), and shortness.</li>
+<li><b>Caching:</b> successful responses are cached for a day (a week for serving sizes) at the Netlify edge. Failures are not cached.</li>
+<li><b>Entries keep a snapshot:</b> each diary entry stores the food's nutrients per 100 g and the grams, so editing the amount recalculates, and old entries never change if a database changes.</li>
+</ul>
+<h4>Dashboard widget</h4>
+<p>Shows calories left, macro bars and an "Add food" button, or a sign-in prompt. It paints at once from a small cache (<code>bfNutriCache</code>) and updates when the account answers.</p>
+
+<h3 id="f-film">Film study</h3>
+<p><b>Code:</b> <code>film.js</code>, <code>fighters.js</code>. <b>Data:</b> <code>bfFilm</code>.</p>
+<ul>
+<li>Paste a YouTube link (watch, short, shorts, embed, live and mobile links, with an optional start time) and it plays in the page using YouTube's own embedded player (IFrame API).</li>
+<li><b>Pausing opens a note</b> stamped with that moment (a short delay stops scrubbing counting as a pause). "Add note at this moment" works without pausing. Tap a note's time to jump to it. Edit and delete notes; add key takeaways; copy all notes (with time-stamped links) as text.</li>
+<li>The library lists studies with thumbnails; reopening resumes where the person stopped.</li>
+<li><b>Fighters:</b> "Study a fighter" lists 45 fighters (A to Z), each with their full fights from official channels (336 fights). Tapping a fight opens it with the link already filled in. The data is in <code>fighters.js</code> as <code>['Opponent', 'videoId', 'Channel']</code>, one line per fight.</li>
+<li><b>How fights were chosen:</b> only full fights on official channels (Top Rank, DAZN, Matchroom, Premier Boxing Champions, Golden Boy, Sky Sports Boxing, The Ring, BOXXER), found by searching YouTube and then checking each with YouTube's oEmbed check (HTTP 200 means embedding is allowed). Highlights, marathons and fan uploads were excluded. Videos can be removed later, so the list should be re-checked (see <a href="#cicd">section 10</a>).</li>
+<li><b>Dashboard widget:</b> a fight to study (a different one each day, or "Another fight"), plus "carry on" with the last study.</li>
+</ul>
+<p><b>Limits:</b> some videos block embedding (the page says so and links to YouTube); on iPhone playback needs a tap and stops when the screen locks.</p>
+
+<h3 id="f-hr">Heart rate</h3>
+<p><b>Code:</b> <code>hr.js</code>. <b>Data:</b> <code>bfHR</code> (age and max heart rate).</p>
+<ul>
+<li>Connects to a chest strap (tested design for the Polar H10; also Garmin straps and any strap using the standard Bluetooth heart rate service) through Web Bluetooth. Shows live beats per minute and the training zone.</li>
+<li>Reads the standard Heart Rate Measurement packet: 8-bit or 16-bit beats per minute, and beat-to-beat (RR) intervals, kept for later recovery and HRV features.</li>
+<li>Zones as a share of max heart rate: Easy 50%, Aerobic 60%, Tempo 70%, Hard 80%, Max 90%. Max heart rate is the person's own number or estimated as <code>208 - 0.7 x age</code> (Tanaka).</li>
+<li>A heart pill with the bpm, coloured by zone, shows at the top of the workout timer. If the strap drops, it retries for about a minute. Stale readings show dashes.</li>
+</ul>
+<div class="call warn"><b>Platform limit</b><p>Web Bluetooth does not exist in Safari or any iPhone or iPad browser. It works in Chrome and Edge on Android, Windows, Mac and Chromebook, and in the Bluefy browser on iPhone. Supporting the iPhone properly needs a native wrapper (see <a href="#roadmap">roadmap</a>). The page needs HTTPS (or localhost).</p></div>
+
+<h3 id="f-live">Live boxing channel</h3>
+<p><b>Code:</b> <code>home.js</code> (the <code>live</code> widget). A dashboard widget that plays <b>Boxing World TV</b> (boxingworld.com), a free 24/7 boxing channel, in a frame. It loads only when "Watch free boxing now" is tapped, shows the site as they serve it (their player, ads and cookie banner), and stops when the dashboard is left or "Stop" is pressed.</p>
+<div class="call warn"><b>Licence</b><p>Their terms allow personal, non-commercial use and forbid redistribution without permission. This is acceptable for the single owner only. Before the app is public or paid, get written permission (a draft email to the channel is in the project history) or replace the widget with a plain link. TrillerTV, FITE, Tubi, Roku, Plex, XUMO and Rakuten TV all block framing and cannot be embedded.</p></div>
+
+<h3 id="f-landing">Landing page</h3>
+<p><code>index.html</code> is public. It has a hero with the live coach preview, the feature sections (including "Beyond the bag"), a coach card that opens the coach workout, a burger menu mirroring the app's, and card links of the form <code>app.html?go=...</code>. With <code>?preview</code> it renders as an embeddable preview (used by the dashboard). The pricing and paywall links were removed while payments are paused.</p>
+
+<h3 id="f-pay">Payments (paused)</h3>
+<p>Stripe Checkout (hosted) with a 7-day free trial and monthly and yearly plans was built and then removed from the live flow on 16 Oct 2026, until there are enough features to justify a subscription. The code is still in the repo.</p>
+<table>
+<tr><th>Piece</th><th>Role</th></tr>
+<tr><td><code>subscribe.html</code></td><td>Plan picker that posts to <code>/api/checkout</code>.</td></tr>
+<tr><td><code>netlify/functions/checkout.mjs</code></td><td>Creates the Stripe Checkout session (7 day trial, card taken up front).</td></tr>
+<tr><td><code>welcome.mjs</code>, <code>refresh.mjs</code>, <code>restore.mjs</code>, <code>portal.mjs</code></td><td>Confirm a subscription and set the signed access cookie (<code>bf_access</code>); refresh it; restore access; open the Stripe customer portal.</td></tr>
+<tr><td><code>netlify/lib/access.mjs</code></td><td>Stripe calls and cookie signing (<code>ACCESS_SECRET</code>).</td></tr>
+<tr><td>Edge gate</td><td>Previously <code>netlify/edge-functions/gate.mjs</code> guarded <code>app.html</code>; it was removed with the paywall. The commit that had everything is <code>1f140a1</code>.</td></tr>
+</table>
+<div class="call todo"><b>To restore the paywall</b><p>Restore the gate, the pricing section and the call-to-action buttons from commit <code>1f140a1</code>; pass the <code>?go=</code> deep link through gate, subscribe, checkout and welcome so people land where they intended; add terms and privacy pages; set <code>STRIPE_SECRET_KEY</code>, <code>PRICE_MONTHLY</code>, <code>PRICE_YEARLY</code>, <code>ACCESS_SECRET</code> in Netlify; test in Stripe test mode first. When accounts exist, access should be tied to the account rather than only a cookie.</p></div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="data">
+<h2>6. Data and sync</h2>
+
+<h3>What is saved on the device</h3>
+<table>
+<tr><th>Key</th><th>Owner</th><th>Holds</th><th>Synced</th></tr>
+<tr><td><code>bfPlan</code></td><td>calendar.js</td><td>Planned sessions: id, date, time, type (a <code>WAYS</code> id), choices, done, repeat.</td><td>yes</td></tr>
+<tr><td><code>bfLog</code></td><td>home.js</td><td>One entry per finished session (date, type, choices, label, minutes). Last 500 kept.</td><td>yes</td></tr>
+<tr><td><code>bfGoal</code></td><td>home.js</td><td>Weekly session goal (1 to 7).</td><td>yes</td></tr>
+<tr><td><code>bfWidgets</code></td><td>home.js</td><td>Dashboard widget order.</td><td>yes</td></tr>
+<tr><td><code>bfCamp</code></td><td>camp.js</td><td>The training camp: dates, phases, focus blocks, tasks, ticks, edits.</td><td>yes</td></tr>
+<tr><td><code>bfCampInfoSeen</code></td><td>camp.js</td><td>Whether the explainer has been dismissed.</td><td>yes</td></tr>
+<tr><td><code>bfFilm</code></td><td>film.js</td><td>Film studies: video, title, notes, takeaways, where they stopped.</td><td>yes</td></tr>
+<tr><td><code>bfHR</code></td><td>hr.js</td><td>Age and max heart rate.</td><td>yes</td></tr>
+<tr><td><code>bfIQ</code></td><td>main script</td><td>Boxing IQ scores.</td><td>yes</td></tr>
+<tr><td><code>bf-coach</code>, <code>bf-gym-hint</code></td><td>main script</td><td>Chosen 3D coach; how many times the gym hint was shown.</td><td>yes</td></tr>
+<tr><td><code>bfNutriCache</code></td><td>nutrition.js</td><td>Today's totals so the widget paints instantly. A copy of data already in the account.</td><td>no</td></tr>
+<tr><td><code>bfSyncMeta</code></td><td>cloud.js</td><td>Which account this device is linked to, and when each key changed and was last sent.</td><td>no</td></tr>
+<tr><td><code>sb-...-auth-token</code></td><td>Supabase library</td><td>The sign-in session.</td><td>no</td></tr>
+</table>
+<p>The rule: <b>any <code>localStorage</code> key beginning with <code>bf</code> is synced</b>, apart from the two above. A new feature that saves under a <code>bf...</code> key is synced with no extra work.</p>
+
+<h3>What is in the database</h3>
+<p>Defined in <code>supabase/migrations</code>, applied in order. Every table has <code>user_id</code> (defaults to the signed-in user) and row level security with the policy "a person can only select, insert, update or delete rows where <code>user_id</code> is themselves".</p>
+<table>
+<tr><th>Table</th><th>Columns (besides user_id)</th><th>Purpose</th></tr>
+<tr><td><code>app_data</code></td><td><code>key</code>, <code>value</code> (text), <code>deleted</code>, <code>updated_at</code>; primary key (user_id, key)</td><td>Everything the app remembers, one row per <code>bf</code> key.</td></tr>
+<tr><td><code>food_entries</code></td><td><code>day</code>, <code>meal</code> (breakfast, lunch, dinner, snacks), <code>name</code>, <code>brand</code>, <code>source</code> (usda, off, custom, quick), <code>source_id</code>, <code>amount</code>, <code>unit_label</code>, <code>grams</code>, <code>per100</code> (json), <code>kcal</code>, <code>protein</code>, <code>carbs</code>, <code>fat</code>, <code>fibre</code>, <code>sugar</code>, <code>sodium_mg</code></td><td>The nutrition diary. Indexed by (user_id, day).</td></tr>
+<tr><td><code>custom_foods</code></td><td><code>name</code>, <code>brand</code>, <code>per100</code> (json), <code>serving_g</code>, <code>serving_label</code></td><td>Foods the person created.</td></tr>
+<tr><td><code>nutrition_profile</code></td><td><code>sex</code>, <code>birth_year</code>, <code>height_cm</code>, <code>weight_kg</code>, <code>activity</code>, <code>goal</code>, <code>rate_kg_week</code>, <code>kcal_target</code>, <code>protein_g</code>, <code>carbs_g</code>, <code>fat_g</code>, <code>manual_targets</code>, <code>energy_unit</code></td><td>Body details and daily targets. Planned to become the shared athlete profile (see <a href="#roadmap">roadmap</a>).</td></tr>
+</table>
+
+<h3>How sync works (<code>cloud.js</code>)</h3>
+<ol>
+<li><b>Noticing changes.</b> <code>Storage.prototype.setItem</code> and <code>removeItem</code> are wrapped. A write to a synced key records the time in <code>bfSyncMeta.ts[key]</code> and schedules a push 1.5 seconds later. This is why <code>cloud.js</code> must load first.</li>
+<li><b>Pushing.</b> Keys whose change time is newer than the last pushed time are upserted into <code>app_data</code> with that time as <code>updated_at</code>. A removed key is sent as <code>deleted = true</code>. On failure the keys stay dirty and a retry runs after 30 seconds, or when the device comes back online, or when the page is hidden.</li>
+<li><b>Pulling.</b> On sign-in, when the page becomes visible (at most every 20 seconds) and when back online, all rows are read. For each key the newer side wins. Keys that exist only on this device are marked to be pushed.</li>
+<li><b>First link of a device.</b> A device that has never been linked to this account takes the account's version of every key the account has, whatever the timestamps. This stops a new phone's starter data (for example an automatically created starter camp) from overwriting the real thing.</li>
+<li><b>A different account.</b> If a different person signs in on a device, the synced keys on it are cleared first so two people's data never mix.</li>
+<li><b>Applying changes.</b> The modules hold what they loaded in memory, so new data needs a restart. Right after the page opens (within 15 seconds, not mid-workout, not more than once per 20 seconds) the page reloads itself; later, a bar at the bottom says "Your data was updated from another device" with a Refresh button.</li>
+</ol>
+<div class="call"><b>Conflict policy</b><p>Last write wins, per key. If two devices edit the same key (for example the calendar) while apart, the later save replaces the other. That is fine for one person on one device at a time. If it becomes a problem, merge by item (plan entries and film notes have ids) instead of by key.</p></div>
+<p>Status for the interface is in <code>bfCloud.status</code>: <code>off</code>, <code>syncing</code>, <code>ok</code>, <code>offline</code> or <code>error</code>.</p>
+</section>
+
+<!-- ============================================================ 7 -->
+<section id="integrations">
+<h2>7. External services</h2>
+<table>
+<tr><th>Service</th><th>Used for</th><th>Needs</th><th>Terms and limits</th><th>If it fails</th></tr>
+<tr><td>Supabase</td><td>Accounts, database, row rules</td><td>Project URL and public anon key in the page; service key and DB password only in <code>.env</code></td><td>Free plan: about 500 MB, 50,000 monthly users; projects pause after about a week with no activity; no automatic backups. The built-in email sender only emails people on the Supabase team and allows very few emails per hour.</td><td>The app keeps working from the device. Saves wait and retry.</td></tr>
+<tr><td>Netlify</td><td>Static hosting and Functions</td><td>Site <code>heroic-jalebi-e2e04b</code>; env var <code>USDA_API_KEY</code></td><td>Not connected to GitHub (manual deploys).</td><td>n/a</td></tr>
+<tr><td>USDA FoodData Central</td><td>Everyday and some packaged food data</td><td>Free API key (<code>USDA_API_KEY</code>)</td><td>US public domain. Rate limited per key (1,000 requests per hour on a registered key).</td><td>Search returns the other database only, with <code>partial:true</code>.</td></tr>
+<tr><td>Open Food Facts</td><td>Packaged products, barcodes, New Zealand products</td><td>None (a User-Agent is sent)</td><td>ODbL licence: show attribution ("Food data: Open Food Facts"), share-alike for databases built from it. Data is entered by the public, so quality varies. Gets overloaded at times.</td><td>Search returns USDA only, with <code>partial:true</code>.</td></tr>
+<tr><td>YouTube IFrame API</td><td>Film study player</td><td>None</td><td>Embedding is allowed per video by its owner. Subject to YouTube's API terms.</td><td>The page says it could not load YouTube and still shows the notes.</td></tr>
+<tr><td>Boxing World TV</td><td>Live channel widget</td><td>None</td><td>Personal use only (see <a href="#f-live">above</a>).</td><td>The frame shows an error; the Stop button and the link still work.</td></tr>
+<tr><td>three.js via jsDelivr</td><td>The 3D coach</td><td>None</td><td>MIT licence.</td><td>The illustrated coach remains.</td></tr>
+<tr><td>Google Fonts (Barlow)</td><td>Typography</td><td>None</td><td>Loaded without blocking.</td><td>System fonts.</td></tr>
+<tr><td>Stripe</td><td>Subscriptions (paused)</td><td>Secret key, price ids</td><td>See <a href="#f-pay">payments</a>.</td><td>n/a</td></tr>
+<tr><td>Mixamo, audio</td><td>Move animations; music and crowd sound</td><td>None</td><td>Music: "No Turning Back" by BearStockMusic, "Not My First Rodeo" by 331music, "Gym Music" by Gr0za. Crowd sound by u_xg7ssi08yr.</td><td>n/a</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 8 -->
+<section id="config">
+<h2>8. Configuration and secrets</h2>
+<table>
+<tr><th>Setting</th><th>Where</th><th>Secret?</th></tr>
+<tr><td>Supabase URL and anon key</td><td><code>supabase-config.js</code> (committed)</td><td>No. Public by design; protected by row level security.</td></tr>
+<tr><td><code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code></td><td><code>.env</code> only</td><td><b>Yes.</b> The service key bypasses row rules. Used for test scripts and admin work only. Never put it in a page or Netlify function exposed to the browser.</td></tr>
+<tr><td><code>SUPABASE_DB_PASSWORD</code></td><td><code>.env</code> only</td><td><b>Yes.</b> Used by the Supabase CLI to apply migrations.</td></tr>
+<tr><td><code>USDA_API_KEY</code></td><td><code>.env</code> (local) and Netlify environment variables (live)</td><td>Yes (low risk, but private).</td></tr>
+<tr><td><code>STRIPE_SECRET_KEY</code>, <code>PRICE_MONTHLY</code>, <code>PRICE_YEARLY</code>, <code>ACCESS_SECRET</code></td><td><code>.env</code> and Netlify (only needed when payments return)</td><td>Yes.</td></tr>
+</table>
+<p><code>.env</code> is git-ignored. <b>Never commit it, paste it into chats or tickets, or print its values.</b> The Supabase project reference is <code>dlfvzgqystwhbsaofdgz</code> (region ap-southeast-2, Sydney).</p>
+<h4>Sign-in settings (in <code>supabase/config.toml</code>, pushed with the CLI)</h4>
+<ul>
+<li>Site URL: <code>https://heroic-jalebi-e2e04b.netlify.app</code>. Allowed redirects: that site's <code>/app.html</code>, and <code>http://localhost:8888</code> (and <code>/app.html</code>) for local testing. If the site moves to another address, update these and run <code>config push</code>, or sign-in links will fail.</li>
+<li>Email sign-in with a 6 digit code length; email confirmations on. Custom email templates are not available on the free plan with the built-in sender.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 9 -->
+<section id="run">
+<h2>9. Run, test and deploy</h2>
+<h3>Run locally</h3>
+<pre><code># one-time
+npm i -g netlify-cli          # or use npx netlify
+netlify login
+netlify link                  # choose the site heroic-jalebi-e2e04b
+
+# every time
+netlify dev --port 8888       # serves the files AND the /api/foods function, with .env loaded</code></pre>
+<p>The sign-in link only returns to <code>http://localhost:8888</code> (the allowed redirect). If another <code>netlify dev</code> is already running it holds ports 8888 and 3999 and a second one will fail with "port in use". Plain static servers work for everything except <code>/api/foods</code>. Features that need HTTPS (Web Bluetooth, the camera) work on <code>localhost</code> and on the live site.</p>
+<h3>Database changes</h3>
+<pre><code>npx supabase login
+npx supabase link --project-ref dlfvzgqystwhbsaofdgz
+# add a file supabase/migrations/YYYYMMDDHHMMSS_name.sql, then
+npx supabase db push          # applies new migrations to the live project
+npx supabase config push      # applies supabase/config.toml (auth settings); preview the diff first</code></pre>
+<p>Never edit a migration that has been applied; add a new one. Every new table needs <code>enable row level security</code>, a policy for <code>user_id = auth.uid()</code> and a <code>grant</code> to <code>authenticated</code>.</p>
+<h3>Deploy</h3>
+<div class="call warn"><b>Current state</b><p>Deploys are manual. Pushing to GitHub does not publish. Run <code>netlify deploy --prod</code> from the project folder (publishes the directory <code>.</code> and the functions). Environment variables changed in Netlify only take effect on the next deploy. Before the first deploy after the nutrition and sync work, make sure the Netlify environment has <code>USDA_API_KEY</code> (it does).</p></div>
+<p>Better: in Netlify, Site configuration, Build and deploy, link the GitHub repository and set the production branch to <code>main</code>, so every merge deploys. With the CI plan below, deploys then happen only when the checks pass.</p>
+<h3>How the app has been tested so far</h3>
+<ul>
+<li>Manual testing on desktop Chrome at phone size.</li>
+<li>Scripted tests that drive headless Chrome through the Chrome DevTools Protocol: every screen and deep link, the nutrition flow against the real database with throwaway accounts, a two-browser sync test, a privacy test with two accounts and a logged-out visitor, and the film study flow with a stand-in YouTube player. <b>These scripts are not in the repository yet</b>; moving them in is the first step of the plan below.</li>
+<li>Not covered: real iPhone behaviour (background audio, lock screen, countdown rendering), a real heart-rate strap, a real sign-in email, and real YouTube playback.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 10 -->
+<section id="cicd">
+<h2>10. Testing and CI/CD plan <span class="tag info">proposed</span></h2>
+<p>Goal: every push is checked automatically and only a passing build reaches the live site. The plan is staged so each stage is useful on its own.</p>
+<h3>Pipeline</h3>
+<figure>
+<svg viewBox="0 0 920 150" role="img" aria-label="Pipeline: push, static checks, unit tests, database tests, end to end tests, preview deploy, smoke test, production deploy">
+  <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--arrow)"/></marker></defs>
+  <g class="lbl">
+    <rect class="node" x="6" y="40" width="100" height="64" rx="10"/><text x="56" y="68" text-anchor="middle">Push or</text><text x="56" y="86" text-anchor="middle">pull request</text>
+    <rect class="node hot" x="128" y="40" width="108" height="64" rx="10"/><text x="182" y="68" text-anchor="middle">1 Static</text><text x="182" y="86" text-anchor="middle">checks</text>
+    <rect class="node hot" x="258" y="40" width="108" height="64" rx="10"/><text x="312" y="68" text-anchor="middle">2 Unit +</text><text x="312" y="86" text-anchor="middle">data tests</text>
+    <rect class="node hot" x="388" y="40" width="108" height="64" rx="10"/><text x="442" y="68" text-anchor="middle">3 Database</text><text x="442" y="86" text-anchor="middle">tests</text>
+    <rect class="node hot" x="518" y="40" width="108" height="64" rx="10"/><text x="572" y="68" text-anchor="middle">4 Browser</text><text x="572" y="86" text-anchor="middle">E2E tests</text>
+    <rect class="node" x="648" y="40" width="108" height="64" rx="10"/><text x="702" y="68" text-anchor="middle">5 Preview</text><text x="702" y="86" text-anchor="middle">deploy + smoke</text>
+    <rect class="node" x="778" y="40" width="130" height="64" rx="10"/><text x="843" y="68" text-anchor="middle">6 Production</text><text x="843" y="86" text-anchor="middle">(main only)</text>
+  </g>
+  <path class="edge" d="M106 72H126" style="marker-end:url(#ah2)"/><path class="edge" d="M236 72H256" style="marker-end:url(#ah2)"/><path class="edge" d="M366 72H386" style="marker-end:url(#ah2)"/><path class="edge" d="M496 72H516" style="marker-end:url(#ah2)"/><path class="edge" d="M626 72H646" style="marker-end:url(#ah2)"/><path class="edge" d="M756 72H776" style="marker-end:url(#ah2)"/>
+  <text class="sml" x="6" y="132">Any failing stage stops the line and blocks the merge. A scheduled job (weekly) re-checks that every film study video still allows embedding.</text>
+</svg>
+<figcaption>Stages 1 to 4 run in GitHub Actions on every push and pull request. Stages 5 and 6 use Netlify.</figcaption>
+</figure>
+<h3>Stages in detail</h3>
+<table>
+<tr><th>Stage</th><th>What it checks</th><th>How</th><th>Effort</th></tr>
+<tr><td>1 Static checks</td><td>JavaScript syntax and common mistakes in every <code>.js</code> and inline script; HTML validity; no secrets committed; script load order file exists; migrations are named in order</td><td><code>node --check</code> / ESLint, an HTML validator, <code>gitleaks</code>, a small script that extracts <code>app.html</code>'s inline script</td><td>small</td></tr>
+<tr><td>2 Unit and data tests</td><td>Pure logic: camp length allocation and shrinking, nutrition target maths and amount maths, sync merge rules, link parsing, calendar date helpers. Data integrity: every fight id in <code>fighters.js</code> is 11 characters with no duplicates per fighter; every IQ question has four options and a valid answer; every scenario has three points per phase</td><td>Node's built-in test runner. Needs the logic functions exposed (they are mostly closures now, so some are moved into small testable files)</td><td>medium</td></tr>
+<tr><td>3 Database tests</td><td>Migrations apply from scratch; row level security (a second account and a logged-out visitor see and change nothing; nobody can write another person's rows); constraints (meal values, units)</td><td><code>supabase start</code> (local Docker stack) then <code>db reset</code>, plus the existing two-account privacy test turned into a script. pgTAP tests are an option</td><td>medium</td></tr>
+<tr><td>4 Browser end-to-end</td><td>Every screen and deep link loads with no console error; add food flow; two-browser sync; film study notes with a stand-in YouTube player; calendar add, move and tick; camp change length; dashboard widgets; no horizontal scroll at phone width</td><td>Playwright against a static server and the local Supabase, with the food APIs, YouTube and Bluetooth faked, in Chromium and WebKit (WebKit gives some iPhone coverage). Screenshots and traces saved when a test fails</td><td>larger</td></tr>
+<tr><td>5 Preview deploy and smoke</td><td>Each pull request gets its own Netlify URL; a short test hits it: pages load, <code>/api/foods?q=banana</code> answers, sign-in config is right</td><td>Netlify deploy previews (needs the repo linked) or <code>netlify deploy</code> without <code>--prod</code>; Playwright smoke project</td><td>small once linked</td></tr>
+<tr><td>6 Production deploy</td><td>Publishes only from <code>main</code> after everything above is green, then repeats the smoke test on the live address. Applies new database migrations first (<code>supabase db push</code>) so the code never runs against an old schema</td><td>GitHub Actions deploy job with the Netlify and Supabase tokens stored as repository secrets, or Netlify's own build with the checks as a required status</td><td>small</td></tr>
+</table>
+<h3>Extras worth adding</h3>
+<ul>
+<li><b>Branch protection:</b> require the checks to pass before merging into <code>main</code>.</li>
+<li><b>Weekly scheduled job:</b> re-check every film study video with YouTube's oEmbed test and open an issue listing the ones that no longer embed.</li>
+<li><b>Performance and accessibility budgets</b> (Lighthouse CI): <code>app.html</code> is already about 340 KB, so a budget stops it growing unnoticed.</li>
+<li><b>Dependabot or Renovate</b> for pinned CDN versions (three.js, supabase-js) so upgrades are deliberate.</li>
+<li><b>Error reporting</b> in production (for example Sentry's free plan) so real problems on phones are seen.</li>
+<li><b>Manual test checklist</b> in the repo for what automation cannot cover: iPhone lock screen audio, a real strap, a real sign-in email, real YouTube playback.</li>
+</ul>
+<h3>Suggested order</h3>
+<ol>
+<li>Move the existing scripted tests into a <code>tests/</code> folder, fix their hard-coded paths, and add stages 1 and 2 (about half a day).</li>
+<li>Link the repository in Netlify and add stage 5 so every branch gets a preview.</li>
+<li>Add the database tests (stage 3) and the end-to-end suite (stage 4), starting with the screens and flows most likely to break.</li>
+<li>Switch on branch protection and automatic production deploys (stage 6), then the weekly embed check and error reporting.</li>
+</ol>
+</section>
+
+<!-- ============================================================ 11 -->
+<section id="security">
+<h2>11. Security and privacy</h2>
+<ul>
+<li><b>Row level security</b> on every table; verified with a second account and a logged-out visitor (neither can read, change, delete or forge rows). New tables must follow the same pattern.</li>
+<li><b>Keys:</b> only the public anon key is in the page. The service key and DB password stay in <code>.env</code>. The USDA key lives in the Netlify function. Rotate any key that was ever pasted into a chat or document.</li>
+<li><b>Personal data:</b> email address, body measurements, heart rate settings and food diary are health-related. They are stored only in the person's account and on their device. A privacy policy and terms are needed before the app is public; the nutrition screen already carries a "not medical advice" note and a weight-cutting warning.</li>
+<li><b>Sign-out</b> leaves local data on the device; signing in as a different person clears the synced keys first.</li>
+<li><b>Publishing:</b> Netlify serves the whole folder, so source files (including <code>supabase/</code> and <code>netlify/functions/</code>) are readable by URL. They contain no secrets. The documentation is hidden from the live site by a rule in <code>netlify.toml</code>.</li>
+<li><b>Third-party content:</b> only embeddable, official video sources; attribution for Open Food Facts; Boxing World TV for personal use only.</li>
+</ul>
+</section>
+
+<!-- ============================================================ 12 -->
+<section id="limits">
+<h2>12. Known limits</h2>
+<table>
+<tr><th>Limit</th><th>Detail</th></tr>
+<tr><td>iPhone and Bluetooth</td><td>Heart rate straps do not work in iPhone browsers. Needs a native wrapper.</td></tr>
+<tr><td>Sign-in email</td><td>On Supabase's free plan only team members can receive sign-in emails and the hourly limit is very low. Add a custom email service (SMTP) before inviting anyone.</td></tr>
+<tr><td>Deployment</td><td>The live site is not linked to GitHub; the last deploy predates the dashboard, nutrition, film study and sync features.</td></tr>
+<tr><td>Sync conflicts</td><td>Last write wins per key; simultaneous edits on two devices can lose one.</td></tr>
+<tr><td>Free database pausing</td><td>A free Supabase project pauses after about a week of no activity.</td></tr>
+<tr><td>Food data quality</td><td>Open Food Facts entries are user-contributed and can be wrong; USDA data is US-centred. The official New Zealand Food Composition Database (Plant and Food Research and the Ministry of Health) is not used because its licence terms were not confirmed. The Australian FSANZ database is share-alike licensed and was left out.</td></tr>
+<tr><td>Film study videos</td><td>Videos can be removed or have embedding switched off later. Some owners block embedding.</td></tr>
+<tr><td>Live channel</td><td>Personal use only; the site could change its layout.</td></tr>
+<tr><td>Training content</td><td>Drills, camp tasks, fight scenarios and the quiz have not been reviewed by a qualified coach.</td></tr>
+<tr><td>Code structure</td><td><code>app.html</code> is one very large file holding the engine and styles; scripts share globals; there is no module system or build, so load order matters.</td></tr>
+<tr><td>Tests</td><td>Not yet automated in the repository.</td></tr>
+<tr><td>Accessibility</td><td>Buttons and inputs are labelled and keyboard reachable, but there has been no formal audit (screen reader, contrast, reduced motion).</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 13 -->
+<section id="roadmap">
+<h2>13. Roadmap</h2>
+<table>
+<tr><th>Item</th><th>Notes</th><th>State</th></tr>
+<tr><td>My profile page</td><td>Body stats with a weight history, resting and max heart rate, the five heart-rate zones with bpm ranges and what each is for, suggested weekly zone time, boxing details (weight class, stance, experience, style, bio). One shared source for nutrition and heart rate. Probably renames <code>nutrition_profile</code> to <code>athlete_profile</code>.</td><td><span class="tag warn">next</span></td></tr>
+<tr><td>CI/CD pipeline</td><td>See <a href="#cicd">section 10</a>.</td><td><span class="tag warn">next</span></td></tr>
+<tr><td>Link Netlify to GitHub, deploy</td><td>Publish the current work.</td><td><span class="tag warn">next</span></td></tr>
+<tr><td>Account area and sync status screen</td><td>Sign in and out from one place, show last synced, export my data.</td><td>planned</td></tr>
+<tr><td>Zone-based training</td><td>Per-round zone time on the finish screen, rest that ends at a target heart rate, recovery score, weekly zone minutes on the dashboard, camp tasks tied to zones, HRV from beat-to-beat data.</td><td>planned</td></tr>
+<tr><td>iPhone app (Capacitor)</td><td>A native shell for Bluetooth, background audio and the App Store; needs an Apple Developer account and a Mac or cloud build.</td><td>idea</td></tr>
+<tr><td>Restore the paywall</td><td>See <a href="#f-pay">payments</a>; tie access to accounts.</td><td>paused</td></tr>
+<tr><td>Custom SMTP</td><td>Reliable sign-in emails for any user.</td><td>needed before launch</td></tr>
+<tr><td>NZ food composition data</td><td>Ask Plant and Food Research whether the NZ FOODfiles can be used.</td><td>idea</td></tr>
+<tr><td>Reminders, calorie and weight trends, recovery week for camps, coach review of all content</td><td></td><td>ideas</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 14 -->
+<section id="decisions">
+<h2>14. Decisions and why</h2>
+<table>
+<tr><th>Decision</th><th>Reason</th></tr>
+<tr><td>Plain HTML and JavaScript, no framework or build</td><td>Fastest to change and deploy, nothing to break in a toolchain; the cost is global names and a very large <code>app.html</code>. Revisit if the code needs to be shared by a native wrapper or many contributors.</td></tr>
+<tr><td>Local first</td><td>Instant, works offline in the gym; the account is a copy, not a requirement.</td></tr>
+<tr><td>Supabase (Postgres) instead of MongoDB</td><td>Sign-in and per-user data protection are built in, so the browser can talk to the database safely without writing our own server; a Mongo setup would need our own functions and login. Postgres also scales to a real product and is portable.</td></tr>
+<tr><td>Sync every <code>bf</code> key whole, newest wins</td><td>Zero work for new features and good enough for one person; item-level merging can be added later.</td></tr>
+<tr><td>Nutrition in real tables, not blobs</td><td>It is queried (by day, totals, recent foods) and will want reporting.</td></tr>
+<tr><td>Food data through one Netlify Function</td><td>Keeps the USDA key private, merges two sources, adds caching and New Zealand handling in one place.</td></tr>
+<tr><td>Official-channel full fights only in film study</td><td>Avoids dead links and copyright trouble; every link checked for embedding.</td></tr>
+<tr><td>Training camp as a focus board, not a scheduler</td><td>The camp tells you what to work on for two weeks; the calendar remains the person's own plan.</td></tr>
+<tr><td>Paywall paused</td><td>Add more features first; the code stays in the repo.</td></tr>
+<tr><td>Email link sign-in (no password)</td><td>Nothing to remember or leak; the same link creates an account.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 15 -->
+<section id="changelog">
+<h2>15. Change log</h2>
+<table>
+<tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
+<tr><td>25 Oct 2026</td><td><i>not yet committed</i></td><td>Nutrition diary and food search (<code>nutrition.js</code>, <code>foods.mjs</code>); Supabase project, tables, rules and settings; account sync of all app data (<code>cloud.js</code>); nutrition widget and menu items; documentation.</td></tr>
+<tr><td>25 Oct 2026</td><td><code>f3b89e4</code></td><td>Dashboard, calendar, training camp, film study with 45 fighters, heart rate, live channel widget, fight countdown, menu and deep links.</td></tr>
+<tr><td>22 Oct 2026</td><td><code>eb8427f</code></td><td>Output rounds, strength and conditioning, mental skills; reworked fight scenarios; iPhone countdown square fix.</td></tr>
+<tr><td>21 Oct 2026</td><td><code>c3eb4e8</code></td><td>Attacking and defence drills, Boxing IQ, fight scenarios, phone lock-screen player.</td></tr>
+<tr><td>16 Oct 2026</td><td><code>1f140a1</code></td><td>Stripe integration for subscription (later switched off).</td></tr>
+<tr><td>15 Oct 2026</td><td><code>1dc2a58</code></td><td>Payment structure with Stripe and Netlify.</td></tr>
+<tr><td>12 Oct 2026</td><td><code>ac058b7</code></td><td>Workout complete information.</td></tr>
+<tr><td>11 Oct 2026</td><td><code>e1599bd</code>, <code>98c8b55</code>, <code>cebfe28</code></td><td>Female avatar, interactive gym mode, avatar feature.</td></tr>
+<tr><td>11 Oct 2026</td><td><code>2de0ff0</code></td><td>Initial commit: round timer and 3D coach.</td></tr>
+</table>
+</section>
+
+<!-- ============================================================ 16 -->
+<section id="maintain">
+<h2>16. Keeping this up to date</h2>
+<p>This page lives in the repository at <code>docs/index.html</code> and can be moved to its own repository later; it has no dependencies. It is hidden from the public site by a rule in <code>netlify.toml</code> (open it from the file, or run the site locally).</p>
+<div class="call todo"><b>When you change something, update this page in the same commit</b>
+<ul>
+<li>New or changed feature: its entry in <a href="#features">section 5</a>, the feature list in <a href="#overview">section 1</a>, and the repository map.</li>
+<li>New <code>localStorage</code> key: the table in <a href="#data">section 6</a> (and say whether it syncs).</li>
+<li>New or changed table or column: add a migration, then update the table in section 6.</li>
+<li>New external service, key or environment variable: <a href="#integrations">section 7</a> and <a href="#config">section 8</a>, never the value.</li>
+<li>New script file or load-order change: <a href="#loading">script load order</a>.</li>
+<li>New deep link or screen: <a href="#screens">screens and routing</a>.</li>
+<li>Add a line to the <a href="#changelog">change log</a> and change the "Last updated" date at the top.</li>
+</ul></div>
+</section>
+
+</main>
+</div>
+
+<footer>Boxing Flow documentation. Written 25 Oct 2026. Not medical advice: training, nutrition and heart rate features are guides, not a substitute for a qualified coach or doctor.</footer>
+
+<script>
+// remember the chosen theme, if the browser allows it; otherwise follow the system
+(function(){
+  var b = document.getElementById('themeBtn'), root = document.documentElement;
+  if(innerWidth < 980) document.querySelector('nav.toc details').removeAttribute('open');
+  try { var t = localStorage.getItem('docsTheme'); if(t) root.setAttribute('data-theme', t); } catch(e){}
+  b.addEventListener('click', function(){
+    var dark = root.getAttribute('data-theme') === 'dark' || (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    var next = dark ? 'light' : 'dark'; root.setAttribute('data-theme', next);
+    try { localStorage.setItem('docsTheme', next); } catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
