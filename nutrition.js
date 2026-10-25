@@ -17,7 +17,7 @@
   const todayKey = () => C.dkey(new Date());
 
   const S = {sb:null, user:null, ready:false, day:todayKey(), entries:[], profile:null, view:'day', meal:mealNow(), err:'', busy:false,
-    q:'', results:null, note:'', searching:false, recent:[], custom:[], pick:null, editing:null, sent:false, email:'', info:''};
+    q:'', results:null, note:'', searching:false, recent:[], custom:[], pick:null, editing:null, sent:false, email:'', info:'', mode:'password', notice:''};
   const listeners = new Set(), emit = () => listeners.forEach(f => { try { f(); } catch(e){} });
   let cache = {}; try { cache = JSON.parse(localStorage.getItem(CACHE) || '{}') || {}; } catch(e){}
   const saveCache = () => { try { localStorage.setItem(CACHE, JSON.stringify(cache)); } catch(e){} };
@@ -94,13 +94,22 @@
   const errBox = () => S.err ? `<p class="t-note warn nu-err" role="alert">${esc(S.err)}</p>` : '';
   const head = (title, back) => `<div class="brand"><button class="eyebrow back-link" ${back || 'data-section="today"'}>&larr; ${back ? 'Back' : 'Dashboard'}</button></div><h1>${title}</h1>`;
 
+  // One account for the person, on every device: email and password once on each device and it stays signed in (browsers and password managers fill it in).
+  // A link by email is the other way in.
   function signInHtml(){
+    const link = S.mode === 'link';
     return `${head('Nutrition')}
-      <p class="sub">Log what you eat and see your calories and macros. Sign in so your food diary is saved to your account and works on every device.</p>${errBox()}
-      <div class="nu-card"><form id="nuSignIn"><label class="c-label">Your email<input id="nuEmail" type="email" inputmode="email" autocomplete="email" required placeholder="you@example.com" value="${esc(S.email)}"></label>
-        <div class="acts"><button class="btn" type="submit" ${S.busy ? 'disabled' : ''}>${S.sent ? 'Send it again' : 'Email me a sign-in link'}</button></div></form>
-        ${S.sent ? `<p class="t-note nu-ok">Check your inbox for ${esc(S.email)} and tap the link in the email. It opens Boxing Flow already signed in. If the email shows a code instead, type it here:</p>
-          <form id="nuCode" class="fs-add"><input id="nuCodeIn" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Code" aria-label="Sign-in code"><button class="btn small" type="submit">Sign in</button></form>` : '<p class="t-note">No password to remember. New here? The same link creates your account.</p>'}</div>`;
+      <p class="sub">Log what you eat and see your calories and macros. Sign in once on each device and your food diary, and everything else in the app, is saved to your account.</p>${errBox()}${S.notice ? `<p class="t-note nu-ok">${esc(S.notice)}</p>` : ''}
+      <div class="nu-card"><form id="nuSignIn">
+        <label class="c-label">Email<input id="nuEmail" name="email" type="email" inputmode="email" autocomplete="username" required placeholder="you@example.com" value="${esc(S.email)}"></label>
+        ${link ? '' : '<label class="c-label">Password<input id="nuPass" name="password" type="password" autocomplete="current-password" minlength="10" required placeholder="at least 10 characters"></label>'}
+        <div class="acts">${link
+          ? `<button class="btn" type="submit" ${S.busy ? 'disabled' : ''}>${S.sent ? 'Send it again' : 'Email me a sign-in link'}</button><button class="btn ghost" type="button" data-nu-mode="password">Use a password</button>`
+          : `<button class="btn" type="submit" ${S.busy ? 'disabled' : ''}>Sign in</button><button class="btn ghost" type="button" data-nu-signup ${S.busy ? 'disabled' : ''}>Create account</button>`}</div></form>
+        ${link
+          ? (S.sent ? `<p class="t-note nu-ok">Check your inbox for ${esc(S.email)} and tap the link in the email. It opens Boxing Flow already signed in. If the email shows a code instead, type it here:</p>
+              <form id="nuCode" class="fs-add"><input id="nuCodeIn" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Code" aria-label="Sign-in code"><button class="btn small" type="submit">Sign in</button></form>` : '<p class="t-note">No password needed: we email you a link.</p>')
+          : '<p class="t-note">First time? Enter your email and a password and tap Create account. After that, Sign in on each new device. <button class="linkbtn" type="button" data-nu-mode="link">Email me a link instead</button></p>'}</div>`;
   }
 
   function dayHtml(){
@@ -117,7 +126,7 @@
           ${es.map(e => `<button class="nu-row" data-nu-edit="${e.id}"><span><strong>${esc(e.name)}</strong><small>${esc([e.brand, e.source === 'quick' ? 'Quick add' : amtLabel(e)].filter(Boolean).join(' · '))}</small></span><b>${energy(e.kcal)}</b></button>`).join('')}
           <button class="add" data-nu-add="${id}">+ Add food</button></section>`; }).join('')}
       <div class="acts nu-foot"><button class="btn ghost small" data-nu-copy>Copy ${dayLabel(C.dkey(C.addDays(C.fromKey(S.day), -1))).toLowerCase()}'s meals here</button><button class="btn ghost small" data-nu-view="settings">Targets and settings</button></div>
-      <p class="iq-note">Signed in as ${esc(S.user.email)} · <button class="linkbtn" data-nu-out>Sign out</button><br>${syncText()}</p>
+      <p class="iq-note">${window.bfCloud && window.bfCloud.owner ? 'Signed in automatically on this computer (owner mode)' : `Signed in as ${esc(S.user.email)} · <button class="linkbtn" data-nu-out>Sign out</button>`}<br>${syncText()}</p>
       <p class="iq-note">Food data: USDA FoodData Central and Open Food Facts. Nutrition values are a guide, and packaged-food data is entered by the public, so check labels. Not medical advice.</p>`;
   }
 
@@ -329,6 +338,8 @@
   root.addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return; const d = b.dataset;
     if(d.section){ show(d.section); return; }
+    if(d.nuMode){ S.mode = d.nuMode; S.err = S.notice = ''; S.sent = false; paint(); return; }
+    if('nuSignup' in d) return passwordAuth(true);
     if(d.nuView){ S.pick = null; S.editing = null; if(d.nuView === 'add') S.focusSearch = true; if(d.nuView === 'settings') S.draft = null; go(d.nuView); return; }
     if(d.nuDay){ S.day = C.dkey(C.addDays(C.fromKey(S.day), +d.nuDay)); S.entries = []; paint(); loadDay(S.day).then(() => { updateCache(); paint(); }).catch(fail); return; }
     if(d.nuAdd){ S.meal = d.nuAdd; S.q = ''; S.results = null; S.note = ''; S.focusSearch = true; go('add'); return; }
@@ -358,9 +369,27 @@
       if(nu.label === 'g' && old.label !== 'g' && S.pick.qty <= 5) S.pick.qty = 100; else if(old.label === 'g' && nu.label !== 'g' && S.pick.qty >= 50) S.pick.qty = 1; paint(); }
     else if(/^s[A-Z]/.test(t.id || '')){ if(t.id === 'sManual') $('sOwn').hidden = !t.checked; const p = readSettings(); S.draft = p; $('sSuggest').innerHTML = suggestHtml(suggest(p), p); }
   });
+  async function passwordAuth(create){
+    S.email = ($('nuEmail').value || '').trim(); const pw = ($('nuPass') || {}).value || '';
+    if(!S.email){ S.err = 'Enter your email.'; return paint(); }
+    if(pw.length < 10){ S.err = 'Use a password of at least 10 characters.'; return paint(); }
+    await init(); if(!S.sb) return;
+    S.busy = true; S.err = S.notice = ''; paint();
+    const r = create ? await S.sb.auth.signUp({email:S.email, password:pw, options:{emailRedirectTo:location.origin + '/app.html'}}) : await S.sb.auth.signInWithPassword({email:S.email, password:pw});
+    S.busy = false;
+    if(r.error){
+      const m = r.error.message || '';
+      S.err = /invalid login/i.test(m) ? 'That email and password don\'t match. If you have not made an account yet, tap Create account.'
+        : /already (been )?registered|already exists/i.test(m) ? 'That email already has an account. Tap Sign in.'
+        : /signups? (are )?(not allowed|disabled)/i.test(m) ? 'New accounts are switched off. Sign in with your existing account.'
+        : /rate|limit/i.test(m) ? 'Too many tries just now. Wait a minute and try again.' : 'Couldn\'t do that: ' + m;
+    } else if(create && !(r.data && r.data.session)) S.notice = 'Almost done: we emailed a confirmation link to ' + S.email + '. Tap it, then come back and Sign in.';
+    paint();   // when a session starts, the sign-in listener takes over from here
+  }
   root.addEventListener('submit', async e => {
     e.preventDefault();
     if(e.target.id === 'nuSignIn'){
+      if(S.mode !== 'link') return passwordAuth(false);
       S.email = $('nuEmail').value.trim(); if(!S.email) return;
       await init(); if(!S.sb) return;
       S.busy = true; paint();

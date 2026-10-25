@@ -126,8 +126,8 @@ test('the live site refuses to serve private files', () => {
   // the whole folder is published, so netlify.toml must answer 404 for anything that is not part of the website (a deploy from this folder would upload .env too)
   const toml = read('netlify.toml');
   const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  for (const p of ['/.env', '/docs/*', '/tests/*', '/supabase/*', '/netlify/*', '/.github/*']) {
-    const block = new RegExp(`from = "${escape(p)}"\\s+to = "/404.html"\\s+status = 404\\s+force = true`);
+  for (const p of ['/.env', '/dev-owner.js', '/docs/*', '/tests/*', '/supabase/*', '/netlify/*', '/.github/*']) {
+    const block = new RegExp(`from = "(?:https://[^"/]+)?${escape(p)}"\\s+to = "/404.html"\\s+status = 404\\s+force = true`);
     assert.match(toml, block, `netlify.toml must hide ${p} with a forced 404`);
   }
 });

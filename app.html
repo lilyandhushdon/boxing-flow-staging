@@ -364,7 +364,18 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .hr-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;border:2px solid var(--c,var(--muted));color:var(--c,var(--muted));font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .hr-pill svg{width:16px;height:16px;fill:currentColor;stroke:none}
 .hr-pill[hidden]{display:none}
+/* saving a finished session */
+.savebox{margin:18px auto 6px;max-width:460px;text-align:left}
+.savebox:empty{display:none}
+.savebox .c-label{display:block;margin-top:12px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.savebox input,.savebox textarea,.sess-label input,.sheet textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--fg);padding:11px 12px;font:inherit;font-size:16px;margin-top:6px;text-transform:none;letter-spacing:0}
+.savebox .acts{margin-top:14px}
+.saved-note{margin:0;padding:12px 14px;background:var(--surface);border:1px solid var(--gold);border-radius:12px;color:var(--fg);font-size:15px;text-align:center}
+.sess-label{display:block;margin:10px 0 4px}
+.gf-result .savebox{max-width:380px}
 /* sync */
+.m-sync{margin:14px 6px 4px;padding:10px 12px;border-radius:10px;background:var(--surface-2);color:var(--muted);font-size:13.5px;line-height:1.45}
+.m-sync .linkbtn{font-size:13.5px}
 .sync-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--surface-2);border:1px solid var(--gold);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:15px}
 /* nutrition */
 .nu-card{margin:14px 0 0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
@@ -758,6 +769,7 @@ button.fs-t{cursor:pointer}
   <button class="m-group" data-go="mind">Mental skills</button>
   <button class="m-sub" data-go="breath">Box breathing</button>
   <button class="m-sub" data-go="reframe">Cognitive reframing</button>
+  <div class="m-sync" id="syncLine" aria-live="polite"></div>
   <hr>
   <a href="index.html">Boxing Flow website</a>
 </nav>
@@ -900,6 +912,7 @@ button.fs-t{cursor:pointer}
     <div class="eyebrow">Session complete</div>
     <div class="big">Well done</div>
     <p class="sub" id="bxDoneText"></p>
+    <div class="savebox" id="bxSave"></div>
     <div class="row"><button class="btn" id="bxAgain">Go again</button><button class="btn ghost" id="bxBack">Back</button></div>
   </div>
 </section>
@@ -987,6 +1000,7 @@ button.fs-t{cursor:pointer}
   <div class="brand"><button class="eyebrow back-link" data-back>&larr; All modes</button></div>
   <h1 id="pTitle">Basic workout</h1>
   <p class="sub" id="pSub"></p>
+  <label class="c-label sess-label">Label this session (optional)<input id="sessLabel" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Heavy bag, jab and double jab"></label>
   <div id="presetBlock">
     <h2 id="presetH">Choose your workout</h2>
     <p class="sub" id="presetSub">The exercises run in this order, 30 seconds each, then start again from the top.</p>
@@ -1273,6 +1287,7 @@ button.fs-t{cursor:pointer}
       <div class="eyebrow">Round after round</div>
       <div class="gf-big">Workout complete</div>
       <div class="gf-stats" id="gfStats"></div>
+      <div class="savebox" id="gfSave"></div>
       <div class="gf-row">
         <button class="btn" id="gfAgain" type="button">Train again</button>
         <button class="btn ghost" id="gfChange" type="button">Change workout</button>
@@ -1302,6 +1317,7 @@ button.fs-t{cursor:pointer}
     <div class="big">Workout complete</div>
     <div class="stats" id="doneStats"></div>
     <div class="review" id="doneReview" hidden></div>
+    <div class="savebox" id="doneSave"></div>
     <div class="row">
       <button class="btn" id="againBtn">Go again</button>
       <button class="btn ghost" id="changeBtn">Change workout</button>
@@ -2656,6 +2672,37 @@ addEventListener('message', e => {
   if(f){ f.dataset.alive = Date.now(); f.classList.add('ready'); }
 });
 const planCtx = {id:null};   // the planned session being done right now, so finishing it can tick it off the calendar
+
+/* ---------- saving a finished session ----------
+   When a session ends, its end screen offers a label, notes and a Save button. Saving puts it in the log (home.js), ticks it off the plan if it was planned
+   (calendar.js), keeps the label and notes with it (they sync to the account like everything else), and refreshes the dashboard. */
+const pendingSaves = new Map(); let saveSeq = 0;
+function offerSave(info){
+  const id = 's' + (++saveSeq), planned = planCtx.id && window.bfCal ? bfCal.plan.find(x => x.id === planCtx.id) : null;
+  pendingSaves.set(id, {info:{...info, planId:planCtx.id}, saved:false, label:(planned && planned.custom) || state.label || '', notes:(planned && planned.notes) || ''});
+  return id;
+}
+function saveBoxHtml(id){
+  const s = pendingSaves.get(id); if(!s) return '';
+  if(s.saved) return '<p class="saved-note" role="status">&#10003; Saved' + (s.label ? ': ' + esc(s.label) : '') + '. It is in your log and calendar, and your dashboard is up to date.</p>';
+  return '<label class="c-label">Label (optional)<input type="text" maxlength="60" autocomplete="off" data-save-label="' + id + '" value="' + esc(s.label) + '" placeholder="e.g. Heavy bag, jab and double jab"></label>'
+    + '<label class="c-label">Notes (optional)<textarea rows="3" maxlength="1000" data-save-notes="' + id + '" placeholder="What went well? What do you want to work on next time?">' + esc(s.notes) + '</textarea></label>'
+    + '<div class="acts"><button class="btn" type="button" data-save-session="' + id + '">Save workout</button></div>';
+}
+function boxFor(elId, sid){ const el = $(elId); if(el){ el.dataset.saveBox = sid; el.innerHTML = saveBoxHtml(sid); } }
+function showSaveBoxes(sid){ document.querySelectorAll('[data-save-box="' + sid + '"]').forEach(el => { el.innerHTML = saveBoxHtml(sid); }); }
+document.addEventListener('input', e => {
+  const l = e.target.dataset && e.target.dataset.saveLabel, n = e.target.dataset && e.target.dataset.saveNotes;
+  if(l && pendingSaves.get(l)) pendingSaves.get(l).label = e.target.value;
+  if(n && pendingSaves.get(n)) pendingSaves.get(n).notes = e.target.value;
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-save-session]'); if(!b) return;
+  const id = b.dataset.saveSession, s = pendingSaves.get(id); if(!s || s.saved) return;
+  s.saved = true; s.label = (s.label || '').trim(); s.notes = (s.notes || '').trim();
+  window.sessionDone?.({...s.info, label:s.label, notes:s.notes});
+  showSaveBoxes(id);
+});
 function show(id){ if(id!=='breath') breathStop(); document.body.classList.toggle('has-menu', id!=='timer');   // no menu during a workout
   syncPreviews(id);
   if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','nutrition','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
@@ -2673,7 +2720,8 @@ const setupScreen = () => mode==='coach' ? 'setup' : 'plainSetup';
 function want3D(){ window.bfWant3D=true; window.bfBoot3D?.(); }
 let hubClick = false;   // set by a tap on a workout's card for the one navigation that follows
 function enterVia(){ document.body.classList.toggle('from-hub', hubClick); hubClick = false; }
-function pickMode(m){ enterVia(); if(m==='iq'){ renderIQ(); show('iq'); return; } mode=m; if(m==='coach'){ want3D(); renderSetup(); } else renderPlain(); show(setupScreen()); }
+$('sessLabel').addEventListener('input', e => { state.label = e.target.value; });
+function pickMode(m){ state.label = ''; $('sessLabel').value = ''; enterVia(); if(m==='iq'){ renderIQ(); show('iq'); return; } mode=m; if(m==='coach'){ want3D(); renderSetup(); } else renderPlain(); show(setupScreen()); }
 document.querySelectorAll('.mode-card[data-mode]').forEach(b=>b.onclick=()=>{ hubClick=true; pickMode(b.dataset.mode); });
 document.querySelectorAll('[data-section]').forEach(b=>b.onclick=()=>show(b.dataset.section));
 document.querySelector('.boxing-card').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); show('modes'); } });
@@ -2714,9 +2762,10 @@ function renderReframe(){
   }
   const n=rf.items.length;
   if(rf.i>=n){
-    window.sessionDone?.({type:'reframe', minutes:3});
+    const sid = offerSave({type:'reframe', minutes:3});
     body.innerHTML = `<div class="done" style="padding-top:10px"><div class="eyebrow">Cognitive reframing</div><div class="big">Nice work</div>
       <p class="sub">You went through ${n} reframes. Pick the one that felt most useful and say it in your next session.</p>
+      <div class="savebox" data-save-box="${sid}">${saveBoxHtml(sid)}</div>
       <div class="row"><button class="btn" id="rfAgain">Go again</button><button class="btn ghost" id="rfBack">Back</button></div></div>`;
     $('rfAgain').onclick=()=>{ rf.items=shuffle(REFRAMES); rf.i=0; rf.shown=false; renderReframe(); }; $('rfBack').onclick=()=>show('mind');
     window.scrollTo(0,0); return;
@@ -2769,11 +2818,12 @@ function breathTick(now){
   $('bxPhase').textContent=BX[side].label; $('bxCount').textContent=count; $('bxTime').textContent=fmt(total-br.acc)+' left';
 }
 function breathEnd(){
-  window.sessionDone?.({type:'breath', minutes:bset.mins});
+  const sid = offerSave({type:'breath', minutes:bset.mins});
   cancelAnimationFrame(br.raf); br=null; try{wake?.release()}catch(e){}
   say('Well done. Breathe normally.');
   const breaths=Math.floor(bset.mins*60/(4*bset.n));
   $('bxDoneText').textContent=`${breaths} full breath${breaths===1?'':'s'} of box breathing, ${bset.mins} minutes. Notice how you feel.`;
+  boxFor('bxSave', sid);
   $('bxRun').hidden=true; $('bxDone').hidden=false;
 }
 $('bxStart').onclick=()=>{
@@ -2820,7 +2870,7 @@ function startQuiz(id){
 function renderQuiz(){
   const body = $('iqBody'), n = quiz.items.length;
   if(quiz.i>=n){
-    window.sessionDone?.({type:'iq', minutes:5});
+    const sid = offerSave({type:'iq', minutes:5});
     const p = Math.round(quiz.got/n*100), title = quiz.cat ? quiz.cat.name : 'Mixed quiz';
     if(quiz.cat){ iqScores[quiz.cat.id] = Math.max(iqScores[quiz.cat.id]||0, p); iqSave(); }
     body.innerHTML = `<div class="done" style="padding-top:10px">
@@ -2828,6 +2878,7 @@ function renderQuiz(){
       <div class="big">${p}%</div>
       <p class="sub" style="font-size:18px;color:var(--fg)">${iqBand(p)}</p>
       <p class="sub">${quiz.got} of ${n} correct</p>
+      <div class="savebox" data-save-box="${sid}">${saveBoxHtml(sid)}</div>
       <div class="row"><button class="btn" id="iqAgain">Try again</button><button class="btn ghost" id="iqTopics">All topics</button></div>
       ${quiz.missed.length ? `<h2 style="margin-top:28px;text-align:left">Review these</h2><div class="iq-missed">${quiz.missed.map(m=>`<div><strong>${esc(m.q[0])}</strong><span>${esc(m.q[1][m.q[2]])} ${esc(m.q[3])}</span></div>`).join('')}</div>` : ''}
     </div>`;
@@ -2871,7 +2922,7 @@ function start(){
   cancelAnimationFrame(raf); raf=requestAnimationFrame(tick);
 }
 function finish(){
-  window.sessionDone?.({type:mode, minutes:Math.round(steps.reduce((n,s)=>n+s.dur,0)/60)});
+  const sid = offerSave({type:mode, minutes:Math.round(steps.reduce((n,s)=>n+s.dur,0)/60)});
   running=false; cancelAnimationFrame(raf); bell(); try{wake?.release()}catch(e){} bgStop();
   say('Workout complete. Great work.', 1400);
   stopMusic();
@@ -2879,6 +2930,7 @@ function finish(){
   $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${Math.round(o.r*o.m)}<span>${mode==='plyo'||mode==='shoulder'?'Minutes trained':'Minutes boxed'}</span></div>`
     + (mode==='timer' ? '' : `<div>${mode==='plyo' ? work.filter(s=>!s.mini).length : work.length}<span>${mode==='basic'||mode==='plyo'||mode==='shoulder'?'Exercises':mode==='scenario'?'Focus areas':mode==='output'?'Rounds of output':'Drills'}</span></div>`)
     + (mode==='output' ? `<div>${(rounds*(work[0]?.total||0)).toLocaleString()}<span>Punches called</span></div>` : '');
+  boxFor('doneSave', sid); boxFor('gfSave', sid);
   const sc = mode==='scenario' && SCENARIOS[state.scen];
   $('doneReview').hidden = !sc;
   if(sc) $('doneReview').innerHTML = `<h3>${sc.name}</h3><p>${sc.mission}</p><h3>Key lesson</h3><p>${sc.lesson}</p><h3>Next time</h3><p>Run it again and pick one tip from this round to nail. Spend the whole round on that one thing.</p>`;

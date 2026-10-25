@@ -139,7 +139,7 @@
     W.suggest = {cls:'suggest', html:`<h2>Suggested for you</h2>${suggestions().map((g,i) => `<div class="t-item"><div><strong>${esc(g.title)}</strong><span>${esc(g.text)}</span></div><button class="btn small" data-suggest="${i}">${g.quick ? 'Quick one' : 'Start'}</button></div>`).join('')}`};
 
     const recent = log.slice(-3).reverse();
-    if(recent.length) W.recent = {cls:'', html:`<h2>Do it again</h2>${recent.map((e,i) => `<div class="t-item"><div><strong>${esc(e.label)}</strong><span>${when(e.date)} · ${e.minutes||'?'} min</span></div><button class="btn small ghost" data-again="${log.length-1-i}">Again</button></div>`).join('')}`};
+    if(recent.length) W.recent = {cls:'', html:`<h2>Do it again</h2>${recent.map((e,i) => `<div class="t-item"><div><strong>${esc(e.label)}</strong><span>${when(e.date)} · ${e.minutes||'?'} min${e.notes ? ' · ' + esc(e.notes.length > 70 ? e.notes.slice(0, 70) + '…' : e.notes) : ''}</span></div><button class="btn small ghost" data-again="${log.length-1-i}">Again</button></div>`).join('')}`};
 
     W.explore = {cls:'', html:`<h2>Explore</h2><div class="t-links"><button data-go-section="modes">Boxing${chev}</button><button data-go-section="sc">Strength &amp; conditioning${chev}</button><button data-go-section="mind">Mental skills${chev}</button><button data-go-section="cal">Training calendar${chev}</button></div>`};
     return W;
@@ -200,6 +200,8 @@
     });
   }
   window.renderToday = renderToday;
+  // coming back to the app after a while (or after midnight): the dashboard shows today, not the day it was last drawn
+  document.addEventListener('visibilitychange', () => { if(!document.hidden && !$('today').hidden) renderToday(); });
   function swap(a, b){
     const i = shown.indexOf(a), j = shown.indexOf(b); if(i < 0 || j < 0) return;
     [shown[i], shown[j]] = [shown[j], shown[i]]; saved = [...shown];

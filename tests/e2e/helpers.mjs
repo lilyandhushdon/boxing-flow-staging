@@ -17,7 +17,7 @@ if (window.onYouTubeIframeAPIReady) window.onYouTubeIframeAPIReady();`;
 const SUPABASE_STUB = `
 window.supabase = {createClient: () => ({
   auth: {onAuthStateChange: () => ({data:{subscription:{unsubscribe(){}}}}), getSession: async () => ({data:{session:null}}),
-    signInWithOtp: async ({email}) => { window.__otpEmail = email; return {error:null}; }, verifyOtp: async () => ({error:{message:'bad code'}}), signOut: async () => {}},
+    signInWithOtp: async ({email}) => { window.__otpEmail = email; return {error:null}; }, verifyOtp: async () => ({error:{message:'bad code'}}), signOut: async () => {}, signInWithPassword: async () => ({error:{message:'Invalid login credentials'}}), signUp: async () => ({data:{session:null}, error:null})},
   from: () => { throw new Error('not signed in'); }
 })};`;
 

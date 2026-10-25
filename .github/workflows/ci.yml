@@ -1,10 +1,9 @@
 name: CI
 
-# Every push to main and every pull request is checked. See docs/index.html, section 10.
+# Switched to manual while the app is being built quickly: run it from the Actions tab (Run workflow) whenever you want a full check.
+# To check every push and pull request again, put these back under "on:":   push: {branches: [main]}   and   pull_request:
+# See docs/index.html, section 10.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 concurrency:

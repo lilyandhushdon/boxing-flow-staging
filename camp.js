@@ -220,6 +220,7 @@
     else if('change' in d){ ui.changing = true; ui.len = camp.len; ui.fight = camp.auto ? '' : camp.fight; renderCamp(); }
     else if('cancelChange' in d){ ui.changing = false; renderCamp(); }
     else if(t.id === 'cApply'){
+      ui.fight = ($('cFight') || {}).value || ui.fight || '';   // read the box itself: some phones announce a picked date with "change" and not "input"
       const fight = ui.fight || dkey(addDays(new Date(), ui.len * 7 - 1)), nu = build(ui.len, fight); nu.auto = !ui.fight;
       camp = carry(camp, nu); ui.changing = false; ui.open = null; save(); renderCamp();
     }
@@ -242,7 +243,7 @@
     ui.editing = ui.adding = null; save(); renderCamp();
   }
   $('campBody').addEventListener('keydown', e => { if(e.target.id === 'inlIn'){ if(e.key === 'Enter'){ e.preventDefault(); commit(); } else if(e.key === 'Escape'){ ui.editing = ui.adding = null; renderCamp(); } } });
-  $('campBody').addEventListener('input', e => { if(e.target.id === 'cFight'){ ui.fight = e.target.value; $('cPrev').innerHTML = preview(); } });
+  ['input', 'change'].forEach(ev => $('campBody').addEventListener(ev, e => { if(e.target.id === 'cFight'){ ui.fight = e.target.value; $('cPrev').innerHTML = preview(); } }));
 
   if(!camp || !camp.phases){ camp = defaultCamp(); save(); }
   window.bfCamp = {get camp(){ return camp; }, showInfo:() => { ui.info = true; }, phaseOn, current, toggle:id => { toggle(id); }, counts, phaseTasks, taskDone, PHASES};

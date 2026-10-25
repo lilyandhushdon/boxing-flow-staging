@@ -37,7 +37,9 @@
   const AREAS = {boxing:'Boxing', sc:'Strength & conditioning', mind:'Mental skills', rest:'Rest'};
   const way = id => WAYS.find(w => w.id === id);
   const at = (arr,i) => arr[+i||0] || arr[0];
-  function label(e){
+  // a person's own label first, then what the session is: "Heavy bag, jab and double jab · Round timer · 3 rounds of 3 min"
+  function label(e){ const b = baseLabel(e), c = ((e && e.custom) || '').trim(); return c ? c + ' · ' + b : b; }
+  function baseLabel(e){
     const c = e.cfg || {}, n = (way(e.type)||{}).name || e.type;
     switch(e.type){
       case 'coach': { const names = (c.focus&&c.focus.length ? c.focus : [...state.focus]).map(id=>(FOCUS.find(f=>f.id===id)||{}).name).filter(Boolean);
@@ -148,14 +150,17 @@
     openSheet(head(draft.id ? 'Edit session' : w.name, draft.id ? w.name : dayName(draft.date)) + fields.map(f => f.multi
       ? `<label>${f.l}</label><div class="chips">${FOCUS.map(x => `<button type="button" data-chip="${x.id}" aria-pressed="${(draft.cfg.focus||[]).includes(x.id)}">${x.name}</button>`).join('')}</div>`
       : `<label>${f.l}<select data-f="${f.k}">${f.o.map((o,i) => `<option value="${i}" ${(+draft.cfg[f.k]||0)===i?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`).join('')
+      + `<label>Label (optional)<input type="text" data-custom maxlength="60" autocomplete="off" value="${esc(draft.custom || '')}" placeholder="e.g. Heavy bag, jab and double jab"></label>`
       + `<div class="two"><label>Day<input type="date" data-date value="${draft.date}"></label><label>Time (optional)<input type="time" data-time value="${draft.time||''}"></label></div>`
       + (draft.id ? '' : `<label>Repeat<select data-repeat><option value="0">Just this once</option><option value="4">Every week for 4 weeks</option><option value="8">Every week for 8 weeks</option><option value="12">Every week for 12 weeks</option></select></label>`)
+      + `<label>Notes (optional)<textarea data-notes rows="3" maxlength="1000" placeholder="What to work on, or how it went">${esc(draft.notes || '')}</textarea></label>`
       + `<div class="acts"><button class="btn" data-save>${draft.id ? 'Save' : 'Add to calendar'}</button><button class="btn ghost" data-close>Cancel</button></div>`);
   }
   function openEvent(id){
     const ev = plan.find(x => x.id === id); if(!ev) return;
     const w = way(ev.type) || {};
     openSheet(head(esc(label(ev)), `${dayName(ev.date)}${ev.time ? ' at ' + timeL(ev.time) : ''}`)
+      + (ev.notes ? `<p class="ev-notes">${esc(ev.notes)}</p>` : '')
       + `<div class="acts">${ev.type==='rest' ? '' : `<button class="btn" data-start="${ev.id}">Start this session</button>`}
          ${ev.type==='rest' ? '' : `<button class="btn ghost" data-toggle="${ev.id}">${ev.done ? 'Mark not done' : 'Mark done'}</button>`}
          <button class="btn ghost" data-edit="${ev.id}">Edit</button></div>
@@ -164,6 +169,7 @@
   function startPlan(ev){
     closeSheet(); planCtx.id = ev.id; applyParams(params(ev));
     if(ev.type === 'breath') openBreath(); else if(ev.type === 'reframe') openReframe(); else pickMode(ev.type);
+    state.label = ev.custom || ''; const sl = document.getElementById('sessLabel'); if(sl) sl.value = state.label;
   }
   sh.addEventListener('click', e => {
     const t = e.target.closest('button'); if(!t) return;
@@ -173,16 +179,16 @@
     if(d.chip){ const s = new Set(draft.cfg.focus || []); s.has(d.chip) ? s.delete(d.chip) : s.add(d.chip); draft.cfg.focus = [...s]; t.setAttribute('aria-pressed', s.has(d.chip)); return; }
     if('save' in d){
       if(draft.type === 'coach' && !(draft.cfg.focus||[]).length){ draft.cfg.focus = [...state.focus]; }
-      if(draft.id){ const ev = plan.find(x => x.id === draft.id); if(ev) Object.assign(ev, {date:draft.date, time:draft.time, type:draft.type, cfg:draft.cfg}); }
+      if(draft.id){ const ev = plan.find(x => x.id === draft.id); if(ev) Object.assign(ev, {date:draft.date, time:draft.time, type:draft.type, cfg:draft.cfg, custom:(draft.custom || '').trim(), notes:(draft.notes || '').trim()}); }
       else {
         const weeks = draft.repeat || 1, series = weeks > 1 ? uid() : undefined;
-        for(let i = 0; i < weeks; i++) plan.push({id:uid(), date:dkey(addDays(fromKey(draft.date), 7*i)), time:draft.time, type:draft.type, cfg:JSON.parse(JSON.stringify(draft.cfg)), done:false, series});
+        for(let i = 0; i < weeks; i++) plan.push({id:uid(), date:dkey(addDays(fromKey(draft.date), 7*i)), time:draft.time, type:draft.type, cfg:JSON.parse(JSON.stringify(draft.cfg)), custom:(draft.custom || '').trim(), notes:(draft.notes || '').trim(), done:false, series});
       }
       save(); cal.sel = draft.date; cal.anchor = fromKey(draft.date); closeSheet(); return renderCal();
     }
     if(d.start){ const ev = plan.find(x => x.id === d.start); if(ev) startPlan(ev); return; }
     if(d.toggle){ const ev = plan.find(x => x.id === d.toggle); if(ev){ ev.done = !ev.done; save(); closeSheet(); renderCal(); } return; }
-    if(d.edit){ const ev = plan.find(x => x.id === d.edit); if(ev){ draft = {id:ev.id, date:ev.date, time:ev.time||'', type:ev.type, cfg:JSON.parse(JSON.stringify(ev.cfg||{})), repeat:0}; openForm(); } return; }
+    if(d.edit){ const ev = plan.find(x => x.id === d.edit); if(ev){ draft = {id:ev.id, date:ev.date, time:ev.time||'', type:ev.type, cfg:JSON.parse(JSON.stringify(ev.cfg||{})), custom:ev.custom||'', notes:ev.notes||'', repeat:0}; openForm(); } return; }
     if(d.del){ plan = plan.filter(x => x.id !== d.del); save(); closeSheet(); return renderCal(); }
     if(d.delall){ const ev = plan.find(x => x.id === d.delall); if(ev){ plan = plan.filter(x => x.series !== ev.series); save(); } closeSheet(); return renderCal(); }
   });
@@ -193,6 +199,7 @@
     else if('time' in t.dataset) draft.time = t.value;
     else if('repeat' in t.dataset) draft.repeat = +t.value;
   });
+  sh.addEventListener('input', e => { const t = e.target; if('custom' in t.dataset) draft.custom = t.value; else if('notes' in t.dataset) draft.notes = t.value; });
 
   /* ---------- finishing a session: tick it off if it was planned, and put it in the activity log (home.js) ---------- */
   const cfgNow = type => ({
@@ -201,10 +208,18 @@
     plyo: () => ({plyo:state.plyo, popt:state.popt}), shoulder: () => ({shd:state.shd, shopt:state.shopt})
   }[type] || (() => ({})))();
   window.sessionDone = info => {
-    const ev = plan.find(x => x.id === planCtx.id); let type = (info && info.type) || mode, cfg;
-    if(ev){ ev.done = true; save(); type = ev.type; cfg = ev.cfg; } else cfg = cfgNow(type);
-    window.logSession?.({id:uid(), date:todayK(), ts:Date.now(), type, cfg, label:label({type, cfg}), minutes:(info && info.minutes) || 0});
-    planCtx.id = null;
+    const pid = (info && info.planId) || planCtx.id, custom = ((info && info.label) || '').trim(), notes = ((info && info.notes) || '').trim();
+    let ev = plan.find(x => x.id === pid), type = (info && info.type) || mode, cfg;
+    if(ev){ type = ev.type; cfg = ev.cfg; }
+    else {
+      cfg = cfgNow(type);
+      // not started from the calendar: if this kind of session is planned for today and not done yet, this is it (the exact same choices first)
+      const open = plan.filter(x => x.date === todayK() && x.type === type && !x.done); ev = open.find(x => JSON.stringify(x.cfg || {}) === JSON.stringify(cfg)) || open[0];
+    }
+    if(ev){ ev.done = true; if(custom) ev.custom = custom; if(notes) ev.notes = notes; save(); }
+    window.logSession?.({id:uid(), date:todayK(), ts:Date.now(), type, cfg, custom, notes, label:label({type, cfg, custom}), minutes:(info && info.minutes) || 0});
+    if(planCtx.id === pid) planCtx.id = null;
+    window.renderToday?.();   // the dashboard is up to date the moment a session ends, not only when it is next opened
   };
   // shared with the Today screen
   const openDay = (k, view) => { cal.sel = k; cal.anchor = fromKey(k); if(view) cal.view = view; show('cal'); };

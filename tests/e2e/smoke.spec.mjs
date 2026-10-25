@@ -79,10 +79,13 @@ test('film study: paste a link, pause to write a note, keep it, and study a figh
   await expectNoErrors(errors);
 });
 
-test('nutrition asks for sign-in, and the sign-in email request goes out', async ({ page }) => {
+test('nutrition asks for sign-in (password first), and the sign-in email request goes out', async ({ page }) => {
   const errors = await open(page, '/app.html?go=nutrition');
+  await expect(page.locator('#nuPass')).toBeVisible();
+  await expect(page.locator('#nutriBody')).toContainText('Create account');
+  await page.locator('[data-nu-mode="link"]').click();
   await expect(page.locator('#nutriBody')).toContainText('Email me a sign-in link');
-  await page.locator('#nuEmail').fill('boxer@example.com'); await page.locator('#nuSignIn button').click();
+  await page.locator('#nuEmail').fill('boxer@example.com'); await page.locator('#nuSignIn button[type="submit"]').click();
   await expect(page.locator('#nutriBody')).toContainText('Check your inbox for boxer@example.com');
   expect(await page.evaluate(() => window.__otpEmail)).toBe('boxer@example.com');
   await expectNoErrors(errors);

@@ -21,6 +21,12 @@
   force = true
 
 [[redirects]]
+  from = "https://heroic-jalebi-e2e04b.netlify.app/dev-owner.js"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
   from = "/.env.*"
   to = "/404.html"
   status = 404
