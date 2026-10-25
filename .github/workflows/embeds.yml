@@ -1,0 +1,22 @@
+name: Film study videos
+
+# Once a week, check that every video in the film study fighter list still allows embedding.
+# If any were removed or had embedding switched off, this run fails and GitHub emails you; the log lists the lines to fix in fighters.js.
+on:
+  schedule:
+    - cron: '0 19 * * 0'   # Sunday 19:00 UTC (Monday morning in New Zealand)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  embeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tests/check-embeds.mjs

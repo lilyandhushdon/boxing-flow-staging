@@ -1,0 +1,14 @@
+{
+  "name": "boxing-flow-tests",
+  "private": true,
+  "type": "module",
+  "description": "Automated checks for Boxing Flow. The app itself has no build step; these tools are for testing only.",
+  "scripts": {
+    "test": "node --test *.test.mjs",
+    "test:e2e": "playwright test",
+    "check:embeds": "node check-embeds.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

@@ -98,7 +98,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
     <p>What the app is, how every part works and fits together, where the data lives, how to run and deploy it, and what is planned. Written so a new developer can pick the project up.</p>
   </div>
   <div class="badges">
-    <span class="badge">Last updated 25 Oct 2026</span>
+    <span class="badge">Last updated 26 Oct 2026</span>
     <span class="badge ok">Single user (personal use)</span>
     <span class="badge warn">Payments paused</span>
     <button class="theme" id="themeBtn" type="button" aria-label="Switch between light and dark">Light / dark</button>
@@ -232,6 +232,8 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><td><code>models/</code>, <code>music/</code>, <code>crowd/</code></td><td>3D coaches (<code>.glb</code>) and Mixamo move clips (<code>.fbx</code>), music tracks, crowd sound.</td></tr>
 <tr><td><code>netlify.toml</code></td><td>Netlify settings: publish directory, functions folder, no-cache header for <code>app.html</code>, and the rule that hides <code>/docs/</code> on the live site.</td></tr>
 <tr><td><code>docs/index.html</code></td><td>This documentation.</td></tr>
+<tr><td><code>tests/</code></td><td>The automated tests, with their own <code>package.json</code> so the app stays free of build tools: <code>static.test.mjs</code>, <code>data.test.mjs</code>, <code>foods.test.mjs</code> (Node's test runner), <code>e2e/</code> (Playwright browser tests), <code>serve.mjs</code> (a small static server for them), <code>check-embeds.mjs</code> (the weekly video check).</td></tr>
+<tr><td><code>.github/workflows/</code></td><td><code>ci.yml</code> (runs the tests on every push and pull request) and <code>embeds.yml</code> (weekly check that film study videos still embed).</td></tr>
 <tr><td><code>.env</code></td><td>Local secrets (git-ignored). See <a href="#config">section 8</a>.</td></tr>
 <tr><td><code>README.md</code>, <code>STRIPE_INTEGRATION_TODO.md</code></td><td>Notes from the original build, including the table of which animation file shows each boxing move, and the Stripe checkout notes.</td></tr>
 </table>
@@ -527,20 +529,45 @@ npx supabase db push          # applies new migrations to the live project
 npx supabase config push      # applies supabase/config.toml (auth settings); preview the diff first</code></pre>
 <p>Never edit a migration that has been applied; add a new one. Every new table needs <code>enable row level security</code>, a policy for <code>user_id = auth.uid()</code> and a <code>grant</code> to <code>authenticated</code>.</p>
 <h3>Deploy</h3>
-<div class="call warn"><b>Current state</b><p>Deploys are manual. Pushing to GitHub does not publish. Run <code>netlify deploy --prod</code> from the project folder (publishes the directory <code>.</code> and the functions). Environment variables changed in Netlify only take effect on the next deploy. Before the first deploy after the nutrition and sync work, make sure the Netlify environment has <code>USDA_API_KEY</code> (it does).</p></div>
+<div class="call warn"><b>Current state</b><p>Deploys are manual. Pushing to GitHub does not publish. Run <code>netlify deploy --prod</code> from the project folder (publishes the directory <code>.</code> and the functions). A command-line deploy uploads every file in the folder, including <code>.env</code>; the rules in <code>netlify.toml</code> keep private paths from being served, but the safest route is a deploy from GitHub. Environment variables changed in Netlify only take effect on the next deploy. Before the first deploy after the nutrition and sync work, make sure the Netlify environment has <code>USDA_API_KEY</code> (it does).</p></div>
 <p>Better: in Netlify, Site configuration, Build and deploy, link the GitHub repository and set the production branch to <code>main</code>, so every merge deploys. With the CI plan below, deploys then happen only when the checks pass.</p>
-<h3>How the app has been tested so far</h3>
+<h3>Run the tests</h3>
+<pre><code>node --test tests/*.test.mjs        # code, data and food search checks (no install needed, a few seconds)
+
+cd tests
+npm ci                              # one-time: installs Playwright (pinned version)
+npx playwright install chromium webkit
+npx playwright test                 # the browser tests, in phone-sized Chromium and WebKit
+npx playwright test --project=chromium --headed    # watch one run
+node check-embeds.mjs               # are all film study videos still embeddable? (needs internet)</code></pre>
 <ul>
-<li>Manual testing on desktop Chrome at phone size.</li>
-<li>Scripted tests that drive headless Chrome through the Chrome DevTools Protocol: every screen and deep link, the nutrition flow against the real database with throwaway accounts, a two-browser sync test, a privacy test with two accounts and a logged-out visitor, and the film study flow with a stand-in YouTube player. <b>These scripts are not in the repository yet</b>; moving them in is the first step of the plan below.</li>
-<li>Not covered: real iPhone behaviour (background audio, lock screen, countdown rendering), a real heart-rate strap, a real sign-in email, and real YouTube playback.</li>
+<li>The browser tests start their own small server (<code>tests/serve.mjs</code>, port 8891) and replace everything outside the site with stand-ins: a pretend YouTube player, a pretend Supabase with nobody signed in, blocked fonts, three.js and live channel. They need no keys and no internet.</li>
+<li>Playwright is pinned to an exact version. Version 1.48 hangs on Node 24; the pinned version works on Node 22 and 24.</li>
+<li>WebKit is a stand-in for iPhone Safari, not a replacement: it has no Web Audio in the automated build, so the tests give the workout engine a harmless fake there.</li>
+</ul>
+<h3>Tested by hand or by throwaway scripts (not yet in the suite)</h3>
+<ul>
+<li>The nutrition flow against the real database with a throwaway account, the two-browser sync test, and the privacy test (two accounts and a logged-out visitor). These need a database; they move into the suite with stage 3 below.</li>
+<li>Not covered by anything automatic: real iPhone behaviour (background audio, lock screen, countdown rendering), a real heart-rate strap, a real sign-in email, and real YouTube playback.</li>
 </ul>
 </section>
 
 <!-- ============================================================ 10 -->
 <section id="cicd">
-<h2>10. Testing and CI/CD plan <span class="tag info">proposed</span></h2>
-<p>Goal: every push is checked automatically and only a passing build reaches the live site. The plan is staged so each stage is useful on its own.</p>
+<h2>10. Testing and CI/CD <span class="tag ok">stages 1, 2 and 4 live</span></h2>
+<p>Goal: every push is checked automatically and only a passing build reaches the live site. The pipeline is staged so each stage is useful on its own.</p>
+<table>
+<tr><th>Stage</th><th>State</th><th>Where</th></tr>
+<tr><td>1 Static checks</td><td><span class="tag ok">done</span> 10 tests</td><td><code>tests/static.test.mjs</code></td></tr>
+<tr><td>2 Unit and data tests</td><td><span class="tag ok">done</span> 12 tests (data and food search). The camp, nutrition-target and sync logic still need extracting to be unit tested; the browser tests cover them meanwhile.</td><td><code>tests/data.test.mjs</code>, <code>tests/foods.test.mjs</code></td></tr>
+<tr><td>3 Database tests</td><td><span class="tag warn">next</span></td><td>needs a local Supabase (Docker) in CI</td></tr>
+<tr><td>4 Browser tests</td><td><span class="tag ok">done</span> 28 tests, Chromium and WebKit</td><td><code>tests/e2e/</code></td></tr>
+<tr><td>5 Preview deploy and smoke</td><td><span class="tag warn">next</span></td><td>needs the Netlify site linked to GitHub</td></tr>
+<tr><td>6 Production deploy from main</td><td><span class="tag warn">next</span></td><td>after 3 and 5</td></tr>
+<tr><td>Weekly video check</td><td><span class="tag ok">done</span></td><td><code>.github/workflows/embeds.yml</code></td></tr>
+</table>
+<p>What the live tests protect: scripts and pages parse; no secret is committed; every menu and landing link is routable; scripts load in a working order; every table has row level security; the docs list every saved key; all quiz, scenario, workout and fighter data is complete; the food search merges, ranks, maps New Zealand words and survives a failing database; every screen opens from its link with no uncaught errors and no sideways scroll; the dashboard, camp, film study, sign-in prompt, a running workout, calendar and landing page work.</p>
+<div class="call"><b>Turn on branch protection</b><p>In GitHub: Settings, Branches, add a rule for <code>main</code> that requires the "Code and data checks" and both "Browser tests" jobs to pass. Until then the checks run and report but do not block a merge.</p></div>
 <h3>Pipeline</h3>
 <figure>
 <svg viewBox="0 0 920 150" role="img" aria-label="Pipeline: push, static checks, unit tests, database tests, end to end tests, preview deploy, smoke test, production deploy">
@@ -557,9 +584,9 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
   <path class="edge" d="M106 72H126" style="marker-end:url(#ah2)"/><path class="edge" d="M236 72H256" style="marker-end:url(#ah2)"/><path class="edge" d="M366 72H386" style="marker-end:url(#ah2)"/><path class="edge" d="M496 72H516" style="marker-end:url(#ah2)"/><path class="edge" d="M626 72H646" style="marker-end:url(#ah2)"/><path class="edge" d="M756 72H776" style="marker-end:url(#ah2)"/>
   <text class="sml" x="6" y="132">Any failing stage stops the line and blocks the merge. A scheduled job (weekly) re-checks that every film study video still allows embedding.</text>
 </svg>
-<figcaption>Stages 1 to 4 run in GitHub Actions on every push and pull request. Stages 5 and 6 use Netlify.</figcaption>
+<figcaption>Stages 1, 2 and 4 run in GitHub Actions on every push and pull request. Stage 3 is next; stages 5 and 6 use Netlify.</figcaption>
 </figure>
-<h3>Stages in detail</h3>
+<h3>The plan in detail</h3>
 <table>
 <tr><th>Stage</th><th>What it checks</th><th>How</th><th>Effort</th></tr>
 <tr><td>1 Static checks</td><td>JavaScript syntax and common mistakes in every <code>.js</code> and inline script; HTML validity; no secrets committed; script load order file exists; migrations are named in order</td><td><code>node --check</code> / ESLint, an HTML validator, <code>gitleaks</code>, a small script that extracts <code>app.html</code>'s inline script</td><td>small</td></tr>
@@ -578,12 +605,13 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <li><b>Error reporting</b> in production (for example Sentry's free plan) so real problems on phones are seen.</li>
 <li><b>Manual test checklist</b> in the repo for what automation cannot cover: iPhone lock screen audio, a real strap, a real sign-in email, real YouTube playback.</li>
 </ul>
-<h3>Suggested order</h3>
+<h3>What is left</h3>
 <ol>
-<li>Move the existing scripted tests into a <code>tests/</code> folder, fix their hard-coded paths, and add stages 1 and 2 (about half a day).</li>
-<li>Link the repository in Netlify and add stage 5 so every branch gets a preview.</li>
-<li>Add the database tests (stage 3) and the end-to-end suite (stage 4), starting with the screens and flows most likely to break.</li>
-<li>Switch on branch protection and automatic production deploys (stage 6), then the weekly embed check and error reporting.</li>
+<li>Add the database tests (stage 3): start the local Supabase in CI, apply the migrations from scratch, and run the two-account privacy test and the two-browser sync test against it.</li>
+<li>Link the repository in Netlify and add the preview deploy and smoke test (stage 5).</li>
+<li>Switch on branch protection and automatic production deploys, applying database migrations first (stage 6).</li>
+<li>Extract the pure logic (camp allocation, nutrition targets, sync merge) into small files so it can be unit tested directly.</li>
+<li>Add error reporting from real phones, and the manual checklist for what automation cannot cover.</li>
 </ol>
 </section>
 
@@ -595,7 +623,7 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <li><b>Keys:</b> only the public anon key is in the page. The service key and DB password stay in <code>.env</code>. The USDA key lives in the Netlify function. Rotate any key that was ever pasted into a chat or document.</li>
 <li><b>Personal data:</b> email address, body measurements, heart rate settings and food diary are health-related. They are stored only in the person's account and on their device. A privacy policy and terms are needed before the app is public; the nutrition screen already carries a "not medical advice" note and a weight-cutting warning.</li>
 <li><b>Sign-out</b> leaves local data on the device; signing in as a different person clears the synced keys first.</li>
-<li><b>Publishing:</b> Netlify serves the whole folder, so source files (including <code>supabase/</code> and <code>netlify/functions/</code>) are readable by URL. They contain no secrets. The documentation is hidden from the live site by a rule in <code>netlify.toml</code>.</li>
+<li><b>Publishing:</b> Netlify serves the whole folder (<code>publish = "."</code>), and a deploy made from this folder with the command line uploads every file in it, including the private <code>.env</code>. <code>netlify.toml</code> therefore answers a forced 404 for <code>/.env</code>, <code>/docs</code>, <code>/tests</code>, <code>/supabase</code>, <code>/netlify</code>, <code>/.github</code> and <code>/node_modules</code>, and a test fails if any of those rules is removed. Deploys that come from GitHub only contain committed files, which is another reason to link the repository.</li>
 <li><b>Third-party content:</b> only embeddable, official video sources; attribution for Open Food Facts; Boxing World TV for personal use only.</li>
 </ul>
 </section>
@@ -615,7 +643,7 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <tr><td>Live channel</td><td>Personal use only; the site could change its layout.</td></tr>
 <tr><td>Training content</td><td>Drills, camp tasks, fight scenarios and the quiz have not been reviewed by a qualified coach.</td></tr>
 <tr><td>Code structure</td><td><code>app.html</code> is one very large file holding the engine and styles; scripts share globals; there is no module system or build, so load order matters.</td></tr>
-<tr><td>Tests</td><td>Not yet automated in the repository.</td></tr>
+<tr><td>Tests</td><td>Static, data, food search and browser tests run automatically. Database, sync and privacy tests are not yet in the pipeline, and nothing automatic covers a real iPhone, strap, email or YouTube.</td></tr>
 <tr><td>Accessibility</td><td>Buttons and inputs are labelled and keyboard reachable, but there has been no formal audit (screen reader, contrast, reduced motion).</td></tr>
 </table>
 </section>
@@ -626,7 +654,7 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <table>
 <tr><th>Item</th><th>Notes</th><th>State</th></tr>
 <tr><td>My profile page</td><td>Body stats with a weight history, resting and max heart rate, the five heart-rate zones with bpm ranges and what each is for, suggested weekly zone time, boxing details (weight class, stance, experience, style, bio). One shared source for nutrition and heart rate. Probably renames <code>nutrition_profile</code> to <code>athlete_profile</code>.</td><td><span class="tag warn">next</span></td></tr>
-<tr><td>CI/CD pipeline</td><td>See <a href="#cicd">section 10</a>.</td><td><span class="tag warn">next</span></td></tr>
+<tr><td>CI/CD pipeline</td><td>Stages 1, 2 and 4 are live; stages 3, 5 and 6 are next. See <a href="#cicd">section 10</a>.</td><td><span class="tag info">in progress</span></td></tr>
 <tr><td>Link Netlify to GitHub, deploy</td><td>Publish the current work.</td><td><span class="tag warn">next</span></td></tr>
 <tr><td>Account area and sync status screen</td><td>Sign in and out from one place, show last synced, export my data.</td><td>planned</td></tr>
 <tr><td>Zone-based training</td><td>Per-round zone time on the finish screen, rest that ends at a target heart rate, recovery score, weekly zone minutes on the dashboard, camp tasks tied to zones, HRV from beat-to-beat data.</td><td>planned</td></tr>
@@ -651,6 +679,8 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <tr><td>Food data through one Netlify Function</td><td>Keeps the USDA key private, merges two sources, adds caching and New Zealand handling in one place.</td></tr>
 <tr><td>Official-channel full fights only in film study</td><td>Avoids dead links and copyright trouble; every link checked for embedding.</td></tr>
 <tr><td>Training camp as a focus board, not a scheduler</td><td>The camp tells you what to work on for two weeks; the calendar remains the person's own plan.</td></tr>
+<tr><td>Tests in <code>tests/</code> with their own <code>package.json</code>, Playwright pinned</td><td>The app has no build step and should not gain one just for testing; keeping the tooling in its own folder keeps the root clean and stops Netlify from installing it.</td></tr>
+<tr><td>Browser tests replace every outside service</td><td>Fast, free and the same result every time; real services are checked separately (the weekly video check, and by hand).</td></tr>
 <tr><td>Paywall paused</td><td>Add more features first; the code stays in the repo.</td></tr>
 <tr><td>Email link sign-in (no password)</td><td>Nothing to remember or leak; the same link creates an account.</td></tr>
 </table>
@@ -661,7 +691,8 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>25 Oct 2026</td><td><i>not yet committed</i></td><td>Nutrition diary and food search (<code>nutrition.js</code>, <code>foods.mjs</code>); Supabase project, tables, rules and settings; account sync of all app data (<code>cloud.js</code>); nutrition widget and menu items; documentation.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>not yet committed</i></td><td>Automated tests and CI: 10 static checks, 12 data and food search tests, 28 browser tests (Chromium and WebKit), GitHub Actions workflows for every push and a weekly video check. Documentation updated.</td></tr>
+<tr><td>25 Oct 2026</td><td><code>326e88a</code></td><td>Nutrition diary and food search (<code>nutrition.js</code>, <code>foods.mjs</code>); Supabase project, tables, rules and settings; account sync of all app data (<code>cloud.js</code>); nutrition widget and menu items; documentation.</td></tr>
 <tr><td>25 Oct 2026</td><td><code>f3b89e4</code></td><td>Dashboard, calendar, training camp, film study with 45 fighters, heart rate, live channel widget, fight countdown, menu and deep links.</td></tr>
 <tr><td>22 Oct 2026</td><td><code>eb8427f</code></td><td>Output rounds, strength and conditioning, mental skills; reworked fight scenarios; iPhone countdown square fix.</td></tr>
 <tr><td>21 Oct 2026</td><td><code>c3eb4e8</code></td><td>Attacking and defence drills, Boxing IQ, fight scenarios, phone lock-screen player.</td></tr>
@@ -692,7 +723,7 @@ npx supabase config push      # applies supabase/config.toml (auth settings); pr
 </main>
 </div>
 
-<footer>Boxing Flow documentation. Written 25 Oct 2026. Not medical advice: training, nutrition and heart rate features are guides, not a substitute for a qualified coach or doctor.</footer>
+<footer>Boxing Flow documentation. Last updated 26 Oct 2026. Not medical advice: training, nutrition and heart rate features are guides, not a substitute for a qualified coach or doctor.</footer>
 
 <script>
 // remember the chosen theme, if the browser allows it; otherwise follow the system
