@@ -157,7 +157,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><th>Area</th><th>Features</th></tr>
 <tr><td>Dashboard</td><td>Draggable widgets: today's session, training camp, nutrition, quick coach workout (live preview), live boxing channel, film study, month calendar, week strip, progress, suggestions, do-it-again, explore. Fight countdown badge.</td></tr>
 <tr><td>Boxing</td><td>Coach workout (3D coach), basic workouts, round timer, fight scenarios, output rounds, Boxing IQ quiz.</td></tr>
-<tr><td>Strength and conditioning</td><td>Plyometrics (bodyweight, lower body, upper body, medicine ball), shoulder conditioning.</td></tr>
+<tr><td>Strength and conditioning</td><td>Plyometrics (bodyweight, lower body, upper body, medicine ball), shoulder conditioning, and five treadmill interval workouts (Red Zone Running).</td></tr>
 <tr><td>Mental skills</td><td>Box breathing, cognitive reframing, read-through skills.</td></tr>
 <tr><td>Planning</td><td>Training calendar (week and month, repeat, move, tick off, .ics export) and the training camp (phases and two-week focus blocks).</td></tr>
 <tr><td>Tracking</td><td>Nutrition diary with free food databases, heart rate monitor with zones, session log, streaks and weekly goal.</td></tr>
@@ -225,7 +225,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><td><code>nutrition.js</code></td><td>Nutrition diary, targets, barcode scan. Exposes <code>bfNutri</code>.</td></tr>
 <tr><td><code>fighters.js</code>, <code>film.js</code></td><td>The fighter and fight list (data) and the film study screen. Expose <code>FILM_FIGHTERS</code> and <code>bfFilm</code>.</td></tr>
 <tr><td><code>home.js</code></td><td>The dashboard and its widgets, the fight countdown, the live channel widget.</td></tr>
-<tr><td><code>iq-questions.js</code>, <code>scenarios.js</code>, <code>output.js</code>, <code>plyo.js</code>, <code>shoulder.js</code>, <code>mind.js</code></td><td>Content data for Boxing IQ, fight scenarios, output rounds, plyometrics, shoulder conditioning and mental skills.</td></tr>
+<tr><td><code>iq-questions.js</code>, <code>scenarios.js</code>, <code>output.js</code>, <code>plyo.js</code>, <code>shoulder.js</code>, <code>treadmill.js</code>, <code>mind.js</code></td><td>Content data for Boxing IQ, fight scenarios, output rounds, plyometrics, shoulder conditioning, treadmill intervals and mental skills.</td></tr>
 <tr><td><code>netlify/functions/</code></td><td><code>foods.mjs</code> (food search, live) and the paused payment functions: <code>checkout</code>, <code>welcome</code>, <code>refresh</code>, <code>portal</code>, <code>restore</code>. Shared code in <code>netlify/lib/access.mjs</code>.</td></tr>
 <tr><td><code>supabase/</code></td><td><code>config.toml</code> (project settings pushed with the CLI) and <code>migrations/</code> (the database, in order).</td></tr>
 <tr><td><code>subscribe.html</code></td><td>The paywall page (monthly or yearly plan, 7 day trial). Not linked from anywhere while payments are paused.</td></tr>
@@ -260,8 +260,8 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <p>Open <code>app.html?go=NAME</code> or <code>app.html#NAME?params</code>. The router (<code>route()</code>) understands:</p>
 <ul>
 <li><b>Screens:</b> <code>today</code> (or <code>dashboard</code>), <code>explore</code>, <code>modes</code> (or <code>boxing</code>), <code>strength</code>, <code>mind</code>, <code>calendar</code>, <code>camp</code>, <code>film</code>, <code>nutrition</code>, <code>hr</code> (or <code>heartrate</code>), <code>breath</code>, <code>reframe</code>.</li>
-<li><b>Workouts:</b> <code>coach</code>, <code>basic</code>, <code>timer</code>, <code>scenario</code>, <code>output</code>, <code>plyo</code>, <code>shoulder</code>, <code>iq</code>.</li>
-<li><b>Choices</b> (numbers pick an entry in that list, checked against its length): <code>focus</code> (comma list of drill ids), <code>opt</code>, <code>preset</code>, <code>scen</code>, <code>sopt</code>, <code>out</code>, <code>oopt</code>, <code>plyo</code>, <code>popt</code>, <code>shd</code>, <code>shopt</code>.</li>
+<li><b>Workouts:</b> <code>coach</code>, <code>basic</code>, <code>timer</code>, <code>scenario</code>, <code>output</code>, <code>plyo</code>, <code>shoulder</code>, <code>treadmill</code>, <code>iq</code>.</li>
+<li><b>Choices</b> (numbers pick an entry in that list, checked against its length): <code>focus</code> (comma list of drill ids), <code>opt</code>, <code>preset</code>, <code>scen</code>, <code>sopt</code>, <code>out</code>, <code>oopt</code>, <code>plyo</code>, <code>popt</code>, <code>shd</code>, <code>shopt</code>, <code>tm</code>.</li>
 </ul>
 <h4>Navigation rule</h4>
 <p>Back links show only when someone arrived through a hub page (<code>hubClick</code> sets the body class <code>from-hub</code>); the Boxing and Strength hubs have no back link; other screens link back to the Dashboard. The logo in the top bar always goes to the Dashboard. The top bar and burger menu are hidden during a workout.</p>
@@ -272,7 +272,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <p>Order matters because scripts share globals. In <code>app.html</code>:</p>
 <pre><code>supabase-config.js   the project address and public key
 cloud.js             FIRST: watches saves to "bf" keys, so no save is missed
-iq-questions.js, scenarios.js, output.js, plyo.js, shoulder.js, mind.js     content data
+iq-questions.js, scenarios.js, output.js, plyo.js, shoulder.js, treadmill.js, mind.js     content data
 (inline main script) show(), route(), the workout engine, menu
 drag.js              holdDrag
 calendar.js          bfCal   (needs the main script's WAYS data)
@@ -342,6 +342,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <ul>
 <li><b>Plyometrics</b> (<code>plyo.js</code>): bodyweight, lower-body, upper-body and medicine-ball libraries with a different set of moves each round, with coaching tips.</li>
 <li><b>Shoulder conditioning</b> (<code>shoulder.js</code>): a drill and an 8-minute shoulder burner.</li>
+<li><b>Treadmill intervals</b> (<code>treadmill.js</code>, mode <code>treadmill</code>): five advanced running workouts from Red Zone Running, all at a 1.5% gradient: <b>Norwegian</b> (22 min), <b>Brianstorm</b> (20), <b>Crying Lightning</b> (36), <b>Sharpshooter</b> (39) and <b>Apples &amp; Pairs</b> (30). A workout is a list of <i>loads</i>; a load is a pattern of on and off intervals (for example 30 seconds on, 15 off, 4 times) at a speed range in km/h, with a recovery after it, and the whole list can repeat (Crying Lightning four times, Sharpshooter twice). The timer screen shows the load and rep, the interval's own countdown in the big number, the speed to run, and the time left in the load; the voice calls "Load 2, 20 seconds on, 10 off, 6 times, on, 17 to 19", then just "Off." and "On."; a bell starts each load and a beep marks each change. Each load is one "round" for the progress bars and the up-next list. The Brianstorm sheet does not print its recovery times: 2 minutes after each load is what makes it the 20 minutes it is named for. A test checks that every workout's loads add up to its stated minutes.</li>
 <li><b>Mental skills</b> (<code>mind.js</code>): box breathing with an animated guide and adjustable minutes, cognitive reframing, and read-through skills.</li>
 </ul>
 
@@ -712,7 +713,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>27 Oct 2026</td><td><i>not yet committed</i></td><td>Owner mode (automatic sign-in on this computer, new accounts off); Save step with label and notes on every finished session, labels and notes in the calendar; planned sessions tick off when the same kind is done any way; the dashboard refreshes the moment a session is saved; sync rewritten (0.3 s push, closing-page flush, 30 s check for other devices, no wipe on account switch, undo, menu status line); fight date read reliably on phones; CI set to manual.</td></tr>
+<tr><td>27 Oct 2026</td><td><i>not yet committed</i></td><td>Treadmill intervals: the five Red Zone Running workouts in Strength and conditioning (setup screen, interval timer screen, voice, calendar, deep links, menu).</td></tr>
+<tr><td>27 Oct 2026</td><td><code>4915128</code></td><td>Owner mode (automatic sign-in on this computer, new accounts off); Save step with label and notes on every finished session, labels and notes in the calendar; planned sessions tick off when the same kind is done any way; the dashboard refreshes the moment a session is saved; sync rewritten (0.3 s push, closing-page flush, 30 s check for other devices, no wipe on account switch, undo, menu status line); fight date read reliably on phones; CI set to manual.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>2b61cc6</code></td><td>Automated tests and CI: 10 static checks, 12 data and food search tests, 28 browser tests (Chromium and WebKit), GitHub Actions workflows for every push and a weekly video check. Documentation updated.</td></tr>
 <tr><td>25 Oct 2026</td><td><code>326e88a</code></td><td>Nutrition diary and food search (<code>nutrition.js</code>, <code>foods.mjs</code>); Supabase project, tables, rules and settings; account sync of all app data (<code>cloud.js</code>); nutrition widget and menu items; documentation.</td></tr>
 <tr><td>25 Oct 2026</td><td><code>f3b89e4</code></td><td>Dashboard, calendar, training camp, film study with 45 fighters, heart rate, live channel widget, fight countdown, menu and deep links.</td></tr>

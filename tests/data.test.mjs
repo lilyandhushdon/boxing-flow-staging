@@ -73,6 +73,21 @@ test('Output rounds, plyometrics, shoulder conditioning and mental skills are co
   assert.ok(REFRAMES.length >= 6);
 });
 
+test('Treadmill intervals: every workout adds up to the minutes it is named for', () => {
+  const { TREADMILL, tmSeconds } = load('treadmill.js', ['TREADMILL', 'tmSeconds']);
+  assert.equal(TREADMILL.length, 5);
+  for (const w of TREADMILL) {
+    assert.ok(text(w.name) && text(w.blurb) && text(w.how), `${w.name} needs a name, a blurb and a description`);
+    assert.equal(tmSeconds(w), w.mins * 60, `${w.name}: the loads add up to ${tmSeconds(w) / 60} min, not the ${w.mins} in its name`);
+    assert.ok(w.passes >= 1 && w.loads.length >= 4);
+    for (const l of w.loads) {
+      assert.ok(l.reps >= 1 && l.after >= 0 && l.speed[0] > 0 && l.speed[0] < l.speed[1], `${w.name}: a load has a bad speed, reps or recovery`);
+      assert.equal(l.seq[0][0], 'on', `${w.name}: every load starts with an on interval`);
+      for (const [kind, secs] of l.seq) assert.ok(['on', 'off'].includes(kind) && secs > 0, `${w.name}: a bad interval`);
+    }
+  }
+});
+
 test('Film study fighters: every fight is a real-looking video from an official channel', () => {
   const w = {}; vm.runInNewContext(fs.readFileSync(path.join(root, 'fighters.js'), 'utf8'), { window: w });
   const list = w.FILM_FIGHTERS, official = new Set(['Top Rank Boxing', 'DAZN Boxing', 'Matchroom Boxing', 'Premier Boxing Champions', 'Golden Boy Boxing', 'Sky Sports Boxing', 'Ring Magazine', 'BOXXER']);
