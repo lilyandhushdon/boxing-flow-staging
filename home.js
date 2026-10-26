@@ -191,7 +191,7 @@
       const days = Math.round((C.fromKey(cur.camp.fight) - C.fromKey(todayK())) / 86400000);
       if(days >= 0){
         const w = Math.floor(days / 7), d = days % 7;
-        return `<div class="streak on" title="${cur.camp.auto ? 'The end of your starter camp. Set your fight date in the training camp.' : 'Until your fight on ' + C.dayLabel(cur.camp.fight)}"><b>${days}</b><span>${days === 1 ? 'day' : 'days'} ${cur.camp.auto ? 'of camp left' : 'to fight'}</span>${days >= 7 ? `<small>${w} week${w === 1 ? '' : 's'}${d ? ` ${d} day${d === 1 ? '' : 's'}` : ''}</small>` : ''}</div>`;
+        return `<button class="streak on cdb" data-camp-go title="${cur.camp.auto ? 'The end of your starter camp. Set your fight date in the training camp.' : 'Until your fight on ' + C.dayLabel(cur.camp.fight)}"><b>${days}</b><span>${days === 1 ? 'day' : 'days'} ${cur.camp.auto ? 'of camp left' : 'to fight'}</span>${days >= 7 ? `<small>${w} week${w === 1 ? '' : 's'}${d ? ` ${d} day${d === 1 ? '' : 's'}` : ''}</small>` : ''}</button>`;
       }
     }
     return `<div class="streak ${s ? 'on' : ''}" title="Days in a row with a session"><b>${s}</b><span>day streak</span></div>`;
@@ -251,6 +251,7 @@
     const d = b.dataset;
     if(d.startPlan){ const ev = C.plan.find(x => x.id === d.startPlan); if(ev) C.start(ev); }
     else if('weightOpen' in d) show('weight');
+    else if('campGo' in d) show('camp');
     else if('weightLog' in d){ const i = $('wQuick'); if(window.bfWeight.add(i.value)) renderToday(); else { i.classList.add('bad'); i.focus(); } }
     else if('nutriOpen' in d) show('nutrition');
     else if('nutriAdd' in d) window.bfNutri.addFood();
