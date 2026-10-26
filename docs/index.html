@@ -455,7 +455,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <li>Zones as a share of max heart rate: Easy 50%, Aerobic 60%, Tempo 70%, Hard 80%, Max 90%. Max heart rate is the person's own number or estimated as <code>208 - 0.7 x age</code> (Tanaka).</li>
 <li>A heart pill with the bpm, coloured by zone, shows at the top of the workout timer. If the strap drops, it retries for about a minute. Stale readings show dashes.</li>
 </ul>
-<div class="call warn"><b>Platform limit</b><p>Web Bluetooth does not exist in Safari or any iPhone or iPad browser. It works in Chrome and Edge on Android, Windows, Mac and Chromebook, and in the Bluefy browser on iPhone. Supporting the iPhone properly needs a native wrapper (see <a href="#roadmap">roadmap</a>). The page needs HTTPS (or localhost).</p></div>
+<div class="call warn"><b>Platform limit</b><p>Web Bluetooth does not exist in Safari, or in Chrome and other browsers on iPhone and iPad (they all use Apple's engine). It works in Chrome and Edge on Android, Windows, Mac and Chromebook, and in the free <b>Bluefy</b> browser on iPhone (App Store: "Bluefy – Web BLE Browser"). On an iPhone the heart rate screen says this and links to Bluefy, with a button that copies the page address to paste into it; the person signs in again there (it keeps its own storage, and the account syncs the data). Supporting the iPhone properly in Safari needs a native wrapper (see <a href="#roadmap">roadmap</a>). The page needs HTTPS (or localhost).</p></div>
 
 <h3 id="f-live">Live boxing channel</h3>
 <p><b>Code:</b> <code>home.js</code> (the <code>live</code> widget). A dashboard widget that plays <b>Boxing World TV</b> (boxingworld.com), a free 24/7 boxing channel, in a frame. It loads only when "Watch free boxing now" is tapped, shows the site as they serve it (their player, ads and cookie banner), and stops when the dashboard is left or "Stop" is pressed.</p>
@@ -698,7 +698,7 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>12. Known limits</h2>
 <table>
 <tr><th>Limit</th><th>Detail</th></tr>
-<tr><td>iPhone and Bluetooth</td><td>Heart rate straps do not work in iPhone browsers. Needs a native wrapper.</td></tr>
+<tr><td>iPhone and Bluetooth</td><td>Heart rate straps do not work in Safari on iPhone. They work in the Bluefy browser; a native wrapper would remove the need for it.</td></tr>
 <tr><td>Sign-in email</td><td>On Supabase's free plan only team members can receive sign-in emails and the hourly limit is very low. Add a custom email service (SMTP) before inviting anyone. New accounts are currently switched off.</td></tr>
 <tr><td>Deployment</td><td>A push to <code>main</code> goes straight to the live site: there is no preview or test gate yet (CI stages 3, 5 and 6).</td></tr>
 <tr><td>Sync conflicts</td><td>Last write wins per key; simultaneous edits on two devices can lose one.</td></tr>
@@ -759,7 +759,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Film study: tapping a text box no longer moves the screen. The frame stays put when the keyboard opens, and the layout keeps the note box above where the keyboard comes up (smaller picture, compact note box with Save and Cancel beside it, notes on the right when sideways).</td></tr>
+<tr><td>27 Oct 2026</td><td><i>this commit</i></td><td>Heart rate on iPhone: the screen says Safari cannot connect to a strap and points to the Bluefy browser, with a button to copy the page address.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>71efed8</code></td><td>Film study: tapping a text box no longer moves the screen. The frame stays put when the keyboard opens, and the layout keeps the note box above where the keyboard comes up (smaller picture, compact note box with Save and Cancel beside it, notes on the right when sideways).</td></tr>
 <tr><td>26 Oct 2026</td><td><code>e13738f</code></td><td>Film study: the video fills the screen and the notes and takeaways are a panel over it (upright phone: the picture moves up and the panel fills the space below), with better note time stamps (two-second lead, nudge buttons).</td></tr>
 <tr><td>26 Oct 2026</td><td><code>0ff7640</code></td><td>The dashboard greeting says "Hi" and the first name from the profile, on one line that fits beside the badges.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>e193e1e</code></td><td>Sign-in gate (<code>gate.js</code>): the app needs an account, with sign in, create account and an emailed link, plus Sign out in the menu. The whole nutrition card on the dashboard opens nutrition.</td></tr>

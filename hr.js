@@ -37,6 +37,12 @@
 
   /* ---------- the strap ---------- */
   const supported = !!(navigator.bluetooth && navigator.bluetooth.requestDevice);
+  // Safari and Chrome on iPhone have no Web Bluetooth. Bluefy (a free browser from the App Store) adds it, so an iPhone is pointed there.
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const BLUEFY = 'https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055';
+  const unsupportedHtml = () => isIOS
+    ? `<div class="t-note warn"><b>Safari on iPhone can't connect to a heart rate strap.</b> Open Boxing Flow in the free <a href="${BLUEFY}" target="_blank" rel="noopener">Bluefy browser</a> instead (App Store: "Bluefy – Web BLE Browser"), sign in there, and tap Connect.<br><button class="linkbtn" data-hr-copy>Copy this page's address</button> to paste into Bluefy.</div>`
+    : '<p class="t-note warn">This browser can\'t connect to heart rate straps. Use Chrome or Edge on Android, Windows, Mac or Chromebook. On an iPhone, use the free Bluefy browser.</p>';
   let dev = null, ch = null, wanted = false, tries = 0;
 
   function parse(dv){
@@ -80,7 +86,7 @@
     return `<div class="brand"><button class="eyebrow back-link" data-section="today">&larr; Dashboard</button></div>
       <h1>Heart rate</h1>
       <p class="sub">Connect a chest strap to see your heart rate and training zone live during a workout.</p>
-      ${supported ? '' : '<p class="t-note warn">This browser can\'t connect to heart rate straps. Use Chrome or Edge on Android, Windows, Mac or Chromebook. iPhone support is planned for the app version.</p>'}
+      ${supported ? '' : unsupportedHtml()}
       <div class="hr-card"><div class="hr-live"><span class="hr-big" id="hrBig">--</span><span class="hr-unit">bpm</span></div>
         <div class="hr-zone" id="hrZone"></div><p class="t-note" id="hrStatus"></p>
         <div class="acts" id="hrActs"></div></div>
@@ -105,6 +111,7 @@
   $('hrBody').addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return;
     if('hrOn' in b.dataset) connect(); else if('hrOff' in b.dataset) disconnect();
+    else if('hrCopy' in b.dataset){ const u = location.origin + '/app.html?go=hr'; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { b.textContent = 'Copied'; }, () => { b.textContent = u; }); }
     else if(b.dataset.section) show(b.dataset.section);
   });
   $('hrBody').addEventListener('input', e => {
