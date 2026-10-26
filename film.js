@@ -117,6 +117,17 @@
     if(resume && player && ready){ try { player.playVideo(); } catch(e){} }
   }
 
+  /* ---------- the study frame follows the visible screen ---------- */
+  // On a phone the on-screen keyboard covers part of the page, and some browsers then scroll the page under it. So the frame is sized and placed by the visual viewport (the
+  // part you can actually see), not by the page: it is always exactly the visible area, and the video in it cannot move off screen.
+  function fitShell(){
+    const s = $('fsShell'); if(!s) return;
+    const v = window.visualViewport;
+    s.style.top = (v ? v.offsetTop : 0) + 'px'; s.style.height = (v ? v.height : window.innerHeight) + 'px';
+  }
+  if(window.visualViewport){ visualViewport.addEventListener('resize', fitShell); visualViewport.addEventListener('scroll', fitShell); }
+  window.addEventListener('resize', fitShell); window.addEventListener('orientationchange', () => setTimeout(fitShell, 200));
+
   /* ---------- screens ---------- */
   function libraryHtml(){
     const list = studies.slice().sort((a, b) => (b.opened || 0) - (a.opened || 0));
@@ -141,19 +152,23 @@
           <span><strong>${esc(f.name)} vs ${esc(x[0])}</strong><small>${esc(x[2])}${s ? ' · ' + s.notes.length + ' note' + (s.notes.length === 1 ? '' : 's') : ''}</small></span></button></div>`; }).join('')}</div>`;
   }
   function studyHtml(st){
-    return `<div class="brand"><button class="eyebrow back-link" data-fs-lib>&larr; Film study</button></div>
-      <h1 class="fs-title" id="fsTitle">${esc(st.title || 'YouTube video')}</h1>
+    // A fixed frame that is always exactly as tall as the visible screen (see fitShell): the video stays at the top, and only the notes underneath scroll. So nothing
+    // can scroll the video away, and an on-screen keyboard just makes the notes area shorter.
+    return `<div class="fs-shell" id="fsShell">
+      <div class="fs-top"><button class="eyebrow back-link" data-fs-lib>&larr; Film study</button><h1 class="fs-title" id="fsTitle">${esc(st.title || 'YouTube video')}</h1></div>
       <div class="fs-player" id="filmPlayerBox"><div id="filmPlayer"></div></div>
-      <p class="t-note warn" id="fsErr" hidden></p>
-      <div class="fs-nh"><h2>Notes <span id="fsCount"></span></h2><button class="btn small" id="fsAdd">+ Note at this moment</button></div>
-      <div id="filmDraft"></div><div id="filmNotes"></div>
-      <h2 class="hr-h">Key takeaways</h2>
-      <textarea id="fsTake" class="fs-take" rows="4" maxlength="2000" placeholder="What are the main things to take from this video?">${esc(st.takeaways || '')}</textarea>
-      <div class="acts"><button class="btn ghost" data-fs-copy>Copy notes</button><a class="btn ghost" href="${watchUrl(st)}" target="_blank" rel="noopener">Open on YouTube</a></div>`;
+      <div class="fs-scroll">
+        <p class="t-note warn" id="fsErr" hidden></p>
+        <div class="fs-nh"><h2>Notes <span id="fsCount"></span></h2><button class="btn small" id="fsAdd">+ Note at this moment</button></div>
+        <div id="filmDraft"></div><div id="filmNotes"></div>
+        <h2 class="hr-h">Key takeaways</h2>
+        <textarea id="fsTake" class="fs-take" rows="4" maxlength="2000" placeholder="What are the main things to take from this video?">${esc(st.takeaways || '')}</textarea>
+        <div class="acts"><button class="btn ghost" data-fs-copy>Copy notes</button><a class="btn ghost" href="${watchUrl(st)}" target="_blank" rel="noopener">Open on YouTube</a></div>
+      </div></div>`;
   }
   window.renderFilm = function(){
     const st = cur();
-    if(st){ $('filmBody').innerHTML = studyHtml(st); renderDraft(); renderNotes(); mount(st); }
+    if(st){ $('filmBody').innerHTML = studyHtml(st); fitShell(); renderDraft(); renderNotes(); mount(st); }
     else { destroy(); ui.id = null; ui.draft = ui.editing = null; const f = fighters().find(x => x.name === ui.fighter); if(!f) ui.fighter = null; $('filmBody').innerHTML = f ? fighterHtml(f) : libraryHtml(); }
   };
   window.filmLeave = function(){ saveLast(); destroy(); ui.id = null; ui.fighter = null; ui.draft = ui.editing = null; };   // called when another screen opens, so the video stops
