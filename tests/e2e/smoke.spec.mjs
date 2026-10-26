@@ -27,8 +27,9 @@ test('the main screens do not scroll sideways on a phone', async ({ page }) => {
 
 test('the dashboard shows every widget, the fight countdown, and the live channel only on request', async ({ page }) => {
   const errors = await open(page, '/app.html');
-  for (const w of ['today', 'camp', 'nutri', 'quick', 'live', 'film', 'minical', 'week', 'progress', 'suggest', 'explore']) await expect(page.locator(`[data-w="${w}"]`), `widget ${w}`).toBeVisible();
-  await expect(page.locator('#tHead .streak')).toContainText(/days? (of camp left|to fight)/i);
+  for (const w of ['today', 'weight', 'camp', 'nutri', 'quick', 'live', 'film', 'minical', 'week', 'progress', 'suggest', 'explore']) await expect(page.locator(`[data-w="${w}"]`), `widget ${w}`).toBeVisible();
+  await expect(page.locator('#tHead .streak:not(.weightb)')).toContainText(/days? (of camp left|to fight)/i);
+  await expect(page.locator('#tHead .weightb')).toBeVisible();   // the weight badge beside the countdown
   await expect(page.locator('[data-w="camp"]')).toContainText('Base');
   await expect(page.locator('[data-w="film"]')).toContainText('Fight to study');
   await expect(page.locator('[data-w="nutri"]')).toContainText('Sign in to start');

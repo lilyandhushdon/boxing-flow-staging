@@ -120,6 +120,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
   <li class="sub"><a href="#f-sc">Strength and mental skills</a></li>
   <li class="sub"><a href="#f-calendar">Calendar</a></li>
   <li class="sub"><a href="#f-camp">Training camp</a></li>
+  <li class="sub"><a href="#f-weight">Weight</a></li>
   <li class="sub"><a href="#f-nutrition">Nutrition</a></li>
   <li class="sub"><a href="#f-film">Film study</a></li>
   <li class="sub"><a href="#f-hr">Heart rate</a></li>
@@ -221,6 +222,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><td><code>drag.js</code></td><td><code>holdDrag</code>: press-and-hold dragging used by the calendar and the dashboard.</td></tr>
 <tr><td><code>calendar.js</code></td><td>Training calendar, session plan, <code>.ics</code> export, <code>sessionDone</code>. Exposes <code>bfCal</code>.</td></tr>
 <tr><td><code>camp.js</code></td><td>Training camp planner. Exposes <code>bfCamp</code>.</td></tr>
+<tr><td><code>weight.js</code></td><td>Weight log, fight weight and the plan to reach it. Exposes <code>bfWeight</code>.</td></tr>
 <tr><td><code>hr.js</code></td><td>Heart-rate strap connection, zones and the live pill. Exposes <code>bfHR</code>.</td></tr>
 <tr><td><code>nutrition.js</code></td><td>Nutrition diary, targets, barcode scan. Exposes <code>bfNutri</code>.</td></tr>
 <tr><td><code>fighters.js</code>, <code>film.js</code></td><td>The fighter and fight list (data) and the film study screen. Expose <code>FILM_FIGHTERS</code> and <code>bfFilm</code>.</td></tr>
@@ -259,7 +261,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <h4>Deep links</h4>
 <p>Open <code>app.html?go=NAME</code> or <code>app.html#NAME?params</code>. The router (<code>route()</code>) understands:</p>
 <ul>
-<li><b>Screens:</b> <code>today</code> (or <code>dashboard</code>), <code>explore</code>, <code>modes</code> (or <code>boxing</code>), <code>strength</code>, <code>mind</code>, <code>calendar</code>, <code>camp</code>, <code>film</code>, <code>nutrition</code>, <code>hr</code> (or <code>heartrate</code>), <code>breath</code>, <code>reframe</code>.</li>
+<li><b>Screens:</b> <code>today</code> (or <code>dashboard</code>), <code>explore</code>, <code>modes</code> (or <code>boxing</code>), <code>strength</code>, <code>mind</code>, <code>calendar</code>, <code>camp</code>, <code>film</code>, <code>nutrition</code>, <code>weight</code>, <code>hr</code> (or <code>heartrate</code>), <code>breath</code>, <code>reframe</code>.</li>
 <li><b>Workouts:</b> <code>coach</code>, <code>basic</code>, <code>timer</code>, <code>scenario</code>, <code>output</code>, <code>plyo</code>, <code>shoulder</code>, <code>treadmill</code>, <code>iq</code>.</li>
 <li><b>Choices</b> (numbers pick an entry in that list, checked against its length): <code>focus</code> (comma list of drill ids), <code>opt</code>, <code>preset</code>, <code>scen</code>, <code>sopt</code>, <code>out</code>, <code>oopt</code>, <code>plyo</code>, <code>popt</code>, <code>shd</code>, <code>shopt</code>, <code>tm</code>.</li>
 </ul>
@@ -277,6 +279,7 @@ iq-questions.js, scenarios.js, output.js, plyo.js, shoulder.js, treadmill.js, mi
 drag.js              holdDrag
 calendar.js          bfCal   (needs the main script's WAYS data)
 camp.js              bfCamp  (needs bfCal)
+weight.js            bfWeight (needs bfCal for dates, bfCamp for the fight date)
 hr.js                bfHR
 nutrition.js         bfNutri (needs bfCal for dates, bfCloud for the account)
 fighters.js          FILM_FIGHTERS (data)
@@ -307,9 +310,9 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <h3 id="f-dashboard">Dashboard</h3>
 <p><b>Code:</b> <code>home.js</code>. <b>Screen:</b> <code>today</code>, the app's home.</p>
 <ul>
-<li><b>Widgets</b> in default order: <code>today</code>, <code>camp</code>, <code>nutri</code>, <code>quick</code>, <code>live</code>, <code>film</code>, <code>minical</code>, <code>week</code>, <code>progress</code>, <code>suggest</code>, <code>recent</code>, <code>explore</code>. Each widget is a persistent element refreshed in place and positioned with CSS <code>order</code>, so the live coach preview and the live channel never reload when the dashboard refreshes.</li>
+<li><b>Widgets</b> in default order: <code>today</code>, <code>weight</code>, <code>camp</code>, <code>nutri</code>, <code>quick</code>, <code>live</code>, <code>film</code>, <code>minical</code>, <code>week</code>, <code>progress</code>, <code>suggest</code>, <code>recent</code>, <code>explore</code>. Each widget is a persistent element refreshed in place and positioned with CSS <code>order</code>, so the live coach preview and the live channel never reload when the dashboard refreshes.</li>
 <li><b>Rearranging:</b> press and hold a widget and drop it on another to swap places. The order is saved in <code>bfWidgets</code> (and so syncs). "Reset layout" removes the key.</li>
-<li><b>Header badge:</b> days until the fight (from the training camp), with weeks and days beneath. For the starter camp (no fight date) it counts to the end of the camp and says "days of camp left". After the camp ends it shows the day streak.</li>
+<li><b>Header badges:</b> this morning's weight and what is left to the fight weight (tap it for the weight screen), and next to it, days until the fight (from the training camp), with weeks and days beneath. For the starter camp (no fight date) it counts to the end of the camp and says "days of camp left". After the camp ends it shows the day streak.</li>
 <li><b>Progress</b> comes from the session log (<code>bfLog</code>, last 500 sessions): streak, sessions and minutes this week, a weekly goal (<code>bfGoal</code>, 1 to 7).</li>
 <li><b>Suggestions</b> pick the area (boxing, strength, mind) done least in the last two weeks and the way to train in it done least recently.</li>
 </ul>
@@ -364,6 +367,17 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <li><b>Lengths:</b> 6, 8, 10 or 12 weeks (<code>SHARES</code> gives the weeks per phase). If the fight is sooner than the camp, the camp shrinks proportionally and low-priority tasks are trimmed (<code>allocate</code> uses largest-remainder rounding with minimums).</li>
 <li>The camp does <b>not</b> schedule workouts. It gives a two-week focus (coach feedback, the person's own ideas) to keep in mind when planning sessions. A "how your training camp works" explainer opens the first time.</li>
 <li>The dashboard widget shows the current phase, the focus goal and the next open tasks, with ticks.</li>
+</ul>
+
+<h3 id="f-weight">Weight</h3>
+<p><b>Code:</b> <code>weight.js</code>. <b>Data:</b> <code>bfWeight</code> (saved on the device and synced like everything else): <code>{entries: [{d, kg, note}], target: {kg, date}}</code>, one entry per day. <b>Screen:</b> <code>weight</code> (menu, <code>?go=weight</code>, or tap the weight on the dashboard).</p>
+<ul>
+<li><b>Log:</b> a weigh-in for any day (default today) with an optional note, from the dashboard widget's quick box or the weight screen. Tap a history row to change it. Weights outside 30 to 300 kg are refused as typos; nothing else is limited.</li>
+<li><b>Fight weight:</b> set it as a weight, or as "kg to lose from now" (this morning's weight minus that), with a weigh-in date (empty means the training camp's fight date). There is no limit on how much or how fast: a water cut is a normal part of fighting and the plan is between the fighter and their coach, so the screen only shows the numbers: kg to lose, days to weigh-in, kg a week needed, and that as a percentage of body weight.</li>
+<li><b>What it works out:</b> this morning's weight and the change since the last weigh-in; the 7-day average (one weigh-in moves a kilo or more with food, water and salt); the change over about a week; the lowest, highest and number of weigh-ins; the pace over the last two weeks (a straight line through the weigh-ins, needs three over four days); and where that pace lands on weigh-in day.</li>
+<li><b>Chart:</b> weigh-ins, the 7-day average, the fight weight as a dashed line, and the projection to weigh-in day.</li>
+<li><b>Dashboard:</b> a weight badge beside the fight countdown in the header (this morning's weight, and kg to go) that opens the weight screen, and a Weight widget with the weight, what is left, a two-week line and a quick log box.</li>
+<li><b>Nutrition link:</b> one weight, not two. Nutrition's settings take the weight from this log, and a weight typed there is added to it. When the log's weight has moved 0.5 kg or more from the weight the calorie targets were worked out at, the nutrition screen offers "Update my targets" (never automatically, and not if the targets were set by hand).</li>
 </ul>
 
 <h3 id="f-nutrition">Nutrition</h3>
@@ -445,6 +459,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <tr><td><code>bfLog</code></td><td>home.js</td><td>One entry per saved session (date, type, choices, <code>custom</code> label, <code>notes</code>, readable title, minutes). Last 500 kept.</td><td>yes</td></tr>
 <tr><td><code>bfGoal</code></td><td>home.js</td><td>Weekly session goal (1 to 7).</td><td>yes</td></tr>
 <tr><td><code>bfWidgets</code></td><td>home.js</td><td>Dashboard widget order.</td><td>yes</td></tr>
+<tr><td><code>bfWeight</code></td><td>weight.js</td><td>The weight log (one entry per day: date, kg, note) and the fight weight and weigh-in date.</td><td>yes</td></tr>
 <tr><td><code>bfCamp</code></td><td>camp.js</td><td>The training camp: dates, phases, focus blocks, tasks, ticks, edits.</td><td>yes</td></tr>
 <tr><td><code>bfCampInfoSeen</code></td><td>camp.js</td><td>Whether the explainer has been dismissed.</td><td>yes</td></tr>
 <tr><td><code>bfFilm</code></td><td>film.js</td><td>Film studies: video, title, notes, takeaways, where they stopped.</td><td>yes</td></tr>
@@ -713,8 +728,9 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>27 Oct 2026</td><td><i>not yet committed</i></td><td>Treadmill intervals: the five Red Zone Running workouts in Strength and conditioning (setup screen, interval timer screen, voice, calendar, deep links, menu).</td></tr>
-<tr><td>27 Oct 2026</td><td><code>4915128</code></td><td>Owner mode (automatic sign-in on this computer, new accounts off); Save step with label and notes on every finished session, labels and notes in the calendar; planned sessions tick off when the same kind is done any way; the dashboard refreshes the moment a session is saved; sync rewritten (0.3 s push, closing-page flush, 30 s check for other devices, no wipe on account switch, undo, menu status line); fight date read reliably on phones; CI set to manual.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>not yet committed</i></td><td>Weight tracking: a weight log, fight weight and weigh-in plan (any size of cut allowed), a weight badge beside the fight countdown, a dashboard widget, and one weight shared with nutrition. Fixed the dashboard wiping what was typed into a box when it redrew, and taps in the first 0.4 seconds after the page opened being ignored.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>e3a310a</code></td><td>Treadmill intervals: the five Red Zone Running workouts in Strength and conditioning (setup screen, interval timer screen, voice, calendar, deep links, menu).</td></tr>
+<tr><td>26 Oct 2026</td><td><code>4915128</code></td><td>Owner mode (automatic sign-in on this computer, new accounts off); Save step with label and notes on every finished session, labels and notes in the calendar; planned sessions tick off when the same kind is done any way; the dashboard refreshes the moment a session is saved; sync rewritten (0.3 s push, closing-page flush, 30 s check for other devices, no wipe on account switch, undo, menu status line); fight date read reliably on phones; CI set to manual.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>2b61cc6</code></td><td>Automated tests and CI: 10 static checks, 12 data and food search tests, 28 browser tests (Chromium and WebKit), GitHub Actions workflows for every push and a weekly video check. Documentation updated.</td></tr>
 <tr><td>25 Oct 2026</td><td><code>326e88a</code></td><td>Nutrition diary and food search (<code>nutrition.js</code>, <code>foods.mjs</code>); Supabase project, tables, rules and settings; account sync of all app data (<code>cloud.js</code>); nutrition widget and menu items; documentation.</td></tr>
 <tr><td>25 Oct 2026</td><td><code>f3b89e4</code></td><td>Dashboard, calendar, training camp, film study with 45 fighters, heart rate, live channel widget, fight countdown, menu and deep links.</td></tr>

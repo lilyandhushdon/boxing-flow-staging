@@ -4,7 +4,7 @@
    Used for the widgets on the Today screen (swap places) and the sessions in the calendar (move to another day). */
 window.holdDrag = function(root, o){
   const HOLD = 380, SLOP = 9;
-  let st = null, endedAt = 0;
+  let st = null, endedAt = -1e9;   // when the last drop ended: a tap right after a drop is ignored (and none is ignored before there was a drop)
   const point = e => (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
 
   function begin(e){

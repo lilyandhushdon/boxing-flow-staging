@@ -112,10 +112,24 @@
           : '<p class="t-note">First time? Enter your email and a password and tap Create account. After that, Sign in on each new device. <button class="linkbtn" type="button" data-nu-mode="link">Email me a link instead</button></p>'}</div>`;
   }
 
+  // the calorie targets were worked out for one weight: when the weight log has moved on, offer to work them out again (never silently)
+  function retargetHtml(){
+    const lw = window.bfWeight && window.bfWeight.stats(), p = S.profile;
+    if(!lw || !p || !p.weight_kg || p.manual_targets || Math.abs(lw.last - p.weight_kg) < 0.5) return '';
+    return `<p class="t-note nu-ok">Your weight is now ${lw.last.toFixed(1)} kg, and your targets were worked out at ${(+p.weight_kg).toFixed(1)} kg. <button class="linkbtn" data-nu-retarget>Update my targets</button></p>`;
+  }
+  async function retarget(){
+    const lw = window.bfWeight.stats(), sg = suggest({...S.profile, weight_kg:lw.last}); if(!sg) return;
+    await guard(async () => {
+      const {error} = await S.sb.from('nutrition_profile').update({weight_kg:lw.last, kcal_target:sg.kcal, protein_g:sg.protein, carbs_g:sg.carbs, fat_g:sg.fat, updated_at:new Date().toISOString()}).eq('user_id', S.user.id); if(error) throw error;
+      await loadProfile(); updateCache(); emit();
+    });
+  }
   function dayHtml(){
     const t = sum(S.entries), tg = targets(), left = tg ? tg.kcal - t.kcal : 0;
     const macro = (label, v, max, cls) => `<div class="nu-macro"><span>${label}</span>${bar(v, max, cls)}<small>${r0(v)}${max ? ' / ' + max : ''} g</small></div>`;
     return `${head('Nutrition')}
+      ${retargetHtml()}
       <div class="nu-day"><button class="nu-nav" data-nu-day="-1" aria-label="Previous day">&lsaquo;</button><b>${dayLabel(S.day)}</b><button class="nu-nav" data-nu-day="1" aria-label="Next day">&rsaquo;</button></div>${errBox()}
       <div class="nu-card nu-sum">${tg
         ? `<div class="nu-left ${left < 0 ? 'over' : ''}"><b>${energyNum(Math.abs(left)).toLocaleString()}</b><span>${unitKJ() ? 'kJ' : 'kcal'} ${left < 0 ? 'over' : 'left'}</span></div>${bar(t.kcal, tg.kcal, left < 0 ? 'over' : '')}<p class="t-note">${energy(t.kcal)} eaten of ${energy(tg.kcal)}</p>`
@@ -125,7 +139,7 @@
         return `<section class="nu-meal"><div class="nu-mh"><h2>${label}</h2><span>${es.length ? energy(mt.kcal) : ''}</span></div>
           ${es.map(e => `<button class="nu-row" data-nu-edit="${e.id}"><span><strong>${esc(e.name)}</strong><small>${esc([e.brand, e.source === 'quick' ? 'Quick add' : amtLabel(e)].filter(Boolean).join(' · '))}</small></span><b>${energy(e.kcal)}</b></button>`).join('')}
           <button class="add" data-nu-add="${id}">+ Add food</button></section>`; }).join('')}
-      <div class="acts nu-foot"><button class="btn ghost small" data-nu-copy>Copy ${dayLabel(C.dkey(C.addDays(C.fromKey(S.day), -1))).toLowerCase()}'s meals here</button><button class="btn ghost small" data-nu-view="settings">Targets and settings</button></div>
+      <div class="acts nu-foot"><button class="btn ghost small" data-nu-copy>Copy ${dayLabel(C.dkey(C.addDays(C.fromKey(S.day), -1))).toLowerCase()}'s meals here</button><button class="btn ghost small" data-nu-view="settings">Targets and settings</button><button class="btn ghost small" data-section="weight">Weight</button></div>
       <p class="iq-note">${window.bfCloud && window.bfCloud.owner ? 'Signed in automatically on this computer (owner mode)' : `Signed in as ${esc(S.user.email)} · <button class="linkbtn" data-nu-out>Sign out</button>`}<br>${syncText()}</p>
       <p class="iq-note">Food data: USDA FoodData Central and Open Food Facts. Nutrition values are a guide, and packaged-food data is entered by the public, so check labels. Not medical advice.</p>`;
   }
@@ -185,10 +199,12 @@
         <div class="acts"><button class="btn" data-nu-csave>Save and use</button></div></div>`;
   }
   function settingsHtml(){
-    const p = {...(S.profile || {}), ...(S.draft || {})}, sg = suggest(p), m = p.manual_targets;
+    const p = {...(S.profile || {}), ...(S.draft || {})}, lw = window.bfWeight && window.bfWeight.stats();
+    if(lw && !(S.draft && S.draft.weight_kg != null)) p.weight_kg = lw.last;   // the weight comes from the weight log: one number, not two
+    const sg = suggest(p), m = p.manual_targets;
     const age = p.birth_year ? new Date().getFullYear() - p.birth_year : '';
     return `${head('Targets and settings', 'data-nu-view="day"')}${errBox()}
-      <div class="nu-card"><h2 class="nu-fname">About you</h2>
+      <div class="nu-card"><h2 class="nu-fname">About you</h2>${lw ? `<p class="t-note">Your weight is taken from your weight log: ${lw.last.toFixed(1)} kg. <button class="linkbtn" data-section="weight">Open the weight log</button></p>` : ''}
         <div class="nu-three"><label class="c-label">Sex<select id="sSex"><option value="" ${p.sex ? '' : 'selected'}>Choose</option><option value="male" ${p.sex === 'male' ? 'selected' : ''}>Male</option><option value="female" ${p.sex === 'female' ? 'selected' : ''}>Female</option></select></label>${fld('sAge', 'Age', age)}${fld('sH', 'Height cm', p.height_cm)}</div>
         <div class="nu-three">${fld('sW', 'Weight kg', p.weight_kg)}<label class="c-label">Training<select id="sAct">${ACTIVITY.map(([v, l]) => `<option value="${v}" ${+p.activity === v || (!p.activity && v === 1.55) ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
         <div class="nu-three"><label class="c-label">Goal<select id="sGoal">${[['maintain', 'Maintain weight'], ['lose', 'Lose weight'], ['gain', 'Gain weight']].map(([v, l]) => `<option value="${v}" ${(p.goal || 'maintain') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -300,7 +316,9 @@
     const row = {sex:p.sex || null, birth_year:p.birth_year || null, height_cm:p.height_cm, weight_kg:p.weight_kg, activity:p.activity, goal:p.goal, rate_kg_week:p.rate_kg_week, energy_unit:p.energy_unit, manual_targets:!!p.manual_targets,
       kcal_target: p.manual_targets ? p.kcal_target : sg && sg.kcal, protein_g: p.manual_targets ? p.protein_g : sg && sg.protein, carbs_g: p.manual_targets ? p.carbs_g : sg && sg.carbs, fat_g: p.manual_targets ? p.fat_g : sg && sg.fat, updated_at:new Date().toISOString()};
     if(!row.kcal_target){ S.err = 'Fill in your details, or set your own targets, so there is a target to save.'; S.draft = p; return paint(); }
-    await guard(async () => { const {error} = await S.sb.from('nutrition_profile').upsert({user_id:S.user.id, ...row}); if(error) throw error; S.draft = null; await loadProfile(); updateCache(); S.view = 'day'; emit(); });
+    await guard(async () => { const {error} = await S.sb.from('nutrition_profile').upsert({user_id:S.user.id, ...row}); if(error) throw error; S.draft = null; await loadProfile(); updateCache(); S.view = 'day'; emit();
+      // a weight typed here is a weigh-in too, so it goes in the weight log
+      const lw = window.bfWeight && window.bfWeight.stats(); if(window.bfWeight && row.weight_kg && (!lw || Math.abs(lw.last - row.weight_kg) >= 0.05)) window.bfWeight.add(row.weight_kg); });
   }
   function readSettings(){
     const age = num($('sAge').value);
@@ -340,6 +358,7 @@
     if(d.section){ show(d.section); return; }
     if(d.nuMode){ S.mode = d.nuMode; S.err = S.notice = ''; S.sent = false; paint(); return; }
     if('nuSignup' in d) return passwordAuth(true);
+    if('nuRetarget' in d) return retarget();
     if(d.nuView){ S.pick = null; S.editing = null; if(d.nuView === 'add') S.focusSearch = true; if(d.nuView === 'settings') S.draft = null; go(d.nuView); return; }
     if(d.nuDay){ S.day = C.dkey(C.addDays(C.fromKey(S.day), +d.nuDay)); S.entries = []; paint(); loadDay(S.day).then(() => { updateCache(); paint(); }).catch(fail); return; }
     if(d.nuAdd){ S.meal = d.nuAdd; S.q = ''; S.results = null; S.note = ''; S.focusSearch = true; go('add'); return; }

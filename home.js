@@ -6,7 +6,7 @@
    A log entry: { id, date 'YYYY-MM-DD', ts, type (a mode id), cfg (the choices, as the calendar saves them), label, minutes }. */
 (function(){
   const C = window.bfCal, LKEY = 'bfLog', GKEY = 'bfGoal', OKEY = 'bfWidgets';
-  const DEFAULT_ORDER = ['today','camp','nutri','quick','live','film','minical','week','progress','suggest','recent','explore'];
+  const DEFAULT_ORDER = ['today','weight','camp','nutri','quick','live','film','minical','week','progress','suggest','recent','explore'];
   let log = []; try{ log = JSON.parse(localStorage.getItem(LKEY) || '[]') || []; }catch(e){}
   let goal = 3; try{ goal = Math.min(7, Math.max(1, +localStorage.getItem(GKEY) || 3)); }catch(e){}
   let saved = []; try{ saved = JSON.parse(localStorage.getItem(OKEY) || '[]') || []; }catch(e){}
@@ -101,6 +101,20 @@
       <p class="t-note">${C.optL(OPTIONS[q.opt||0])}, with the 3D coach. Starts straight away.</p>
       <div class="t-row"><button class="btn small" data-quick>Start now</button></div>`};
 
+    // weight: this morning's weight, how far it is to the fight weight, a quick way to log it
+    if(window.bfWeight){
+      const WT = window.bfWeight, s = WT.stats(), p = WT.plan(), head = '<div class="q-top"><h2>Weight</h2><button class="linkbtn" data-weight-open>Details &rsaquo;</button></div>';
+      const quick = '<div class="wt-quick"><input id="wQuick" type="number" inputmode="decimal" step="0.1" min="30" max="300" placeholder="Today\'s weight (kg)" aria-label="Today\'s weight in kilograms"><button class="btn small" data-weight-log>Log</button></div>';
+      if(!s) W.weight = {cls:'weightw', html:`${head}<p class="t-big" style="font-size:20px">Log your weight</p><p class="t-note">Track it against your fight weight. Weigh in at the same time each morning.</p>${quick}`};
+      else {
+        const good = v => p ? ((v < 0) === (s.last > p.target)) : null, sp = WT.spark(), pct = p && s.start > p.target ? Math.max(0, Math.min(100, (s.last >= s.start ? 0 : (s.start - s.last) / (s.start - p.target) * 100))) : 0;
+        W.weight = {cls:'weightw', html:`${head}<div class="wt-big"><b>${WT.kg(s.last)}</b><span>kg</span>${s.change != null && s.change !== 0 ? `<em class="wt-d ${good(s.change) == null ? '' : good(s.change) ? 'good' : 'bad'}">${s.change < 0 ? '▼' : '▲'} ${WT.kg(Math.abs(s.change))}</em>` : ''}</div>
+          ${p ? (p.done ? `<p class="t-note"><b>At your fight weight</b> (${WT.kg(p.target)} kg).</p>` : `<div class="goal-bar"><i style="width:${pct}%"></i></div><p class="t-note"><b>${WT.kg(p.toGo)} kg</b> to go to ${WT.kg(p.target)}${p.days != null ? ` · ${Math.max(0, p.days)} days${p.perWeek != null ? ` · ${WT.kg(p.perWeek)} kg a week needed` : ''}` : ''}</p>`)
+            : '<p class="t-note"><button class="linkbtn" data-weight-open>Set your fight weight</button> to see what is left.</p>'}
+          ${sp.length >= 2 ? sparkSvg(sp, p && p.target) : ''}${quick}`};
+      }
+    }
+
     // nutrition: calories left today and the macros, or a prompt to sign in. The numbers come from window.bfNutri, which keeps the last ones so this paints at once.
     if(window.bfNutri){
       const ns = window.bfNutri.summary(), head = '<div class="q-top"><h2>Nutrition</h2><button class="linkbtn" data-nutri-open>Open &rsaquo;</button></div>', kj = ns.unit === 'kj', e = k => (kj ? Math.round(k * 4.184) : Math.round(k)).toLocaleString(), u = kj ? 'kJ' : 'kcal';
@@ -185,17 +199,37 @@
     }
     return `<div class="streak ${s ? 'on' : ''}" title="Days in a row with a session"><b>${s}</b><span>day streak</span></div>`;
   }
+  // the weight beside the countdown: this morning's weight and what is left to the fight weight; tap it for the whole picture
+  function weightBadge(){
+    const WT = window.bfWeight; if(!WT) return '';
+    const s = WT.stats(), p = WT.plan();
+    if(!s) return '<button class="streak weightb" data-weight-open title="Log your weight"><b>--</b><span>kg</span><small>log today</small></button>';
+    const sub = p ? (p.done ? 'at fight weight' : WT.kg(p.toGo) + ' to go') : s.change != null ? WT.sign(s.change) + ' kg' : 'logged';
+    return `<button class="streak on weightb" data-weight-open title="Your weight and fight weight: tap for details"><b>${WT.kg(s.last)}</b><span>kg</span><small>${sub}</small></button>`;
+  }
+  // a small line of the last two weeks, with the fight weight as a dashed line when it is in range
+  function sparkSvg(pts, target){
+    const W = 300, H = 46, ys = pts.map(p => p[1]).concat(target ? [target] : []), lo = Math.min(...ys) - 0.3, hi = Math.max(...ys) + 0.3;
+    const X = x => 4 + x / 14 * (W - 8), Y = y => 4 + (hi - y) / (hi - lo) * (H - 8);
+    return `<svg class="wt-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${target ? `<line class="wt-target" x1="4" x2="${W - 4}" y1="${Y(target).toFixed(1)}" y2="${Y(target).toFixed(1)}"/>` : ''}
+      <path class="wt-line" d="${pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ')}"/>${pts.map(p => `<circle class="wt-dot" cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2.6"/>`).join('')}</svg>`;
+  }
   let shown = [];   // the order on screen right now
   function renderToday(){
     ensureDom();
     const W = widgets(), s = streak();
     $('tHead').innerHTML = `<div><div class="eyebrow">${new Date().toLocaleDateString('en-NZ', {weekday:'long', day:'numeric', month:'long'})}</div><h1>${greeting()}</h1></div>
-      ${countdown(s)}`;
+      <div class="t-badges">${weightBadge()}${countdown(s)}</div>`;
     shown = [...saved.filter(id => W[id]), ...DEFAULT_ORDER.filter(id => W[id] && !saved.includes(id))];
     DEFAULT_ORDER.forEach(id => {
       const el = els[id], w = W[id]; el.hidden = !w; if(!w) return;
       el.className = 'tw ' + w.cls;
-      if(id !== 'live') (id === 'quick' ? el.querySelector('.q-info') : el).innerHTML = w.html;
+      if(id !== 'live'){
+        // a redraw (sign-in finishing, a sync) must not wipe what is being typed into the weight box
+        const q = el.querySelector('#wQuick'), typed = q ? q.value : '', focused = !!q && document.activeElement === q;
+        (id === 'quick' ? el.querySelector('.q-info') : el).innerHTML = w.html;
+        const n = typed && el.querySelector('#wQuick'); if(n){ n.value = typed; if(focused) n.focus(); }
+      }
       el.style.order = shown.indexOf(id);
     });
   }
@@ -219,6 +253,8 @@
     if(!b){ if(mini) C.openDay(todayK(), 'month'); return; }
     const d = b.dataset;
     if(d.startPlan){ const ev = C.plan.find(x => x.id === d.startPlan); if(ev) C.start(ev); }
+    else if('weightOpen' in d) show('weight');
+    else if('weightLog' in d){ const i = $('wQuick'); if(window.bfWeight.add(i.value)) renderToday(); else { i.classList.add('bad'); i.focus(); } }
     else if('nutriOpen' in d) show('nutrition');
     else if('nutriAdd' in d) window.bfNutri.addFood();
     else if('filmOpen' in d) show('film');
@@ -240,5 +276,7 @@
   });
   $('todayBody').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-w="minical"]')){ e.preventDefault(); C.openDay(todayK(), 'month'); } });
   if(window.bfNutri) window.bfNutri.onChange(() => { if(!$('today').hidden) renderToday(); });   // the widget follows the diary
+  if(window.bfWeight) window.bfWeight.onChange(() => { if(!$('today').hidden) renderToday(); });   // and the weight badge and widget follow the weight log
+  $('todayBody').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.id === 'wQuick'){ e.preventDefault(); document.querySelector('[data-weight-log]').click(); } });
   if(!$('today').hidden){ renderToday(); window.syncPreviews?.('today'); }
 })();
