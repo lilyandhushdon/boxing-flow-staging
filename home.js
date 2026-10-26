@@ -78,7 +78,7 @@
     const W = {};
 
     W.today = {cls:'hero', html:`<h2>Today</h2>` + (open.length
-      ? open.slice(0,2).map(e => `<div class="t-item"><div><strong>${esc(C.label(e))}</strong><span>${e.time ? C.timeL(e.time) : 'Planned for today'}</span></div><button class="btn small" data-start-plan="${e.id}">Start</button></div>`).join('') + (open.length > 2 ? `<p class="t-note">+ ${open.length - 2} more today</p>` : '')
+      ? open.slice(0,2).map(e => `<div class="t-item"><div><strong>${esc(C.label(e))}</strong><span>${e.time ? C.timeL(e.time) : 'Planned for today'}</span></div><button class="btn small" data-start-plan="${e.id}">${e.type === 'gym' ? 'Log it' : 'Start'}</button></div>`).join('') + (open.length > 2 ? `<p class="t-note">+ ${open.length - 2} more today</p>` : '')
       : planned.length
         ? `<p class="t-big">Today's done. Nice work.</p>` + (upcoming ? `<p class="t-note">Next up: ${C.dayLabel(upcoming.date)}, ${esc(C.label(upcoming))}</p>` : `<p class="t-note">Plan your next session to keep the run going.</p>`)
         : `<p class="t-big">Nothing planned today.</p><p class="t-note">${upcoming ? `Next up: ${C.dayLabel(upcoming.date)}, ${esc(C.label(upcoming))}` : 'Pick a session, or plan your week.'}</p><div class="t-row"><button class="btn small ghost" data-plan-today>Plan a session</button></div>`)};

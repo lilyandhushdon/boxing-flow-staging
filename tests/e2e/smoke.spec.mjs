@@ -135,6 +135,25 @@ test('the profile feeds heart rate zones and nutrition, and remembers itself', a
   await expectNoErrors(errors);
 });
 
+test('a gym session can be planned with your own details, repeats, and counts when logged', async ({ page }) => {
+  const errors = await open(page, '/app.html?go=calendar');
+  await page.locator('#calAdd').click();
+  await page.locator('[data-way="gym"]').click();
+  await page.locator('select[data-f="gk"]').selectOption({ label: 'Sparring' });
+  await page.locator('select[data-f="gm"]').selectOption({ label: '90 minutes' });
+  await page.locator('[data-ft="where"]').fill('Eastside Boxing');
+  await page.locator('[data-custom]').fill('Tuesday sparring');
+  await page.locator('[data-repeat]').selectOption('4');
+  await page.locator('[data-save]').click();
+  await expect(page.locator('.cs', { hasText: 'Tuesday sparring · Gym session · Sparring · Eastside Boxing · 90 min' }).first()).toBeVisible();
+  expect(await page.evaluate(() => window.bfCal.plan.filter((e) => e.type === 'gym').length)).toBe(4);   // every week for four weeks
+  await page.locator('.cs-tick').first().click();
+  await expect(page.locator('.cs.is-done')).toHaveCount(1);
+  const log = await page.evaluate(() => JSON.parse(localStorage.getItem('bfLog') || '[]'));
+  expect(log.filter((e) => e.type === 'gym' && e.minutes === 90)).toHaveLength(1);   // it counts as a session
+  await expectNoErrors(errors);
+});
+
 test('the calendar opens on a week and can show the month', async ({ page }) => {
   const errors = await open(page, '/app.html?go=calendar');
   await expect(page.locator('#cal h1')).toHaveText('Training calendar');

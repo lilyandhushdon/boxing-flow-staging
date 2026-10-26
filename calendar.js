@@ -21,7 +21,12 @@
 
   /* ---------- every way to train, and the choices each one has ---------- */
   const optL = o => `${o.r} × ${o.m}-minute round${o.r>1?'s':''}`;
+  // a session at the person's own gym: the app can't run it, so it is planned here and logged when it's done
+  const GYM_KINDS = ['Boxing class', 'Sparring', 'Pad work', 'Bag work', 'Technique and drills', 'Strength and conditioning', 'Roadwork', 'Fight prep', 'Other'];
+  const GYM_MINS = [30, 45, 60, 75, 90, 120], GYM_DEFAULT_MINS = 2;   // 60 minutes unless changed
+  const gymMins = c => GYM_MINS[c && c.gm != null ? +c.gm : GYM_DEFAULT_MINS] || 60;
   const WAYS = [
+    {id:'gym', area:'boxing', name:'Gym session', fields:()=>[{k:'gk', l:'What kind of session', o:GYM_KINDS}, {k:'gm', l:'How long', o:GYM_MINS.map(m => m + ' minutes')}, {k:'where', l:'Where, or who with (optional)', text:true, ph:'e.g. Eastside Boxing, Coach Mike'}]},
     {id:'coach', area:'boxing', name:'Coach workout', fields:()=>[{k:'focus', l:'Skills to work on', multi:true}, {k:'opt', l:'Rounds', o:OPTIONS.map(optL)}]},
     {id:'basic', area:'boxing', name:'Basic workout', fields:()=>[{k:'preset', l:'Workout', o:BASIC.map(w=>w.name)}, {k:'opt', l:'Rounds', o:OPTIONS.map(optL)}]},
     {id:'timer', area:'boxing', name:'Round timer', fields:()=>[{k:'opt', l:'Rounds', o:OPTIONS.map(optL)}]},
@@ -46,6 +51,7 @@
     switch(e.type){
       case 'coach': { const names = (c.focus&&c.focus.length ? c.focus : [...state.focus]).map(id=>(FOCUS.find(f=>f.id===id)||{}).name).filter(Boolean);
                       return n + (names.length ? ' · ' + names.slice(0,2).join(', ') + (names.length>2 ? ` +${names.length-2}` : '') : ''); }
+      case 'gym': return n + ' · ' + at(GYM_KINDS, c.gk) + (c.where ? ' · ' + c.where : '') + ' · ' + gymMins(c) + ' min';
       case 'basic': return n + ' · ' + at(BASIC, c.preset).name;
       case 'scenario': return n + ' · ' + at(SCENARIOS, c.scen).name;
       case 'output': return n + ' · ' + at(OUTPUT, c.out).punches + ' punches';
@@ -59,7 +65,7 @@
   }
   // the address that opens exactly this session in the app (the same form the landing page uses)
   function params(e){
-    const p = new URLSearchParams({go: e.type}), c = e.cfg || {};
+    const p = new URLSearchParams({go: e.type === 'gym' ? 'calendar' : e.type}), c = e.cfg || {};   // a gym session has nothing to open in the app, so its link goes to the calendar
     if(c.focus && c.focus.length) p.set('focus', c.focus.join(','));
     ['opt','preset','scen','sopt','out','oopt','plyo','popt','shd','shopt','tm','rec'].forEach(k => { if(c[k] != null) p.set(k, c[k]); });
     return p;
@@ -118,7 +124,7 @@
     if(t.dataset.day){ cal.sel = t.dataset.day; if(fromKey(cal.sel).getMonth() !== cal.anchor.getMonth()) cal.anchor = fromKey(cal.sel); renderCal(); }
     else if(t.dataset.add){ cal.sel = t.dataset.add; openAdd(t.dataset.add); }
     else if(t.dataset.open) openEvent(t.dataset.open);
-    else if(t.dataset.tick){ const ev = plan.find(x => x.id === t.dataset.tick); if(ev){ ev.done = !ev.done; save(); renderCal(); } }
+    else if(t.dataset.tick){ const ev = plan.find(x => x.id === t.dataset.tick); if(ev){ if(ev.type === 'gym' && !ev.done) sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); else { ev.done = !ev.done; save(); } renderCal(); } }
   });
 
   // press and hold a session, then drop it on another day to move it
@@ -147,14 +153,16 @@
     const c = {};
     if(type === 'coach'){ c.focus = [...state.focus]; c.opt = state.opt; }
     else way(type).fields({}).forEach(f => { if(f.o) c[f.k] = 0; });
+    if(type === 'gym') c.gm = GYM_DEFAULT_MINS;
     return c;
   }
   function openForm(){
     const w = way(draft.type), fields = w.fields(draft.cfg);
     openSheet(head(draft.id ? 'Edit session' : w.name, draft.id ? w.name : dayName(draft.date)) + fields.map(f => f.multi
       ? `<label>${f.l}</label><div class="chips">${FOCUS.map(x => `<button type="button" data-chip="${x.id}" aria-pressed="${(draft.cfg.focus||[]).includes(x.id)}">${x.name}</button>`).join('')}</div>`
+      : f.text ? `<label>${f.l}<input type="text" data-ft="${f.k}" maxlength="60" autocomplete="off" value="${esc(draft.cfg[f.k] || '')}" placeholder="${esc(f.ph || '')}"></label>`
       : `<label>${f.l}<select data-f="${f.k}">${f.o.map((o,i) => `<option value="${i}" ${(+draft.cfg[f.k]||0)===i?'selected':''}>${esc(o)}</option>`).join('')}</select></label>`).join('')
-      + `<label>Label (optional)<input type="text" data-custom maxlength="60" autocomplete="off" value="${esc(draft.custom || '')}" placeholder="e.g. Heavy bag, jab and double jab"></label>`
+      + `<label>Label (optional)<input type="text" data-custom maxlength="60" autocomplete="off" value="${esc(draft.custom || '')}" placeholder="${draft.type === 'gym' ? 'e.g. Tuesday sparring, Friday pads' : 'e.g. Heavy bag, jab and double jab'}"></label>`
       + `<div class="two"><label>Day<input type="date" data-date value="${draft.date}"></label><label>Time (optional)<input type="time" data-time value="${draft.time||''}"></label></div>`
       + (draft.id ? '' : `<label>Repeat<select data-repeat><option value="0">Just this once</option><option value="4">Every week for 4 weeks</option><option value="8">Every week for 8 weeks</option><option value="12">Every week for 12 weeks</option></select></label>`)
       + `<label>Notes (optional)<textarea data-notes rows="3" maxlength="1000" placeholder="What to work on, or how it went">${esc(draft.notes || '')}</textarea></label>`
@@ -165,12 +173,13 @@
     const w = way(ev.type) || {};
     openSheet(head(esc(label(ev)), `${dayName(ev.date)}${ev.time ? ' at ' + timeL(ev.time) : ''}`)
       + (ev.notes ? `<p class="ev-notes">${esc(ev.notes)}</p>` : '')
-      + `<div class="acts">${ev.type==='rest' ? '' : `<button class="btn" data-start="${ev.id}">Start this session</button>`}
+      + `<div class="acts">${ev.type==='rest' ? '' : `<button class="btn" data-start="${ev.id}" ${ev.type==='gym' && ev.done ? 'disabled' : ''}>${ev.type==='gym' ? (ev.done ? 'Logged' : 'Log it as done') : 'Start this session'}</button>`}
          ${ev.type==='rest' ? '' : `<button class="btn ghost" data-toggle="${ev.id}">${ev.done ? 'Mark not done' : 'Mark done'}</button>`}
          <button class="btn ghost" data-edit="${ev.id}">Edit</button></div>
          <div class="acts"><button class="btn ghost danger" data-del="${ev.id}">Delete</button>${ev.series ? `<button class="btn ghost danger" data-delall="${ev.id}">Delete the whole series</button>` : ''}</div>`);
   }
   function startPlan(ev){
+    if(ev.type === 'gym'){ closeSheet(); if(!ev.done){ sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); renderCal(); } return; }   // nothing to run: finishing it is logging it
     closeSheet(); planCtx.id = ev.id; applyParams(params(ev));
     if(ev.type === 'breath') openBreath(); else if(ev.type === 'reframe') openReframe(); else pickMode(ev.type);
     state.label = ev.custom || ''; const sl = document.getElementById('sessLabel'); if(sl) sl.value = state.label;
@@ -191,7 +200,7 @@
       save(); cal.sel = draft.date; cal.anchor = fromKey(draft.date); closeSheet(); return renderCal();
     }
     if(d.start){ const ev = plan.find(x => x.id === d.start); if(ev) startPlan(ev); return; }
-    if(d.toggle){ const ev = plan.find(x => x.id === d.toggle); if(ev){ ev.done = !ev.done; save(); closeSheet(); renderCal(); } return; }
+    if(d.toggle){ const ev = plan.find(x => x.id === d.toggle); if(ev){ if(ev.type === 'gym' && !ev.done) sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); else { ev.done = !ev.done; save(); } closeSheet(); renderCal(); } return; }
     if(d.edit){ const ev = plan.find(x => x.id === d.edit); if(ev){ draft = {id:ev.id, date:ev.date, time:ev.time||'', type:ev.type, cfg:JSON.parse(JSON.stringify(ev.cfg||{})), custom:ev.custom||'', notes:ev.notes||'', repeat:0}; openForm(); } return; }
     if(d.del){ plan = plan.filter(x => x.id !== d.del); save(); closeSheet(); return renderCal(); }
     if(d.delall){ const ev = plan.find(x => x.id === d.delall); if(ev){ plan = plan.filter(x => x.series !== ev.series); save(); } closeSheet(); return renderCal(); }
@@ -203,7 +212,7 @@
     else if('time' in t.dataset) draft.time = t.value;
     else if('repeat' in t.dataset) draft.repeat = +t.value;
   });
-  sh.addEventListener('input', e => { const t = e.target; if('custom' in t.dataset) draft.custom = t.value; else if('notes' in t.dataset) draft.notes = t.value; });
+  sh.addEventListener('input', e => { const t = e.target; if('ft' in t.dataset) draft.cfg[t.dataset.ft] = t.value; else if('custom' in t.dataset) draft.custom = t.value; else if('notes' in t.dataset) draft.notes = t.value; });
 
   /* ---------- finishing a session: tick it off if it was planned, and put it in the activity log (home.js) ---------- */
   const cfgNow = type => ({
@@ -243,7 +252,7 @@
       const url = base + '?' + params(e).toString(), ymd = e.date.replace(/-/g,'');
       L.push('BEGIN:VEVENT', `UID:${e.id}@boxingflow`, `DTSTAMP:${stamp}`);
       if(e.time){
-        const [h,m] = e.time.split(':').map(Number), end = new Date(2000,0,1,h,m+45);
+        const [h,m] = e.time.split(':').map(Number), end = new Date(2000,0,1,h,m+(e.type === 'gym' ? gymMins(e.cfg) : 45));
         L.push(`DTSTART:${ymd}T${pad(h)}${pad(m)}00`, `DTEND:${ymd}T${pad(end.getHours())}${pad(end.getMinutes())}00`);
       } else L.push(`DTSTART;VALUE=DATE:${ymd}`, `DTEND;VALUE=DATE:${dkey(addDays(fromKey(e.date),1)).replace(/-/g,'')}`);
       L.push(`SUMMARY:${esc2('Boxing Flow: ' + label(e))}`, `DESCRIPTION:${esc2('Open it in Boxing Flow: ' + url)}`, `URL:${url}`);

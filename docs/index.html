@@ -358,6 +358,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <ul>
 <li>Week and month views. Add, edit and delete a planned session (any way of training from the <code>WAYS</code> table: coach, basic, timer, scenario, output, IQ, plyo, shoulder, breathing, reframing, rest day). Repeat options.</li>
 <li>Press and hold a session to move it to another day (<code>holdDrag</code>). Tap to start it; finishing ticks it off.</li>
+<li><b>Gym sessions</b> (type <code>gym</code>): the sessions you do at your own gym, which the app cannot run. Pick the kind (boxing class, sparring, pad work, bag work, technique and drills, strength and conditioning, roadwork, fight prep, other), how long (30 to 120 minutes), and where or who with, plus your own label and notes. It can repeat every week for 4, 8 or 12 weeks, so a regular class is one entry. There is nothing to start: tick it, or tap "Log it as done" (also on the dashboard), and it is marked done and added to your activity with its minutes, so it counts toward your streak and weekly goal. In an exported calendar its length is the session length.</li>
 <li>Export to <code>.ics</code> for any calendar app.</li>
 <li>Every session can have a <b>label</b> ("Heavy bag, jab and double jab") and <b>notes</b>. The label shows first in every list ("Heavy bag · Round timer · 3 rounds of 3 min"); the notes show when the session is opened. Starting it from the calendar carries the label into the workout, and saving the workout writes its label and notes back.</li>
 <li>If a training camp exists, the calendar shows which phase and focus block each day is in (coloured strip and tints).</li>
@@ -742,7 +743,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Netlify linked to GitHub: pushes to <code>main</code> now deploy the site. Documentation updated.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Gym sessions in the calendar: plan the sessions done at your own gym (kind, length, where, label, notes, weekly repeat) and log them as done so they count in your activity.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>f33bde4</code></td><td>Netlify linked to GitHub: pushes to <code>main</code> now deploy the site. Documentation updated.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>c3d74ee</code></td><td>Profile page (<code>profile.js</code>): name, age, sex, height, stance, record, gym, coach, bio, max and resting heart rate, with training zones. Nutrition and heart rate share its numbers.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>71d66f8</code></td><td>Recovery sessions in Strength and conditioning: cold shower, massage gun, foam roller, stretching and mobility, each with its benefits, tips and a safety note, a timed move-by-move screen with left and right sides, voice, calendar, dashboard and deep links (<code>recovery.js</code>). Fixed a dashboard header that was too wide on WebKit.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>26024e0</code></td><td>Nutrition: targets have no cap or floor and the weight-cut warning is gone; foods are added by the item (medium, large, whole pack, listed portions, grams, ounces) with a stepper and quick amounts. Food search reads pack sizes.</td></tr>
