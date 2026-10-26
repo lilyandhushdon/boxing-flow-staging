@@ -39,7 +39,7 @@
   function quickCoach(){ applyParams(C.params({type:'coach', cfg:quickCfg()})); pickMode('coach'); start(); }   // straight into the coach workout, no setup screen
 
   /* ---------- a suggestion that fits what they have and haven't done ---------- */
-  const AREA_MODES = {boxing:['coach','basic','timer','scenario','output','iq'], sc:['plyo','shoulder','treadmill'], mind:['breath','reframe']};
+  const AREA_MODES = {boxing:['coach','basic','timer','scenario','output','iq'], sc:['plyo','shoulder','treadmill','recovery'], mind:['breath','reframe']};
   function suggestions(){
     const out = [], now = Date.now(), t = todayK(), planned = C.plan.some(e => e.date === t && e.type !== 'rest' && !e.done);
     const doneToday = daysWithSessions().has(t), s = streak();

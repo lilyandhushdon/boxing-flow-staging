@@ -5,7 +5,7 @@ import { open, visibleScreens, expectNoErrors } from './helpers.mjs';
 const links = [
   ['dashboard', 'today'], ['explore', 'home'], ['boxing', 'modes'], ['strength', 'sc'], ['mind', 'mind'], ['calendar', 'cal'], ['camp', 'camp'], ['film', 'film'],
   ['nutrition', 'nutrition'], ['hr', 'hr'], ['coach', 'setup'], ['basic', 'plainSetup'], ['timer', 'plainSetup'], ['scenario', 'plainSetup'], ['output', 'plainSetup'],
-  ['plyo', 'plainSetup'], ['shoulder', 'plainSetup'], ['iq', 'iq'], ['breath', 'breath'], ['reframe', 'reframe'],
+  ['plyo', 'plainSetup'], ['shoulder', 'plainSetup'], ['treadmill', 'plainSetup'], ['recovery', 'plainSetup'], ['iq', 'iq'], ['breath', 'breath'], ['reframe', 'reframe'],
 ];
 
 for (const [go, screen] of links) {
@@ -97,6 +97,23 @@ test('a basic workout starts and the round timer runs', async ({ page }) => {
   await page.locator('#buildBtn').click();
   await expect.poll(() => visibleScreens(page)).toEqual(['timer']);
   await expect(page.locator('#rTime')).toHaveText(/^\d\d:\d\d$/);
+  await expectNoErrors(errors);
+});
+
+test('a recovery session lists its benefits, starts, and calls the first move', async ({ page }) => {
+  const errors = await open(page, '/app.html?go=recovery&rec=1');
+  await expect(page.locator('#scenBrief')).toContainText('What it does for a boxer');
+  await expect(page.locator('#scenBrief')).toContainText('Calves');
+  await expect(page.locator('#summary')).toContainText('Massage gun');
+  await page.locator('#buildBtn').click();
+  await expect.poll(() => visibleScreens(page)).toEqual(['timer']);
+  await expect(page.locator('#wTitle')).toHaveText('Massage gun');
+  await expect(page.locator('#rTime')).toHaveText(/^\d\d:\d\d$|^\d$/);
+  const names = await page.evaluate(() => steps.map((s) => s.name));
+  expect(names.slice(0, 5)).toEqual(['Get ready', 'Calves · left', 'Switch sides', 'Calves · right', 'Hamstrings · left']);   // each side, then the switch between
+  await page.locator('#nextBtn').click();
+  await expect(page.locator('#nowName')).toHaveText('Calves · left');
+  await expect(page.locator('#rCaption')).toHaveText('left side');
   await expectNoErrors(errors);
 });
 

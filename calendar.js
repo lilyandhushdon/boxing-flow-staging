@@ -31,6 +31,7 @@
     {id:'plyo', area:'sc', name:'Plyometrics', fields:()=>[{k:'plyo', l:'Workout', o:PLYO.map(w=>w.name)}, {k:'popt', l:'Rounds and timing', o:PLYO_OPTS.map(o=>`${o.r} rounds, ${o.w} sec on, ${o.rs} sec off`)}]},
     {id:'shoulder', area:'sc', name:'Shoulder conditioning', fields:c=>[{k:'shd', l:'Workout', o:SHOULDER.map(w=>w.name)}, {k:'shopt', l:'Rounds', o:(SHOULDER[+c.shd||0].opts||SHOULDER_OPTS).map(optL)}]},
     {id:'treadmill', area:'sc', name:'Treadmill intervals', fields:()=>[{k:'tm', l:'Workout', o:TREADMILL.map(w=>`${w.name}, ${w.mins} min`)}]},
+    {id:'recovery', area:'sc', name:'Recovery', fields:()=>[{k:'rec', l:'Session', o:RECOVERY.map(w=>`${w.name}, ${w.mins} min`)}]},
     {id:'breath', area:'mind', name:'Box breathing', fields:()=>[]},
     {id:'reframe', area:'mind', name:'Cognitive reframing', fields:()=>[]},
     {id:'rest', area:'rest', name:'Rest day', fields:()=>[]}
@@ -51,6 +52,7 @@
       case 'plyo': return n + ' · ' + at(PLYO, c.plyo).name;
       case 'shoulder': return n + ' · ' + at(SHOULDER, c.shd).name;
       case 'treadmill': return n + ' · ' + at(TREADMILL, c.tm).name;
+      case 'recovery': return n + ' · ' + at(RECOVERY, c.rec).name;
       case 'timer': return n + ' · ' + optL(at(OPTIONS, c.opt));
       default: return n;
     }
@@ -59,7 +61,7 @@
   function params(e){
     const p = new URLSearchParams({go: e.type}), c = e.cfg || {};
     if(c.focus && c.focus.length) p.set('focus', c.focus.join(','));
-    ['opt','preset','scen','sopt','out','oopt','plyo','popt','shd','shopt','tm'].forEach(k => { if(c[k] != null) p.set(k, c[k]); });
+    ['opt','preset','scen','sopt','out','oopt','plyo','popt','shd','shopt','tm','rec'].forEach(k => { if(c[k] != null) p.set(k, c[k]); });
     return p;
   }
 
@@ -207,7 +209,7 @@
   const cfgNow = type => ({
     coach: () => ({focus:[...state.focus], opt:state.opt}), basic: () => ({preset:state.preset, opt:state.opt}), timer: () => ({opt:state.opt}),
     scenario: () => ({scen:state.scen, sopt:state.sopt}), output: () => ({out:state.out, oopt:state.oopt}),
-    plyo: () => ({plyo:state.plyo, popt:state.popt}), shoulder: () => ({shd:state.shd, shopt:state.shopt}), treadmill: () => ({tm:state.tm})
+    plyo: () => ({plyo:state.plyo, popt:state.popt}), shoulder: () => ({shd:state.shd, shopt:state.shopt}), treadmill: () => ({tm:state.tm}), recovery: () => ({rec:state.rec})
   }[type] || (() => ({})))();
   window.sessionDone = info => {
     const pid = (info && info.planId) || planCtx.id, custom = ((info && info.label) || '').trim(), notes = ((info && info.notes) || '').trim();

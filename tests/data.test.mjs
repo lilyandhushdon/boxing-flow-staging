@@ -88,6 +88,18 @@ test('Treadmill intervals: every workout adds up to the minutes it is named for'
   }
 });
 
+test('Recovery sessions: every session adds up to the minutes it is named for', () => {
+  const { RECOVERY, recSeconds } = load('recovery.js', ['RECOVERY', 'recSeconds']);
+  assert.equal(RECOVERY.length, 5);
+  assert.equal(new Set(RECOVERY.map((w) => w.id)).size, RECOVERY.length, 'duplicate session ids');
+  for (const w of RECOVERY) {
+    assert.ok(text(w.name) && text(w.blurb) && text(w.ready) && text(w.safety), `${w.name} needs a name, a blurb, a start note and a safety note`);
+    assert.ok(w.benefits.length >= 3 && w.tips.length >= 1, `${w.name} needs its benefits and tips`);
+    assert.ok(Math.abs(recSeconds(w) / 60 - w.mins) < 0.75, `${w.name}: the moves add up to ${(recSeconds(w) / 60).toFixed(1)} min, not the ${w.mins} in its description`);
+    for (const m of w.moves) assert.ok(text(m.n) && text(m.c) && m.s >= 20, `${w.name}: a move needs a name, how to do it and at least 20 seconds`);
+  }
+});
+
 test('Film study fighters: every fight is a real-looking video from an official channel', () => {
   const w = {}; vm.runInNewContext(fs.readFileSync(path.join(root, 'fighters.js'), 'utf8'), { window: w });
   const list = w.FILM_FIGHTERS, official = new Set(['Top Rank Boxing', 'DAZN Boxing', 'Matchroom Boxing', 'Premier Boxing Champions', 'Golden Boy Boxing', 'Sky Sports Boxing', 'Ring Magazine', 'BOXXER']);
