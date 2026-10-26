@@ -222,6 +222,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><td><code>drag.js</code></td><td><code>holdDrag</code>: press-and-hold dragging used by the calendar and the dashboard.</td></tr>
 <tr><td><code>calendar.js</code></td><td>Training calendar, session plan, <code>.ics</code> export, <code>sessionDone</code>. Exposes <code>bfCal</code>.</td></tr>
 <tr><td><code>camp.js</code></td><td>Training camp planner. Exposes <code>bfCamp</code>.</td></tr>
+<tr><td><code>profile.js</code></td><td>The fighter's profile: name, age, sex, height, stance, weight class, record, gym, coach, bio, max and resting heart rate. Exposes <code>bfProfile</code>.</td></tr>
 <tr><td><code>weight.js</code></td><td>Weight log, fight weight and the plan to reach it. Exposes <code>bfWeight</code>.</td></tr>
 <tr><td><code>hr.js</code></td><td>Heart-rate strap connection, zones and the live pill. Exposes <code>bfHR</code>.</td></tr>
 <tr><td><code>nutrition.js</code></td><td>Nutrition diary, targets, barcode scan. Exposes <code>bfNutri</code>.</td></tr>
@@ -279,6 +280,7 @@ iq-questions.js, scenarios.js, output.js, plyo.js, shoulder.js, treadmill.js, re
 drag.js              holdDrag
 calendar.js          bfCal   (needs the main script's WAYS data)
 camp.js              bfCamp  (needs bfCal)
+profile.js           bfProfile (loads before hr.js and nutrition.js)
 weight.js            bfWeight (needs bfCal for dates, bfCamp for the fight date)
 hr.js                bfHR
 nutrition.js         bfNutri (needs bfCal for dates, bfCloud for the account)
@@ -296,6 +298,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <tr><td><code>bfCamp</code></td><td>camp.js</td><td><code>camp</code>, <code>current()</code>, <code>phaseOn(date)</code>, <code>toggle</code>, <code>counts</code>, <code>showInfo()</code></td></tr>
 <tr><td><code>bfNutri</code></td><td>nutrition.js</td><td><code>summary()</code> for the widget, <code>addFood()</code>, <code>onChange(fn)</code>, <code>ensure()</code></td></tr>
 <tr><td><code>bfFilm</code></td><td>film.js</td><td><code>studies</code>, <code>featured(offset)</code>, <code>latest()</code>, <code>startFight(fight)</code>, <code>openStudy(id)</code>, <code>parseLink</code></td></tr>
+<tr><td><code>bfProfile</code></td><td>profile.js</td><td><code>data</code>, <code>age()</code>, <code>set(patch)</code>, <code>onChange(fn)</code>, <code>open()</code></td></tr>
 <tr><td><code>bfHR</code></td><td>hr.js</td><td><code>state</code>, <code>bpm</code>, <code>zone</code>, <code>zones()</code>, <code>maxHR()</code>, <code>connect()</code>, <code>on(fn)</code></td></tr>
 <tr><td><code>holdDrag</code></td><td>drag.js</td><td><code>holdDrag(root, {item, target, onDrop})</code></td></tr>
 <tr><td><code>show</code>, <code>route</code>, <code>pickMode</code>, <code>start</code>, <code>finish</code></td><td>main script</td><td>Navigation and the workout engine</td></tr>
@@ -381,6 +384,15 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <li><b>Nutrition link:</b> one weight, not two. Nutrition's settings take the weight from this log, and a weight typed there is added to it. When the log's weight has moved 0.5 kg or more from the weight the calorie targets were worked out at, the nutrition screen offers "Update my targets" (never automatically, and not if the targets were set by hand).</li>
 </ul>
 
+<h3 id="f-profile">Profile</h3>
+<p><b>Code:</b> <code>profile.js</code>. <b>Data:</b> <code>bfProfile</code> (saved on the device and synced like everything else). Opens from the menu or <code>?go=profile</code>.</p>
+<ul>
+<li>One place for the details other screens need, so they are typed once: name, age, sex, height, stance, weight class, record (wins, losses, draws), gym, coach and a short bio. The weight comes from the weight log.</li>
+<li>Heart rate: max heart rate (or an estimate from age) and resting heart rate. The five training zones are shown with what each is for, and the heart rate screen uses the same numbers. Anything typed on the heart rate screen before the profile existed is copied in the first time.</li>
+<li>Nutrition takes sex, age and height from the profile and writes them back when targets are saved.</li>
+<li>Changes save as they are typed. A guide, not medical advice.</li>
+</ul>
+
 <h3 id="f-nutrition">Nutrition</h3>
 <p><b>Code:</b> <code>nutrition.js</code>, <code>netlify/functions/foods.mjs</code>. <b>Data:</b> Supabase tables (not localStorage).</p>
 <h4>What the person can do</h4>
@@ -460,11 +472,12 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <tr><td><code>bfLog</code></td><td>home.js</td><td>One entry per saved session (date, type, choices, <code>custom</code> label, <code>notes</code>, readable title, minutes). Last 500 kept.</td><td>yes</td></tr>
 <tr><td><code>bfGoal</code></td><td>home.js</td><td>Weekly session goal (1 to 7).</td><td>yes</td></tr>
 <tr><td><code>bfWidgets</code></td><td>home.js</td><td>Dashboard widget order.</td><td>yes</td></tr>
+<tr><td><code>bfProfile</code></td><td>profile.js</td><td>The profile: <code>{name, birthYear, sex, heightCm, maxHr, restHr, stance, weightClass, wins, losses, draws, gym, coach, bio}</code>. Sex, age and height are shared with nutrition; age and max heart rate with the heart rate screen.</td><td>yes</td></tr>
 <tr><td><code>bfWeight</code></td><td>weight.js</td><td>The weight log (one entry per day: date, kg, note) and the fight weight and weigh-in date.</td><td>yes</td></tr>
 <tr><td><code>bfCamp</code></td><td>camp.js</td><td>The training camp: dates, phases, focus blocks, tasks, ticks, edits.</td><td>yes</td></tr>
 <tr><td><code>bfCampInfoSeen</code></td><td>camp.js</td><td>Whether the explainer has been dismissed.</td><td>yes</td></tr>
 <tr><td><code>bfFilm</code></td><td>film.js</td><td>Film studies: video, title, notes, takeaways, where they stopped.</td><td>yes</td></tr>
-<tr><td><code>bfHR</code></td><td>hr.js</td><td>Age and max heart rate.</td><td>yes</td></tr>
+<tr><td><code>bfHR</code></td><td>hr.js</td><td>Age and max heart rate typed on the heart rate screen (the profile is read first).</td><td>yes</td></tr>
 <tr><td><code>bfIQ</code></td><td>main script</td><td>Boxing IQ scores.</td><td>yes</td></tr>
 <tr><td><code>bf-coach</code>, <code>bf-gym-hint</code></td><td>main script</td><td>Chosen 3D coach; how many times the gym hint was shown.</td><td>yes</td></tr>
 <tr><td><code>bfNutriCache</code></td><td>nutrition.js</td><td>Today's totals so the widget paints instantly. A copy of data already in the account.</td><td>no</td></tr>
@@ -729,7 +742,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Recovery sessions in Strength and conditioning: cold shower, massage gun, foam roller, stretching and mobility, each with its benefits, tips and a safety note, a timed move-by-move screen with left and right sides, voice, calendar, dashboard and deep links (<code>recovery.js</code>). Fixed a dashboard header that was too wide on WebKit.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Profile page (<code>profile.js</code>): name, age, sex, height, stance, record, gym, coach, bio, max and resting heart rate, with training zones. Nutrition and heart rate share its numbers.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>71d66f8</code></td><td>Recovery sessions in Strength and conditioning: cold shower, massage gun, foam roller, stretching and mobility, each with its benefits, tips and a safety note, a timed move-by-move screen with left and right sides, voice, calendar, dashboard and deep links (<code>recovery.js</code>). Fixed a dashboard header that was too wide on WebKit.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>26024e0</code></td><td>Nutrition: targets have no cap or floor and the weight-cut warning is gone; foods are added by the item (medium, large, whole pack, listed portions, grams, ounces) with a stepper and quick amounts. Food search reads pack sizes.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>06894aa</code></td><td>Weight tracking: a weight log, fight weight and weigh-in plan (any size of cut allowed), a weight badge beside the fight countdown, a dashboard widget, and one weight shared with nutrition. Fixed the dashboard wiping what was typed into a box when it redrew, and taps in the first 0.4 seconds after the page opened being ignored.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>e3a310a</code></td><td>Treadmill intervals: the five Red Zone Running workouts in Strength and conditioning (setup screen, interval timer screen, voice, calendar, deep links, menu).</td></tr>

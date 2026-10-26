@@ -63,7 +63,7 @@ test('app.html loads scripts that exist, in an order that works', () => {
   before('supabase-config.js', 'cloud.js');
   before('cloud.js', 'iq-questions.js');   // the sync layer must see every save, so it loads first
   before('drag.js', 'calendar.js'); before('calendar.js', 'camp.js'); before('calendar.js', 'nutrition.js');
-  before('cloud.js', 'nutrition.js'); before('fighters.js', 'film.js');
+  before('cloud.js', 'nutrition.js'); before('profile.js', 'hr.js'); before('profile.js', 'nutrition.js'); before('fighters.js', 'film.js');
   for (const dep of ['calendar.js', 'camp.js', 'nutrition.js', 'film.js', 'drag.js']) before(dep, 'home.js');
 });
 

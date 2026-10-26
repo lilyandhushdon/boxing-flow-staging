@@ -202,7 +202,9 @@
         <div class="acts"><button class="btn" data-nu-csave>Save and use</button></div></div>`;
   }
   function settingsHtml(){
-    const p = {...(S.profile || {}), ...(S.draft || {})}, lw = window.bfWeight && window.bfWeight.stats();
+    const bp = (window.bfProfile && window.bfProfile.data) || {}, fromProfile = {};   // sex, age and height are kept in the profile
+    if(bp.sex) fromProfile.sex = bp.sex; if(bp.birthYear) fromProfile.birth_year = bp.birthYear; if(bp.heightCm) fromProfile.height_cm = bp.heightCm;
+    const p = {...(S.profile || {}), ...fromProfile, ...(S.draft || {})}, lw = window.bfWeight && window.bfWeight.stats();
     if(lw && !(S.draft && S.draft.weight_kg != null)) p.weight_kg = lw.last;   // the weight comes from the weight log: one number, not two
     const sg = suggest(p), m = p.manual_targets;
     const age = p.birth_year ? new Date().getFullYear() - p.birth_year : '';
@@ -346,6 +348,7 @@
       kcal_target: p.manual_targets ? p.kcal_target : sg && sg.kcal, protein_g: p.manual_targets ? p.protein_g : sg && sg.protein, carbs_g: p.manual_targets ? p.carbs_g : sg && sg.carbs, fat_g: p.manual_targets ? p.fat_g : sg && sg.fat, updated_at:new Date().toISOString()};
     if(!row.kcal_target){ S.err = 'Fill in your details, or set your own targets, so there is a target to save.'; S.draft = p; return paint(); }
     await guard(async () => { const {error} = await S.sb.from('nutrition_profile').upsert({user_id:S.user.id, ...row}); if(error) throw error; S.draft = null; await loadProfile(); updateCache(); S.view = 'day'; emit();
+      if(window.bfProfile) window.bfProfile.set({sex:row.sex, birthYear:row.birth_year, heightCm:row.height_cm && Math.round(row.height_cm)});
       // a weight typed here is a weigh-in too, so it goes in the weight log
       const lw = window.bfWeight && window.bfWeight.stats(); if(window.bfWeight && row.weight_kg && (!lw || Math.abs(lw.last - row.weight_kg) >= 0.05)) window.bfWeight.add(row.weight_kg); });
   }

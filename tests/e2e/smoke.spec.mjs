@@ -4,7 +4,7 @@ import { open, visibleScreens, expectNoErrors } from './helpers.mjs';
 
 const links = [
   ['dashboard', 'today'], ['explore', 'home'], ['boxing', 'modes'], ['strength', 'sc'], ['mind', 'mind'], ['calendar', 'cal'], ['camp', 'camp'], ['film', 'film'],
-  ['nutrition', 'nutrition'], ['hr', 'hr'], ['coach', 'setup'], ['basic', 'plainSetup'], ['timer', 'plainSetup'], ['scenario', 'plainSetup'], ['output', 'plainSetup'],
+  ['nutrition', 'nutrition'], ['weight', 'weight'], ['profile', 'profile'], ['hr', 'hr'], ['coach', 'setup'], ['basic', 'plainSetup'], ['timer', 'plainSetup'], ['scenario', 'plainSetup'], ['output', 'plainSetup'],
   ['plyo', 'plainSetup'], ['shoulder', 'plainSetup'], ['treadmill', 'plainSetup'], ['recovery', 'plainSetup'], ['iq', 'iq'], ['breath', 'breath'], ['reframe', 'reframe'],
 ];
 
@@ -18,7 +18,7 @@ for (const [go, screen] of links) {
 
 test('the main screens do not scroll sideways on a phone', async ({ page }) => {
   await open(page, '/app.html');
-  for (const s of ['today', 'home', 'modes', 'sc', 'mind', 'cal', 'camp', 'nutrition', 'film', 'hr']) {
+  for (const s of ['today', 'home', 'modes', 'sc', 'mind', 'cal', 'camp', 'nutrition', 'film', 'hr', 'weight', 'profile']) {
     await page.evaluate((id) => window.show(id), s);
     const wide = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(wide, `${s} is ${wide}px wider than the screen`).toBeLessThanOrEqual(1);
@@ -114,6 +114,24 @@ test('a recovery session lists its benefits, starts, and calls the first move', 
   await page.locator('#nextBtn').click();
   await expect(page.locator('#nowName')).toHaveText('Calves · left');
   await expect(page.locator('#rCaption')).toHaveText('left side');
+  await expectNoErrors(errors);
+});
+
+test('the profile feeds heart rate zones and nutrition, and remembers itself', async ({ page }) => {
+  const errors = await open(page, '/app.html?go=profile');
+  await page.locator('#pfAge').fill('30'); await page.locator('#pfH').fill('180'); await page.locator('#pfSex').selectOption('male');
+  await expect(page.locator('#pfZones')).toContainText('estimated from your age');
+  await expect(page.locator('#pfSum')).toContainText('180');
+  await page.locator('#pfMax').fill('195');
+  await expect(page.locator('#pfZones')).toContainText('max of 195 bpm');
+  await page.locator('#pfName').fill('Test Fighter');
+  await page.reload();
+  await expect(page.locator('#pfName')).toHaveValue('Test Fighter');
+  await expect(page.locator('#pfMax')).toHaveValue('195');
+  await page.evaluate(() => window.show('hr'));
+  await expect(page.locator('#hrMax')).toHaveValue('195');
+  await expect(page.locator('#hrAge')).toHaveValue('30');
+  expect(await page.evaluate(() => window.bfHR.maxHR())).toBe(195);
   await expectNoErrors(errors);
 });
 

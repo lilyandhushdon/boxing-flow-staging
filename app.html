@@ -375,6 +375,8 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .wt-big span{color:var(--muted);font-size:18px}
 .wt-big em{font-style:normal;font-size:16px}
 .wt-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px;text-align:center}
+#pfSum{grid-template-columns:repeat(4,1fr)}
+.c-label textarea{display:block;width:100%;margin-top:6px;background:var(--surface-2);color:var(--fg);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;resize:vertical;color-scheme:dark}
 .wt-sum b{display:block;font-family:var(--display);font-size:24px;color:var(--gold);line-height:1.1}
 .wt-sum span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .wt-d{font-weight:600}
@@ -808,6 +810,7 @@ button.fs-t{cursor:pointer}
   <button class="m-group" data-go="calendar">Training calendar</button>
   <button class="m-group" data-go="camp">Training camp</button>
   <button class="m-group" data-go="weight">Weight</button>
+  <button class="m-group" data-go="profile">Profile</button>
   <button class="m-group" data-go="nutrition">Nutrition</button>
   <button class="m-group" data-go="film">Film study</button>
   <button class="m-group" data-go="hr">Heart rate</button>
@@ -1087,6 +1090,9 @@ button.fs-t{cursor:pointer}
 
 <!-- ============ WEIGHT ============ -->
 <section id="weight" class="wrap" hidden><div id="weightBody"></div></section>
+
+<!-- ============ PROFILE ============ -->
+<section id="profile" class="wrap" hidden><div id="profileBody"></div></section>
 
 <!-- ============ NUTRITION ============ -->
 <section id="nutrition" class="wrap" hidden><div id="nutriBody"></div></section>
@@ -2899,13 +2905,14 @@ document.addEventListener('click', e => {
 });
 function show(id){ if(id!=='breath') breathStop(); document.body.classList.toggle('has-menu', id!=='timer');   // no menu during a workout
   syncPreviews(id);
-  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','nutrition','weight','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
+  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','nutrition','weight','profile','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
   if(id!=='today') window.liveStop?.();   // stop the live channel when leaving the dashboard
   if(id!=='film') window.filmLeave?.();   // stop the video when leaving film study
-  if(['today','home','modes','sc','mind','cal','camp','hr','film','nutrition','weight'].includes(id)) planCtx.id=null;
+  if(['today','home','modes','sc','mind','cal','camp','hr','film','nutrition','weight','profile'].includes(id)) planCtx.id=null;
   if(id==='film') window.renderFilm?.();
   if(id==='nutrition') window.renderNutrition?.();
   if(id==='weight') window.renderWeight?.();
+  if(id==='profile') window.renderProfile?.();
   if(id==='hr') window.renderHR?.();   // back at a menu: no longer working on a planned session
   if(id==='cal') window.renderCal?.();
   if(id==='camp') window.renderCamp?.();
@@ -3180,7 +3187,7 @@ function route(){
   const sp=new URLSearchParams(location.search), [hname,hq]=location.hash.slice(1).split('?'), p=new URLSearchParams(hq||'');
   sp.forEach((v,k)=>{ if(k!=='go') p.set(k,v); });
   const name=sp.get('go')||hname; if(!name) return;
-  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), weight:()=>show('weight'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
+  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), weight:()=>show('weight'), profile:()=>show('profile'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
   if(sections[name]) return sections[name]();
   applyParams(p);
   if(['coach','basic','timer','scenario','output','plyo','shoulder','treadmill','recovery','iq'].includes(name)) pickMode(name);
@@ -3207,6 +3214,7 @@ menuEl.addEventListener('click',e=>{
 <script src="drag.js"></script>
 <script src="calendar.js"></script>
 <script src="camp.js"></script>
+<script src="profile.js"></script>
 <script src="hr.js"></script>
 <script src="weight.js"></script>
 <script src="nutrition.js"></script>

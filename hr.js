@@ -22,7 +22,12 @@
   const emit = () => { listeners.forEach(f => { try { f(hr); } catch(e){} }); paint(); };
 
   // max heart rate: their own number if they know it, otherwise estimated from age (Tanaka: 208 - 0.7 x age)
-  const maxHR = () => cfg.max || (cfg.age ? Math.round(208 - 0.7 * cfg.age) : null);
+  // age and max heart rate live in the profile (profile.js); this screen's own copy is the fallback for anything saved before the profile existed
+  const prof = () => (window.bfProfile && window.bfProfile.data) || {};
+  const ageNow = () => (prof().birthYear ? new Date().getFullYear() - prof().birthYear : null) || cfg.age;
+  const maxSet = () => prof().maxHr || cfg.max;
+  if(window.bfProfile && (cfg.age || cfg.max) && !prof().maxHr && !prof().birthYear) window.bfProfile.set({birthYear: cfg.age ? new Date().getFullYear() - cfg.age : null, maxHr:cfg.max});   // copy what was typed on this screen before the profile existed
+  const maxHR = () => maxSet() || (ageNow() ? Math.round(208 - 0.7 * ageNow()) : null);
   function zoneOf(bpm){
     const m = maxHR(); if(!m || !bpm) return null;
     let z = null; for(const x of ZONES) if(bpm >= x.from * m) z = x; return z;
@@ -80,9 +85,9 @@
         <div class="hr-zone" id="hrZone"></div><p class="t-note" id="hrStatus"></p>
         <div class="acts" id="hrActs"></div></div>
       <h2 class="hr-h">Your zones</h2>
-      <div class="hr-set"><label class="c-label">Your age<input type="number" id="hrAge" inputmode="numeric" min="12" max="90" value="${cfg.age || ''}" placeholder="e.g. 28"></label>
-        <label class="c-label">Max heart rate (if you know it)<input type="number" id="hrMax" inputmode="numeric" min="120" max="230" value="${cfg.max || ''}" placeholder="${cfg.age ? maxHR() + ' (estimated)' : 'e.g. 192'}"></label></div>
-      <p class="t-note" id="hrNote">${m ? `Zones are worked out from a max of ${m} bpm${cfg.max ? '' : ' (estimated from your age, so it may be a little off)'}.` : 'Enter your age, or your max heart rate if you know it, to get your zones.'}</p>
+      <div class="hr-set"><label class="c-label">Your age<input type="number" id="hrAge" inputmode="numeric" min="12" max="90" value="${ageNow() || ''}" placeholder="e.g. 28"></label>
+        <label class="c-label">Max heart rate (if you know it)<input type="number" id="hrMax" inputmode="numeric" min="120" max="230" value="${maxSet() || ''}" placeholder="${ageNow() ? maxHR() + ' (estimated)' : 'e.g. 192'}"></label></div>
+      <p class="t-note" id="hrNote">${m ? `Zones are worked out from a max of ${m} bpm${maxSet() ? '' : ' (estimated from your age, so it may be a little off)'}.` : 'Enter your age, or your max heart rate if you know it, to get your zones.'} <button class="linkbtn" data-section="profile">Open your profile</button></p>
       <div class="hr-zones" id="hrZones">${zs ? zs.map(z => `<div class="hr-z" style="--c:${z.color}"><b>${z.n}</b><span><strong>${z.name}</strong> <em>${z.lo}-${z.hi}${z.n === 5 ? '+' : ''} bpm</em><small>${z.use}</small></span></div>`).join('') : ''}</div>
       <p class="iq-note">Your heart rate stays on your device. Heart rate zones are a guide, not medical advice.</p>`;
   }
@@ -106,9 +111,10 @@
     if(e.target.id !== 'hrAge' && e.target.id !== 'hrMax') return;
     const age = +$('hrAge').value, max = +$('hrMax').value;
     cfg.age = age >= 12 && age <= 90 ? Math.round(age) : null; cfg.max = max >= 120 && max <= 230 ? Math.round(max) : null; save();
+    if(window.bfProfile) window.bfProfile.set({birthYear: cfg.age ? new Date().getFullYear() - cfg.age : null, maxHr:cfg.max});   // one copy for the whole app
     const m = maxHR(), zs = zones();   // update the numbers without redrawing, so the inputs keep focus
-    $('hrNote').textContent = m ? `Zones are worked out from a max of ${m} bpm${cfg.max ? '' : ' (estimated from your age, so it may be a little off)'}.` : 'Enter your age, or your max heart rate if you know it, to get your zones.';
-    $('hrMax').placeholder = cfg.age ? m + ' (estimated)' : 'e.g. 192';
+    $('hrNote').textContent = m ? `Zones are worked out from a max of ${m} bpm${maxSet() ? '' : ' (estimated from your age, so it may be a little off)'}.` : 'Enter your age, or your max heart rate if you know it, to get your zones.';
+    $('hrMax').placeholder = ageNow() ? m + ' (estimated)' : 'e.g. 192';
     $('hrZones').innerHTML = zs ? zs.map(z => `<div class="hr-z" style="--c:${z.color}"><b>${z.n}</b><span><strong>${z.name}</strong> <em>${z.lo}-${z.hi}${z.n === 5 ? '+' : ''} bpm</em><small>${z.use}</small></span></div>`).join('') : '';
     paint(); listeners.forEach(f => { try { f(hr); } catch(err){} });
   });
