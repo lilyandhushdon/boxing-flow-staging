@@ -94,10 +94,10 @@
   const seek = t => { try { if(player && ready) player.seekTo(Math.max(0, t), true); } catch(e){} };
   function renderDraft(){
     const box = $('filmDraft'); if(!box) return;
+    const pn = $('fsPanel'); if(pn) pn.classList.toggle('drafting', !!ui.draft);
     box.innerHTML = ui.draft ? `<div class="fs-draft"><div class="fs-when"><label for="fsText"><b>Note at <button type="button" class="fs-dt" id="fsDt" data-fs-check title="Jump the video to this moment">${clock(ui.draft.t)}</button></b></label>
-      <span class="fs-nudge"><button type="button" data-fs-nudge="-5">&minus;5s</button><button type="button" data-fs-nudge="-1">&minus;1s</button><button type="button" data-fs-nudge="1">+1s</button><button type="button" data-fs-nudge="5">+5s</button><button type="button" data-fs-now>Now</button></span></div>
-      <textarea id="fsText" rows="3" maxlength="600" placeholder="What did you see? e.g. He drops his right hand after the jab"></textarea>
-      <div class="acts"><button class="btn small" data-fs-save>Save note</button><button class="btn small ghost" data-fs-cancel>Cancel</button></div></div>` : '';
+      <span class="fs-nudge"><button type="button" data-fs-nudge="-5">&minus;5</button><button type="button" data-fs-nudge="-1">&minus;1</button><button type="button" data-fs-nudge="1">+1</button><button type="button" data-fs-nudge="5">+5</button><button type="button" data-fs-now>Now</button></span></div>
+      <div class="fs-row"><textarea id="fsText" rows="2" maxlength="600" placeholder="What did you see?"></textarea><div class="fs-btns"><button class="btn small" data-fs-save>Save</button><button class="btn small ghost" data-fs-cancel>Cancel</button></div></div></div>` : '';
   }
   function renderNotes(){
     const st = cur(); if(!st || !$('filmNotes')) return;
@@ -119,15 +119,18 @@
 
   /* ---------- the notes panel, and the frame that follows the visible screen ---------- */
   function setPanel(on){ ui.panel = !!on; const p = $('fsPanel'), s = $('fsStage'); if(p) p.classList.toggle('open', ui.panel); if(s) s.classList.toggle('p-open', ui.panel); const c = document.querySelector('.fs-chip.r'); if(c) c.hidden = ui.panel; }
-  // On a phone the keyboard covers part of the page. The frame is sized and placed by the visual viewport (what can really be seen), so the video fills what is visible and
-  // the panel sits above the keyboard, whatever the browser does to the page underneath.
-  function fitStage(){
+  // The frame is sized to the screen when the study opens and when the phone is turned, and then left alone: it does not follow the keyboard. A frame that shrinks or
+  // slides when the keyboard opens moves everything under the person's thumb. Instead the note box sits high in the panel, above where the keyboard comes up, so the
+  // browser has nothing to scroll into view.
+  let stageW = 0;
+  function fitStage(force){
     const s = $('fsStage'); if(!s) return;
-    const v = window.visualViewport;
-    s.style.top = (v ? v.offsetTop : 0) + 'px'; s.style.height = (v ? v.height : window.innerHeight) + 'px';
+    const a = document.activeElement, typing = a && /^(TEXTAREA|INPUT)$/.test(a.tagName);
+    if(!force && (typing || window.innerWidth === stageW)) return;   // typing, or only the height changed (the keyboard): leave it
+    stageW = window.innerWidth; s.style.top = '0px'; s.style.height = window.innerHeight + 'px';
   }
-  if(window.visualViewport){ visualViewport.addEventListener('resize', fitStage); visualViewport.addEventListener('scroll', fitStage); }
-  window.addEventListener('resize', fitStage); window.addEventListener('orientationchange', () => setTimeout(fitStage, 200));
+  window.addEventListener('resize', () => fitStage()); window.addEventListener('orientationchange', () => setTimeout(() => fitStage(true), 250));
+  document.addEventListener('focusout', () => setTimeout(fitStage, 400));   // keyboard closed: fit the screen again
 
   /* ---------- screens ---------- */
   function libraryHtml(){
@@ -172,7 +175,7 @@
   window.renderFilm = function(){
     const st = cur();
     document.documentElement.classList.toggle('fs-on', !!st);
-    if(st){ ui.panel = false; $('filmBody').innerHTML = studyHtml(st); fitStage(); renderDraft(); renderNotes(); mount(st); }
+    if(st){ ui.panel = false; $('filmBody').innerHTML = studyHtml(st); fitStage(true); renderDraft(); renderNotes(); mount(st); }
     else { destroy(); ui.id = null; ui.draft = ui.editing = null; const f = fighters().find(x => x.name === ui.fighter); if(!f) ui.fighter = null; $('filmBody').innerHTML = f ? fighterHtml(f) : libraryHtml(); }
   };
   window.filmLeave = function(){ document.documentElement.classList.remove('fs-on'); saveLast(); destroy(); ui.id = null; ui.fighter = null; ui.draft = ui.editing = null; };   // called when another screen opens, so the video stops

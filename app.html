@@ -519,13 +519,38 @@ html.fs-on,html.fs-on body{overflow:hidden;overscroll-behavior:none}
 .fs-x{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:22px;line-height:1}
 .fs-pb{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 14px calc(18px + env(safe-area-inset-bottom,0px))}
 .fs-pb .hr-h{margin-top:16px}
+.fs-draft .fs-row{display:flex;gap:8px;align-items:stretch}
+.fs-btns{flex:none;display:flex;flex-direction:column;gap:6px;justify-content:center}
+.fs-btns{gap:4px}
+.fs-btns .btn{padding:0 10px;min-width:72px;min-height:0;height:30px;font-size:13px}
+.fs-draft{padding:8px 10px;margin-bottom:8px}
+.fs-draft .fs-when{margin-bottom:6px}
+.fs-panel.drafting .fs-ptitle,.fs-panel.drafting #fsAdd{display:none}
+.fs-panel.drafting .fs-ph{position:absolute;top:4px;right:6px;padding:0;z-index:2}
+.fs-panel.drafting .fs-x{width:28px;height:28px;font-size:18px}
+.fs-panel.drafting .fs-pb{padding-top:8px}
+.fs-panel.drafting .fs-when{padding-right:34px}
+.fs-draft .fs-row textarea{height:64px;resize:none;padding:8px 10px}
+.fs-draft .fs-row textarea{flex:1;min-width:0}
+.fs-dx{flex:none;margin-left:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:18px;line-height:1}
+.fs-nudge button{padding:5px 7px;font-size:12px}
 /* upright phone: the picture is only as tall as it is wide, so it sits in the middle while the notes are closed, moves to the top when they open, and the notes fill the space
    below it, never covering the picture. Sideways (or on a wide screen) the video fills the screen and the notes are laid over its lower part. */
 @media (orientation:portrait){
   .fs-stage #filmPlayerBox{top:50%;bottom:auto;height:56.25vw;transform:translateY(-50%)}
-  .fs-stage.p-open #filmPlayerBox{top:0;transform:none}
-  .fs-stage.p-open .fs-panel{max-height:calc(100% - 56.25vw)}
+  /* with the notes open the picture is smaller, so the note box sits above where the keyboard comes up and nothing has to move when it does */
+  .fs-stage.p-open #filmPlayerBox{top:0;left:50%;width:64vw;height:36vw;transform:translateX(-50%)}
+  .fs-stage.p-open .fs-panel{top:36vw;bottom:0;max-height:none}   /* straight under the picture, so the note box is as high as it can be */
   .fs-panel{border-radius:16px 16px 0 0}
+}
+@media (orientation:portrait) and (max-height:620px){   /* a small phone: a smaller picture, so the note box still clears the keyboard */
+  .fs-stage.p-open #filmPlayerBox{width:48vw;height:27vw}
+  .fs-stage.p-open .fs-panel{top:27vw}
+}
+/* sideways: the notes take the right side, the picture the left, so the note box is at the top, clear of the keyboard */
+@media (orientation:landscape){
+  .fs-stage.p-open #filmPlayerBox{right:auto;width:54%}
+  .fs-stage.p-open .fs-panel{left:auto;right:0;top:0;bottom:0;width:46%;max-width:none;max-height:none;margin:0;border-radius:0;border-top:0;border-bottom:0;border-right:0}
 }
 .fs-when{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .fs-when label{margin:0}
