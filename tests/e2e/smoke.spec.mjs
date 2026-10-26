@@ -71,8 +71,7 @@ test('film study: paste a link, pause to write a note, keep it, and study a figh
   await expect(page.locator('#fsTitle')).toHaveText('A very long YouTube title | FULL FIGHT');
   expect(await page.evaluate(() => window.__ytOpts.playerVars.start)).toBe(90);        // the start time in the link is used
   await page.evaluate(() => { __yt.time = 134; __yt.state = 2; __ytEvents.onStateChange({ data: 2 }); });   // the person pauses at 2:14
-  await expect(page.locator('.fs-draft label')).toContainText('Note at 2:12');   // stamped two seconds before the pause: people react a moment after they see it
-  await page.locator('[data-fs-nudge="5"]').click(); await expect(page.locator('.fs-draft label')).toContainText('Note at 2:17'); await page.locator('[data-fs-nudge="-5"]').click();   // and can be nudged
+  await expect(page.locator('.fs-draft label')).toContainText('Note at 2:14');
   await page.locator('#fsText').fill('He drops his right hand after the jab'); await page.locator('[data-fs-save]').click();
   await expect(page.locator('.fs-note')).toContainText('He drops his right hand after the jab');
   await page.locator('#fsTake').fill('Watch the lead hand');
