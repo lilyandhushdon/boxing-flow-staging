@@ -358,9 +358,25 @@
       manual_targets:$('sManual').checked, kcal_target:num($('sK').value), protein_g:num($('sPg').value), carbs_g:num($('sCg').value), fat_g:num($('sFg').value)};
   }
 
-  /* ---------- barcode scanning (where the browser can: Chrome on Android and desktop) ---------- */
+  /* ---------- barcode scanning ----------
+     Browsers that have BarcodeDetector (Chrome on Android) use it. Everything else (iPhone, Windows, Firefox) reads the camera frames with ZXing (vendor/zxing.min.js,
+     Apache-2.0), loaded only when someone scans. Both give detect(video) -> [{rawValue}]. */
   let stream = null, scanTimer = null;
   function stopScan(){ clearInterval(scanTimer); if(stream) stream.getTracks().forEach(t => t.stop()); stream = null; const o = $('nuScan'); if(o) o.remove(); }
+  const loadZXing = () => window.ZXing ? Promise.resolve() : new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'vendor/zxing.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  async function makeDetector(){
+    if('BarcodeDetector' in window){ try { return new BarcodeDetector({formats:['ean_13', 'ean_8', 'upc_a', 'upc_e']}); } catch(e){} }
+    await loadZXing();
+    const Z = window.ZXing, hints = new Map(), reader = new Z.MultiFormatReader();
+    hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.EAN_13, Z.BarcodeFormat.EAN_8, Z.BarcodeFormat.UPC_A, Z.BarcodeFormat.UPC_E]); hints.set(Z.DecodeHintType.TRY_HARDER, true);
+    reader.setHints(hints);
+    const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d', {willReadFrequently:true});
+    return {detect: async v => {
+      const w = v.videoWidth || v.width, h = v.videoHeight || v.height; if(!w || !h) return [];
+      const k = Math.min(1, 1280 / w); canvas.width = Math.round(w * k); canvas.height = Math.round(h * k); ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      try { return [{rawValue:reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(canvas)))).getText()}]; } catch(e){ return []; }   // nothing readable in this frame
+    }};
+  }
   async function lookupBarcode(code){
     S.err = ''; try {
       const j = await (await fetch('/api/foods?barcode=' + encodeURIComponent(code))).json();
@@ -371,13 +387,13 @@
   }
   async function scan(){
     const typed = () => { const c = prompt('Type the barcode number (the digits under the bars):'); if(c && /^\d{8,14}$/.test(c.trim())) lookupBarcode(c.trim()); else if(c){ S.err = 'That doesn\'t look like a barcode.'; paint(); } };
-    if(!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return typed();
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return typed();
     try {
       stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
       const o = document.createElement('div'); o.id = 'nuScan'; o.className = 'nu-scan';
       o.innerHTML = '<video playsinline muted></video><p>Point the camera at the barcode</p><div class="acts"><button class="btn ghost" data-nu-scanno>Cancel</button><button class="btn ghost" data-nu-scantype>Type it instead</button></div>';
       document.body.appendChild(o); const v = o.querySelector('video'); v.srcObject = stream; await v.play();
-      const det = new BarcodeDetector({formats:['ean_13', 'ean_8', 'upc_a', 'upc_e']});
+      const det = await makeDetector();
       scanTimer = setInterval(async () => { try { const r = await det.detect(v); if(r.length){ const c = r[0].rawValue; stopScan(); lookupBarcode(c); } } catch(e){} }, 300);
       o.addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; stopScan(); if('nuScantype' in b.dataset) typed(); });
     } catch(e){ stopScan(); typed(); }
@@ -458,7 +474,7 @@
   document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('nuScan')) stopScan(); });
 
   /* ---------- for the dashboard widget ---------- */
-  window.bfNutri = {
+  window.bfNutri = {scanDetector:makeDetector, 
     onChange:fn => { listeners.add(fn); return () => listeners.delete(fn); },
     // what the widget shows, straight away from what was saved last time, and refreshed once the account answers
     summary(){

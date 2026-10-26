@@ -225,6 +225,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><td><code>profile.js</code></td><td>The fighter's profile: name, age, sex, height, stance, weight class, record, gym, coach, bio, max and resting heart rate. Exposes <code>bfProfile</code>.</td></tr>
 <tr><td><code>weight.js</code></td><td>Weight log, fight weight and the plan to reach it. Exposes <code>bfWeight</code>.</td></tr>
 <tr><td><code>hr.js</code></td><td>Heart-rate strap connection, zones and the live pill. Exposes <code>bfHR</code>.</td></tr>
+<tr><td><code>vendor/zxing.min.js</code></td><td>The ZXing barcode reader (third-party, unmodified, Apache-2.0), loaded by <code>nutrition.js</code> only when scanning on a browser without its own reader.</td></tr>
 <tr><td><code>nutrition.js</code></td><td>Nutrition diary, targets, barcode scan. Exposes <code>bfNutri</code>.</td></tr>
 <tr><td><code>fighters.js</code>, <code>film.js</code></td><td>The fighter and fight list (data) and the film study screen. Expose <code>FILM_FIGHTERS</code> and <code>bfFilm</code>.</td></tr>
 <tr><td><code>home.js</code></td><td>The dashboard and its widgets, the fight countdown, the live channel widget.</td></tr>
@@ -400,7 +401,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <h4>What the person can do</h4>
 <ul>
 <li>No separate sign-in: on this computer the app signs in automatically (owner mode, <a href="#config">section 8</a>). Without that, the nutrition screen shows a temporary email and password form (or an email link) until the whole app has its own sign-up. Pick a day (previous, next), add food to Breakfast, Lunch, Dinner or Snacks: search by name, choose how much by the item, not just by weight: whole items ("1 medium banana", "1 large egg"), the whole pack, the portions the database lists, or grams and ounces. A stepper and quick amounts (½, 1, 1½, 2, 3) change the amount, and the screen shows the grams it works out to. Switching units keeps the same amount of food. Edit the amount or delete an entry. "Copy yesterday's meals".</li>
-<li>Scan a barcode (Chrome on Android and desktop; elsewhere a typed barcode), quick-add calories and macros, create their own foods, see recent foods and their own foods before typing.</li>
+<li>Scan a barcode with the phone or computer camera: browsers with a built-in barcode reader (Chrome on Android) use it; every other browser (iPhone Safari, Windows, Firefox) reads the camera picture with the bundled ZXing library (<code>vendor/zxing.min.js</code>, version 0.21.3, Apache-2.0 licence, loaded only when someone scans). EAN-13, EAN-8, UPC-A and UPC-E are read. If the camera is blocked or missing, the person types the number under the bars. Quick-add calories and macros, create their own foods, see recent foods and their own foods before typing.</li>
 <li>Daily summary: calories left (or over), and protein, carbohydrate and fat bars against targets. Targets are worked out from sex, age, height, weight, training level and goal with the Mifflin-St Jeor formula, at a pace of 0.25 to 2 kg a week. There is no cap or floor on the result. Protein is 2.0 g per kg (2.2 when cutting), fat 25% of calories, carbohydrate the rest. The person can override every target. Energy can be shown in kcal or kJ.</li>
 <li>The settings page carries a short "a guide, not medical advice" line. Nothing stops a fighter choosing any pace or typing any target, for example for a water cut.</li>
 </ul>
@@ -744,7 +745,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Dashboard: the month calendar and the week strip are one calendar card. Calendar: swipe a session left to delete it.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Barcode scanning now works on iPhone, Windows and Firefox as well (bundled ZXing reader), not only Chrome on Android.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>959620a</code></td><td>Dashboard: the month calendar and the week strip are one calendar card. Calendar: swipe a session left to delete it.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>f6278f2</code></td><td>Gym sessions in the calendar: plan the sessions done at your own gym (kind, length, where, label, notes, weekly repeat) and log them as done so they count in your activity.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>f33bde4</code></td><td>Netlify linked to GitHub: pushes to <code>main</code> now deploy the site. Documentation updated.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>c3d74ee</code></td><td>Profile page (<code>profile.js</code>): name, age, sex, height, stance, record, gym, coach, bio, max and resting heart rate, with training zones. Nutrition and heart rate share its numbers.</td></tr>
