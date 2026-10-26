@@ -403,6 +403,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <li>One place for the details other screens need, so they are typed once: name, age, sex, height, stance, weight class, record (wins, losses, draws), gym, coach and a short bio. The weight comes from the weight log.</li>
 <li>Heart rate: max heart rate (or an estimate from age) and resting heart rate. The five training zones are shown with what each is for, and the heart rate screen uses the same numbers. Anything typed on the heart rate screen before the profile existed is copied in the first time.</li>
 <li>Nutrition takes sex, age and height from the profile and writes them back when targets are saved.</li>
+<li>The first name in the profile is used in the dashboard greeting: with a name, the line changes from day to day ("Good evening, Hush", "Hi Hush", "Evening, Hush", "Hey Hush, ready to train?"); without one it is "Good morning", "Good afternoon" or "Good evening". It updates as soon as the name is typed.</li>
 <li>Changes save as they are typed. A guide, not medical advice.</li>
 </ul>
 
@@ -756,7 +757,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Sign-in gate (<code>gate.js</code>): the app needs an account, with sign in, create account and an emailed link, plus Sign out in the menu. The whole nutrition card on the dashboard opens nutrition.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>The dashboard greeting uses the name from the profile ("Hi Hush").</td></tr>
+<tr><td>26 Oct 2026</td><td><code>c261067</code></td><td>Sign-in gate (<code>gate.js</code>): the app needs an account, with sign in, create account and an emailed link, plus Sign out in the menu. The whole nutrition card on the dashboard opens nutrition.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>9a99c9a</code></td><td>Fight date no longer reverts: it is saved on its own and synced (<code>bfFightDate</code>), the camp is rebuilt from it, a starter camp is never saved just by opening the app, and a starter camp never replaces a real one in the sync.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>7776669</code></td><td>Training camp: setting a fight date starts the camp today and covers every day to the fight, instead of waiting for the next whole week. A camp already waiting to start is rebuilt to start today.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>6aeab7c</code></td><td>Runs (<code>run.js</code>): green zone recovery, easy and long runs and a yellow zone tempo run, with a voice and heart rate zone targets.</td></tr>
