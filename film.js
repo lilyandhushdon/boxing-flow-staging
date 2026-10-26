@@ -73,7 +73,7 @@
   }
   function paused(){
     try { if(!player || player.getPlayerState() !== 2) return; } catch(e){ return; }
-    saveLast(); if(!ui.draft && !ui.editing) openDraft(player.getCurrentTime(), true);
+    saveLast(); if(!ui.draft && !ui.editing && player.getCurrentTime() > 1) openDraft(player.getCurrentTime(), true);   // not at the very start: that is a pause before it has begun
   }
   function onError(e){
     const blocked = e.data === 101 || e.data === 150, st = cur();
@@ -83,13 +83,19 @@
   }
 
   /* ---------- notes ---------- */
+  // A note is stamped a moment before the video was paused or the button was tapped: people react a second or two after they see something, so stamping the exact
+  // instant lands just after it. The note box has buttons to nudge the time a little, and "Now" to take the video's time again.
+  const LEAD = 2, BACK = 3;   // seconds: stamped this much earlier; a tap on a note's time starts the video this much earlier, for the run-up
   function openDraft(t, resume){
-    ui.draft = {t:Math.floor(t), resume:!!resume}; renderDraft();
-    if(window.matchMedia && matchMedia('(pointer:fine)').matches) $('fsText')?.focus();
+    ui.draft = {t:Math.max(0, Math.floor(t) - LEAD), resume:!!resume}; renderDraft();
+    if(window.matchMedia && matchMedia('(pointer:fine)').matches) $('fsText')?.focus({preventScroll:true});
   }
+  const nowTime = () => { try { return ready ? player.getCurrentTime() : 0; } catch(e){ return 0; } };
+  const seek = t => { try { if(player && ready) player.seekTo(Math.max(0, t), true); } catch(e){} };
   function renderDraft(){
     const box = $('filmDraft'); if(!box) return;
-    box.innerHTML = ui.draft ? `<div class="fs-draft"><label for="fsText"><b>Note at ${clock(ui.draft.t)}</b></label>
+    box.innerHTML = ui.draft ? `<div class="fs-draft"><div class="fs-when"><label for="fsText"><b>Note at <button type="button" class="fs-dt" id="fsDt" data-fs-check title="Jump the video to this moment">${clock(ui.draft.t)}</button></b></label>
+      <span class="fs-nudge"><button type="button" data-fs-nudge="-5">&minus;5s</button><button type="button" data-fs-nudge="-1">&minus;1s</button><button type="button" data-fs-nudge="1">+1s</button><button type="button" data-fs-nudge="5">+5s</button><button type="button" data-fs-now>Now</button></span></div>
       <textarea id="fsText" rows="3" maxlength="600" placeholder="What did you see? e.g. He drops his right hand after the jab"></textarea>
       <div class="acts"><button class="btn small" data-fs-save>Save note</button><button class="btn small ghost" data-fs-cancel>Cancel</button></div></div>` : '';
   }
@@ -174,10 +180,13 @@
   });
   $('filmBody').addEventListener('click', e => {
     const b = e.target.closest('button'); if(!b) return; const d = b.dataset, st = cur();
-    if(b.id === 'fsAdd'){ if(ui.draft){ $('fsText').focus(); return; } let t = 0, playing = false; try { t = ready ? player.getCurrentTime() : 0; playing = ready && player.getPlayerState() === 1; } catch(err){} openDraft(t, playing); $('fsText')?.focus(); }
+    if(b.id === 'fsAdd'){ if(ui.draft){ $('fsText').focus({preventScroll:true}); return; } let t = 0, playing = false; try { t = ready ? player.getCurrentTime() : 0; playing = ready && player.getPlayerState() === 1; } catch(err){} openDraft(t, playing); $('fsText')?.focus({preventScroll:true}); }
+    else if(d.fsNudge && ui.draft){ ui.draft.t = Math.max(0, ui.draft.t + +d.fsNudge); $('fsDt').textContent = clock(ui.draft.t); seek(ui.draft.t); }   // the box keeps what was typed
+    else if('fsNow' in d && ui.draft){ ui.draft.t = Math.floor(nowTime()); $('fsDt').textContent = clock(ui.draft.t); }
+    else if('fsCheck' in d && ui.draft){ seek(ui.draft.t); }
     else if('fsSave' in d) addNote();
     else if('fsCancel' in d){ ui.draft = ui.editing = null; renderDraft(); renderNotes(); }
-    else if(d.fsSeek){ if(player && ready){ try { player.seekTo(+d.fsSeek, true); player.playVideo(); } catch(err){} window.scrollTo({top:0, behavior:'smooth'}); } }
+    else if(d.fsSeek){ if(player && ready){ try { player.seekTo(Math.max(0, +d.fsSeek - BACK), true); player.playVideo(); } catch(err){} } }   // the video is pinned in view, so the page stays where it is
     else if(d.fsEdit){ ui.editing = d.fsEdit; ui.draft = null; renderDraft(); renderNotes(); $('fsEditText')?.focus(); }
     else if(d.fsEditsave){ const n = st.notes.find(x => x.id === d.fsEditsave), v = ($('fsEditText').value || '').trim(); if(n && v){ n.text = v; save(); } ui.editing = null; renderNotes(); }
     else if(d.fsDel){ st.notes = st.notes.filter(x => x.id !== d.fsDel); save(); renderNotes(); }
