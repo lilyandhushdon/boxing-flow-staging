@@ -30,14 +30,12 @@
   }
   const lastCfg = type => { for(let i = log.length - 1; i >= 0; i--) if(log[i].type === type) return log[i].cfg || {}; return null; };
   const lastDone = type => { for(let i = log.length - 1; i >= 0; i--) if(log[i].type === type) return log[i].ts; return 0; };
-  // "Good morning", or with a name in the profile a short line that changes from day to day: "Hi Hush", "Evening Hush"
+  // "Good evening", or with a name in the profile: "Good evening, Hush"
   const greeting = () => {
     const now = new Date(), h = now.getHours(), part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening', plain = 'Good ' + part;
     const full = ((window.bfProfile && window.bfProfile.data.name) || '').trim(), n = esc(full.split(/\s+/)[0] || '');
     if(!n) return plain;
-    const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-    const lines = ['Hi ' + n, part[0].toUpperCase() + part.slice(1) + ' ' + n];   // short: "Hi Hush" or "Evening Hush"
-    return lines[day % lines.length];
+    return plain + ', ' + n;   // "Good evening, Hush"
   };
   const when = k => { if(k === todayK()) return 'Today'; if(k === C.dkey(C.addDays(new Date(), -1))) return 'Yesterday'; return C.dayLabel(k); };
 
