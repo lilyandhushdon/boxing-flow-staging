@@ -152,7 +152,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
   <div class="card"><h4>Where it runs</h4><p>Any modern browser, phone first. Hosted on Netlify at <code>heroic-jalebi-e2e04b.netlify.app</code>. Source on GitHub at <code>lilyandhushdon/boxing-flow-staging</code> (branch <code>main</code>).</p></div>
 </div>
 <div class="call warn"><b>Status of the live site</b>
-  <p>The Netlify site is <b>not connected to the GitHub repository</b>: its last deploy was on 10 Oct 2026 and pushing to GitHub does not update it. To publish, run <code>netlify deploy --prod</code> from the project folder, or link the repository in Netlify (Site configuration, Build and deploy). See <a href="#run">section 9</a>.</p></div>
+  <p>The Netlify site is <b>connected to the GitHub repository</b> (branch <code>main</code>, linked 26 Oct 2026): every push to <code>main</code> publishes the site and the functions. A manual <code>netlify deploy --prod</code> still works. See <a href="#run">section 9</a>.</p></div>
 <h3>Feature list</h3>
 <table>
 <tr><th>Area</th><th>Features</th></tr>
@@ -517,7 +517,7 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <table>
 <tr><th>Service</th><th>Used for</th><th>Needs</th><th>Terms and limits</th><th>If it fails</th></tr>
 <tr><td>Supabase</td><td>Accounts, database, row rules</td><td>Project URL and public anon key in the page; service key and DB password only in <code>.env</code></td><td>Free plan: about 500 MB, 50,000 monthly users; projects pause after about a week with no activity; no automatic backups. The built-in email sender only emails people on the Supabase team and allows very few emails per hour.</td><td>The app keeps working from the device. Saves wait and retry.</td></tr>
-<tr><td>Netlify</td><td>Static hosting and Functions</td><td>Site <code>heroic-jalebi-e2e04b</code>; env var <code>USDA_API_KEY</code></td><td>Not connected to GitHub (manual deploys).</td><td>n/a</td></tr>
+<tr><td>Netlify</td><td>Static hosting and Functions</td><td>Site <code>heroic-jalebi-e2e04b</code>; env var <code>USDA_API_KEY</code></td><td>Connected to GitHub (<code>main</code>); deploys on every push.</td><td>n/a</td></tr>
 <tr><td>USDA FoodData Central</td><td>Everyday and some packaged food data</td><td>Free API key (<code>USDA_API_KEY</code>)</td><td>US public domain. Rate limited per key (1,000 requests per hour on a registered key).</td><td>Search returns the other database only, with <code>partial:true</code>.</td></tr>
 <tr><td>Open Food Facts</td><td>Packaged products, barcodes, New Zealand products</td><td>None (a User-Agent is sent)</td><td>ODbL licence: show attribution ("Food data: Open Food Facts"), share-alike for databases built from it. Data is entered by the public, so quality varies. Gets overloaded at times.</td><td>Search returns USDA only, with <code>partial:true</code>.</td></tr>
 <tr><td>YouTube IFrame API</td><td>Film study player</td><td>None</td><td>Embedding is allowed per video by its owner. Subject to YouTube's API terms.</td><td>The page says it could not load YouTube and still shows the notes.</td></tr>
@@ -577,7 +577,7 @@ npx supabase db push          # applies new migrations to the live project
 npx supabase config push      # applies supabase/config.toml (auth settings); preview the diff first</code></pre>
 <p>Never edit a migration that has been applied; add a new one. Every new table needs <code>enable row level security</code>, a policy for <code>user_id = auth.uid()</code> and a <code>grant</code> to <code>authenticated</code>.</p>
 <h3>Deploy</h3>
-<div class="call warn"><b>Current state</b><p>Deploys are manual. Pushing to GitHub does not publish. Run <code>netlify deploy --prod</code> from the project folder (publishes the directory <code>.</code> and the functions). A command-line deploy uploads every file in the folder, including <code>.env</code>; the rules in <code>netlify.toml</code> keep private paths from being served, but the safest route is a deploy from GitHub. Environment variables changed in Netlify only take effect on the next deploy. Before the first deploy after the nutrition and sync work, make sure the Netlify environment has <code>USDA_API_KEY</code> (it does).</p></div>
+<div class="call"><b>Current state</b><p>Netlify deploys from GitHub: every push to <code>main</code> builds and publishes (no build command; the publish directory is <code>.</code> and the functions are in <code>netlify/functions</code>). The private-path rules in <code>netlify.toml</code> keep tests, docs, migrations and <code>.env</code> from being served. Environment variables changed in Netlify only take effect on the next deploy; <code>USDA_API_KEY</code> is set. A manual <code>netlify deploy --prod</code> from the project folder still works, but it uploads every file in the folder, so prefer pushing. The tests run locally (and in GitHub Actions when started by hand) before a push, because a push to <code>main</code> goes live.</p></div>
 <p>Better: in Netlify, Site configuration, Build and deploy, link the GitHub repository and set the production branch to <code>main</code>, so every merge deploys. With the CI plan below, deploys then happen only when the checks pass.</p>
 <h3>Run the tests</h3>
 <pre><code>node --test tests/*.test.mjs        # code, data and food search checks (no install needed, a few seconds)
@@ -610,7 +610,7 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <tr><td>2 Unit and data tests</td><td><span class="tag ok">done</span> 12 tests (data and food search). The camp, nutrition-target and sync logic still need extracting to be unit tested; the browser tests cover them meanwhile.</td><td><code>tests/data.test.mjs</code>, <code>tests/foods.test.mjs</code></td></tr>
 <tr><td>3 Database tests</td><td><span class="tag warn">next</span></td><td>needs a local Supabase (Docker) in CI</td></tr>
 <tr><td>4 Browser tests</td><td><span class="tag ok">done</span> 28 tests, Chromium and WebKit</td><td><code>tests/e2e/</code></td></tr>
-<tr><td>5 Preview deploy and smoke</td><td><span class="tag warn">next</span></td><td>needs the Netlify site linked to GitHub</td></tr>
+<tr><td>5 Preview deploy and smoke</td><td><span class="tag warn">next</span></td><td>the Netlify site is now linked to GitHub, so pull request previews can be switched on</td></tr>
 <tr><td>6 Production deploy from main</td><td><span class="tag warn">next</span></td><td>after 3 and 5</td></tr>
 <tr><td>Weekly video check</td><td><span class="tag ok">done</span></td><td><code>.github/workflows/embeds.yml</code></td></tr>
 </table>
@@ -683,7 +683,7 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <tr><th>Limit</th><th>Detail</th></tr>
 <tr><td>iPhone and Bluetooth</td><td>Heart rate straps do not work in iPhone browsers. Needs a native wrapper.</td></tr>
 <tr><td>Sign-in email</td><td>On Supabase's free plan only team members can receive sign-in emails and the hourly limit is very low. Add a custom email service (SMTP) before inviting anyone. New accounts are currently switched off.</td></tr>
-<tr><td>Deployment</td><td>The live site is not linked to GitHub; the last deploy predates the dashboard, nutrition, film study and sync features.</td></tr>
+<tr><td>Deployment</td><td>A push to <code>main</code> goes straight to the live site: there is no preview or test gate yet (CI stages 3, 5 and 6).</td></tr>
 <tr><td>Sync conflicts</td><td>Last write wins per key; simultaneous edits on two devices can lose one.</td></tr>
 <tr><td>Free database pausing</td><td>A free Supabase project pauses after about a week of no activity.</td></tr>
 <tr><td>Food data quality</td><td>Open Food Facts entries are user-contributed and can be wrong; USDA data is US-centred. The official New Zealand Food Composition Database (Plant and Food Research and the Ministry of Health) is not used because its licence terms were not confirmed. The Australian FSANZ database is share-alike licensed and was left out.</td></tr>
@@ -742,6 +742,7 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Netlify linked to GitHub: pushes to <code>main</code> now deploy the site. Documentation updated.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>c3d74ee</code></td><td>Profile page (<code>profile.js</code>): name, age, sex, height, stance, record, gym, coach, bio, max and resting heart rate, with training zones. Nutrition and heart rate share its numbers.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>71d66f8</code></td><td>Recovery sessions in Strength and conditioning: cold shower, massage gun, foam roller, stretching and mobility, each with its benefits, tips and a safety note, a timed move-by-move screen with left and right sides, voice, calendar, dashboard and deep links (<code>recovery.js</code>). Fixed a dashboard header that was too wide on WebKit.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>26024e0</code></td><td>Nutrition: targets have no cap or floor and the weight-cut warning is gone; foods are added by the item (medium, large, whole pack, listed portions, grams, ounces) with a stepper and quick amounts. Food search reads pack sizes.</td></tr>
