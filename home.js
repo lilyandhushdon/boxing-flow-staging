@@ -6,7 +6,7 @@
    A log entry: { id, date 'YYYY-MM-DD', ts, type (a mode id), cfg (the choices, as the calendar saves them), label, minutes }. */
 (function(){
   const C = window.bfCal, LKEY = 'bfLog', GKEY = 'bfGoal', OKEY = 'bfWidgets';
-  const DEFAULT_ORDER = ['today','weight','camp','nutri','quick','live','film','minical','week','progress','suggest','recent','explore'];
+  const DEFAULT_ORDER = ['today','weight','camp','nutri','quick','live','film','minical','progress','suggest','recent','explore'];
   let log = []; try{ log = JSON.parse(localStorage.getItem(LKEY) || '[]') || []; }catch(e){}
   let goal = 3; try{ goal = Math.min(7, Math.max(1, +localStorage.getItem(GKEY) || 3)); }catch(e){}
   let saved = []; try{ saved = JSON.parse(localStorage.getItem(OKEY) || '[]') || []; }catch(e){}
@@ -138,12 +138,10 @@
 
     W.live = {cls:'live', html:''};   // made once in ensureDom, so the stream never reloads when the dashboard refreshes
 
-    W.minical = {cls:'mini', html:`<h2>Calendar</h2>${miniCal()}`};
-
-    W.week = {cls:'', html:`<h2>This week</h2><div class="wk">${weekDays().map((d,i) => { const k = C.dkey(d), p = C.plan.filter(e => e.date === k && e.type !== 'rest'), l = log.filter(e => e.date === k).length, doneP = p.filter(e => e.done).length;
+    // one card: this week as a strip of days, then the month, then the buttons
+    W.minical = {cls:'mini', html:`<h2>Calendar</h2><h3 class="cal-sub">This week</h3><div class="wk">${weekDays().map((d,i) => { const k = C.dkey(d), p = C.plan.filter(e => e.date === k && e.type !== 'rest'), l = log.filter(e => e.date === k).length, doneP = p.filter(e => e.done).length;
       const st = l || doneP ? 'is-done' : p.length ? 'planned' : '';
-      return `<button class="wk-d ${st} ${k===t?'today':''}" data-day="${k}" aria-label="${C.dayLabel(k)}: ${l||doneP} done, ${p.length} planned"><small>${C.DOW[i]}</small><b>${d.getDate()}</b><i></i></button>`; }).join('')}</div>
-      <div class="t-row"><button class="btn small ghost" data-open-cal>Open calendar</button><button class="btn small ghost" data-plan-today>Add a session</button></div>`};
+      return `<button class="wk-d ${st} ${k===t?'today':''}" data-day="${k}" aria-label="${C.dayLabel(k)}: ${l||doneP} done, ${p.length} planned"><small>${C.DOW[i]}</small><b>${d.getDate()}</b><i></i></button>`; }).join('')}</div><h3 class="cal-sub">This month</h3>${miniCal()}<div class="t-row"><button class="btn small ghost" data-open-cal>Open calendar</button><button class="btn small ghost" data-plan-today>Add a session</button></div>`};
 
     const pct = Math.min(100, Math.round(ws.sessions / goal * 100));
     W.progress = {cls:'', html:`<h2>Progress</h2><div class="stats3"><div><b>${ws.sessions}</b><span>sessions this week</span></div><div><b>${ws.minutes}</b><span>minutes this week</span></div><div><b>${log.length}</b><span>sessions in total</span></div></div>
@@ -185,7 +183,6 @@
     els.live.innerHTML = `<div class="q-top"><h2>Boxing World TV</h2><a class="linkbtn" href="${LIVE_URL}" target="_blank" rel="noopener">Open site &rsaquo;</a></div>
       <div class="live-box" id="liveBox"></div><p class="t-note" id="liveNote"></p>`;
     liveStop();
-    els.minical.setAttribute('role', 'button'); els.minical.tabIndex = 0; els.minical.setAttribute('aria-label', 'Open your training calendar');
   }
   // the badge beside the greeting: how long until the fight (from the training camp). With no camp date to count to, it falls back to the streak.
   function countdown(s){

@@ -77,9 +77,9 @@
   const byDay = k => plan.filter(e => e.date === k).sort((a,b) => (a.time||'99').localeCompare(b.time||'99'));
   function card(e){
     const w = way(e.type) || {};
-    return `<div class="cs ${w.area||''} ${e.done?'is-done':''}">
+    return `<div class="cs-wrap"><button class="cs-del" data-sdel="${e.id}" tabindex="-1" aria-label="Delete ${esc(label(e))}">Delete</button><div class="cs ${w.area||''} ${e.done?'is-done':''}">
       <button class="cs-main" data-open="${e.id}"><strong>${esc(label(e))}</strong><span>${[timeL(e.time), AREAS[w.area]||''].filter(Boolean).join(' · ')}</span></button>
-      ${e.type==='rest' ? '' : `<button class="cs-tick" data-tick="${e.id}" aria-label="${e.done?'Mark not done':'Mark done'}">&#10003;</button>`}</div>`;
+      ${e.type==='rest' ? '' : `<button class="cs-tick" data-tick="${e.id}" aria-label="${e.done?'Mark not done':'Mark done'}">&#10003;</button>`}</div></div>`;
   }
   // the training camp's phase for a day, as a colour on the day's box, and a line saying which phases and sprints are on screen
   const phA = k => { const p = window.bfCamp && window.bfCamp.phaseOn(k); return p ? ` style="--ph:${p.color}"` : ''; };
@@ -120,12 +120,46 @@
   $('calToday').onclick = () => { cal.anchor = new Date(); cal.sel = todayK(); renderCal(); };
   $('calAdd').onclick = () => openAdd(cal.sel);
   $('calBody').addEventListener('click', e => {
+    const del = e.target.closest('[data-sdel]');
+    if(del){ plan = plan.filter(x => x.id !== del.dataset.sdel); save(); renderCal(); $('calSub').textContent = 'Session deleted.'; return; }
+    const open = $('calBody').querySelector('.cs.swiped');
+    if(open && e.target.closest('.cs') === open){ open.classList.remove('swiped'); return; }   // a tap on a swiped card just closes it
     const t = e.target.closest('[data-day],[data-add],[data-open],[data-tick]'); if(!t) return;
     if(t.dataset.day){ cal.sel = t.dataset.day; if(fromKey(cal.sel).getMonth() !== cal.anchor.getMonth()) cal.anchor = fromKey(cal.sel); renderCal(); }
     else if(t.dataset.add){ cal.sel = t.dataset.add; openAdd(t.dataset.add); }
     else if(t.dataset.open) openEvent(t.dataset.open);
     else if(t.dataset.tick){ const ev = plan.find(x => x.id === t.dataset.tick); if(ev){ if(ev.type === 'gym' && !ev.done) sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); else { ev.done = !ev.done; save(); } renderCal(); } }
   });
+
+  // swipe a session to the left to show Delete, the way a phone list works; swipe back or tap it to close
+  (() => {
+    const body = $('calBody'), W = 88;
+    let sw = null, swipedAt = -1e9;
+    const closeAll = except => body.querySelectorAll('.cs.swiped').forEach(c => { if(c !== except) c.classList.remove('swiped'); });
+    body.addEventListener('pointerdown', e => {
+      const c = e.target.closest('.cs'); if(!c || e.target.closest('.cs-tick') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      closeAll(c);
+      sw = {c, id:e.pointerId, x:e.clientX, y:e.clientY, base:c.classList.contains('swiped') ? -W : 0, on:false, off:0};
+    });
+    body.addEventListener('pointermove', e => {
+      if(!sw || e.pointerId !== sw.id) return;
+      const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+      if(!sw.on){
+        if(Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.5){ sw.on = true; sw.c.classList.add('swiping'); try { sw.c.setPointerCapture(e.pointerId); } catch(x){} }
+        else if(Math.abs(dy) > 10){ sw = null; return; }   // they are scrolling
+        else return;
+      }
+      sw.off = Math.max(-W - 12, Math.min(0, sw.base + dx)); sw.c.style.transform = 'translateX(' + sw.off + 'px)';
+    });
+    const finish = e => {
+      if(!sw || e.pointerId !== sw.id) return;
+      const {c, on, off} = sw; sw = null;
+      if(!on) return;
+      c.classList.remove('swiping'); c.style.transform = ''; c.classList.toggle('swiped', off < -W / 2); swipedAt = performance.now();
+    };
+    body.addEventListener('pointerup', finish); body.addEventListener('pointercancel', finish);
+    body.addEventListener('click', e => { if(performance.now() - swipedAt < 350){ e.stopPropagation(); e.preventDefault(); } }, true);   // letting go after a swipe is not a tap
+  })();
 
   // press and hold a session, then drop it on another day to move it
   window.holdDrag($('calBody'), {item:'.cs', target:'[data-dropday]', onDrop:(item, day) => {
