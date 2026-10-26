@@ -99,6 +99,18 @@ test('serving sizes for an everyday food come from the USDA record', async () =>
   const { body } = await ask('usda=173944');
   assert.deepEqual(body.servings.map((s) => s.grams), [136, 225], 'duplicates are removed');
   assert.match(body.servings[0].label, /large/);
+  assert.equal(body.servings[0].label, '1 large (136 g)', 'the inch measurements are dropped so the choice reads plainly');
+});
+
+test('a packaged food offers its whole pack as one way to measure it', async () => {
+  const hit = (code, quantity) => ({ ...offHit(code, 'Cereal', 'Brand', 350, true), quantity });
+  pretend({ 'api.nal.usda.gov': { body: { foods: [] } }, 'search.openfoodfacts.org': { body: { hits: [hit('1', '500 g'), hit('2', '1.5 kg'), hit('3', '6 x 330 ml'), hit('4', 'a big box'), hit('5', '2 g')] } } });
+  const items = (await ask('q=cereal')).body.items, by = (id) => items.find((i) => i.id === 'off:' + id).pack;
+  assert.deepEqual(by('1'), { label: 'Whole pack (500 g)', grams: 500 });
+  assert.equal(by('2').grams, 1500);
+  assert.equal(by('3').grams, 1980, 'a multipack is the count times the size');
+  assert.equal(by('4'), null, 'text with no size gives no pack');
+  assert.equal(by('5'), null, 'a few grams is not a pack');
 });
 
 test('without a USDA key the search still works from Open Food Facts', async () => {

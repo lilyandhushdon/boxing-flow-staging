@@ -10,7 +10,7 @@
   const CACHE = 'bfNutriCache';
   const ACTIVITY = [[1.2, 'Rarely train'], [1.375, 'Light: 1 to 3 sessions a week'], [1.55, 'Moderate: 3 to 5 sessions a week'], [1.725, 'Hard: 6 to 7 sessions a week'], [1.9, 'Very hard: twice a day or a physical job']];
   // "60 g", "2 x 1 cup, sliced", "1 serving": the amount and what it is an amount of, without saying the number twice
-  const amtLabel = e => { const q = Math.round(e.amount * 10) / 10, l = e.unit_label || ''; return l === 'g' || !l ? `${q} g` : /^d/.test(l) ? (q === 1 ? l : `${q} x ${l}`) : `${q} ${l}`; };
+  const amtLabel = e => { const q = Math.round(e.amount * 10) / 10, l = e.unit_label || ''; return l === 'g' || !l ? `${q} g` : /^\d/.test(l) ? (q === 1 ? l : `${q} x ${l}`) : `${q} ${l}`; };
   const syncText = () => { const c = window.bfCloud, s = c && c.status; return s === 'syncing' ? 'Saving to your account…' : s === 'error' || s === 'offline' ? 'Offline. Changes are kept on this device and saved to your account when you are back online.' : 'Everything in the app is saved to your account' + (c && c.last ? ' · last synced ' + new Date(c.last).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '') + '.'; };
   const r0 = v => Math.round(v), r1 = v => Math.round(v * 10) / 10, num = v => (v === '' || v == null || isNaN(+v) ? null : +v);
   const mealNow = () => { const h = new Date().getHours(); return h < 10 ? 'breakfast' : h < 15 ? 'lunch' : h < 20 ? 'dinner' : 'snacks'; };
@@ -79,12 +79,9 @@
     if(!p.sex || !p.height_cm || !p.weight_kg || !p.birth_year) return null;
     const age = new Date().getFullYear() - p.birth_year, bmr = 10 * p.weight_kg + 6.25 * p.height_cm - 5 * age + (p.sex === 'male' ? 5 : -161);
     const tdee = bmr * (p.activity || 1.55), adj = p.goal === 'lose' ? -(p.rate_kg_week || 0.25) * 1100 : p.goal === 'gain' ? (p.rate_kg_week || 0.25) * 1100 : 0;
-    const floor = Math.max(bmr, p.sex === 'male' ? 1500 : 1200);
-    let kcal = tdee + adj, capped = false;
-    if(adj < 0 && kcal < Math.max(floor, tdee * 0.8)){ kcal = Math.max(floor, tdee * 0.8); capped = true; }   // never a crash diet: at most 20% under, and never below the minimum
-    kcal = Math.round(kcal / 10) * 10;
+    const kcal = Math.max(0, Math.round((tdee + adj) / 10) * 10);   // exactly what the pace works out to: no floor and no cap, the person decides (and can type any targets of their own)
     const protein = r0(p.weight_kg * (p.goal === 'lose' ? 2.2 : 2)), fat = r0(kcal * 0.25 / 9), carbs = Math.max(0, r0((kcal - protein * 4 - fat * 9) / 4));
-    return {kcal, protein, carbs, fat, maintenance:Math.round(tdee / 10) * 10, capped};
+    return {kcal, protein, carbs, fat, maintenance:Math.round(tdee / 10) * 10};
   }
 
   /* ---------- the screen ---------- */
@@ -168,12 +165,18 @@
   }
 
   // choosing an amount: a quantity, and what it is a quantity of (a serving, a cup, grams...)
+  // ways to pick an amount: the food's own whole items first (1 medium banana, 1 egg, 2 biscuits, the whole pack), then grams and ounces
+  const quickFor = u => u.kind === 'g' ? [50, 100, 150, 200, 250] : u.kind === 'oz' ? [1, 2, 4, 6, 8] : [0.5, 1, 1.5, 2, 3];
+  const qlab = v => v === 0.5 ? '½' : v === 1.5 ? '1½' : String(v);
   function pickHtml(){
     const p = S.pick, f = p.food, u = p.units[p.unit], grams = (num(p.qty) || 0) * u.grams, a = amounts(f.per100, grams);
     return `${head(p.entry ? 'Edit food' : 'Add food', 'data-nu-view="' + (p.entry ? 'day' : 'add') + '"')}${errBox()}
       <div class="nu-card"><h2 class="nu-fname">${esc(f.name)}</h2>${f.brand ? `<p class="t-note">${esc(f.brand)}</p>` : ''}
-        <div class="nu-amt"><label class="c-label">Amount<input id="nuQty" type="number" inputmode="decimal" min="0" step="any" value="${esc(p.qty)}"></label>
-          <label class="c-label">Unit<select id="nuUnit">${p.units.map((x, i) => `<option value="${i}" ${i === p.unit ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}</select></label></div>
+        <p class="nu-lab">How much?</p>
+        <div class="nu-units" role="radiogroup" aria-label="Unit">${p.units.map((x, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === p.unit}" aria-pressed="${i === p.unit}" data-nu-unit="${i}">${esc(x.name || x.label)}</button>`).join('')}</div>
+        <div class="nu-qty"><button type="button" class="nu-step" data-nu-step="-1" aria-label="Less">&minus;</button><input id="nuQty" type="number" inputmode="decimal" min="0" step="any" value="${esc(p.qty)}" aria-label="How many"><button type="button" class="nu-step" data-nu-step="1" aria-label="More">+</button></div>
+        <div class="nu-quick">${quickFor(u).map(v => `<button type="button" class="chip" data-nu-set="${v}">${qlab(v)}</button>`).join('')}</div>
+        <p class="t-note" id="nuGrams">That is ${Math.round(grams)} g${u.kind === 'item' ? '' : ''}.</p>
         ${p.entry ? '' : `<div class="nu-meals">${MEALS.map(([id, l]) => `<button class="chip" aria-pressed="${S.meal === id}" data-nu-meal="${id}">${l}</button>`).join('')}</div>`}
         <div class="nu-totals" id="nuTotals">${totalsHtml(a, grams)}</div>
         <div class="acts"><button class="btn" data-nu-save>${p.entry ? 'Save' : 'Add to ' + (MEALS.find(m => m[0] === S.meal) || [])[1]}</button>${p.entry ? '<button class="btn ghost" data-nu-del>Delete</button>' : ''}</div></div>
@@ -208,16 +211,16 @@
         <div class="nu-three"><label class="c-label">Sex<select id="sSex"><option value="" ${p.sex ? '' : 'selected'}>Choose</option><option value="male" ${p.sex === 'male' ? 'selected' : ''}>Male</option><option value="female" ${p.sex === 'female' ? 'selected' : ''}>Female</option></select></label>${fld('sAge', 'Age', age)}${fld('sH', 'Height cm', p.height_cm)}</div>
         <div class="nu-three">${fld('sW', 'Weight kg', p.weight_kg)}<label class="c-label">Training<select id="sAct">${ACTIVITY.map(([v, l]) => `<option value="${v}" ${+p.activity === v || (!p.activity && v === 1.55) ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
         <div class="nu-three"><label class="c-label">Goal<select id="sGoal">${[['maintain', 'Maintain weight'], ['lose', 'Lose weight'], ['gain', 'Gain weight']].map(([v, l]) => `<option value="${v}" ${(p.goal || 'maintain') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-          <label class="c-label">Pace<select id="sRate">${[0.25, 0.5].map(v => `<option value="${v}" ${+(p.rate_kg_week || 0.25) === v ? 'selected' : ''}>${v} kg a week</option>`).join('')}</select></label>
+          <label class="c-label">Pace<select id="sRate">${[0.25, 0.5, 0.75, 1, 1.5, 2].map(v => `<option value="${v}" ${+(p.rate_kg_week || 0.25) === v ? 'selected' : ''}>${v} kg a week</option>`).join('')}</select></label>
           <label class="c-label">Energy<select id="sUnit"><option value="kcal" ${p.energy_unit !== 'kj' ? 'selected' : ''}>kcal</option><option value="kj" ${p.energy_unit === 'kj' ? 'selected' : ''}>kJ</option></select></label></div>
         <div id="sSuggest">${suggestHtml(sg, p)}</div>
         <label class="nu-check"><input type="checkbox" id="sManual" ${m ? 'checked' : ''}> Set my own targets</label>
         <div class="nu-three" id="sOwn" ${m ? '' : 'hidden'}>${fld('sK', 'kcal', p.kcal_target)}${fld('sPg', 'Protein g', p.protein_g)}${fld('sCg', 'Carbs g', p.carbs_g)}${fld('sFg', 'Fat g', p.fat_g)}</div>
         <div class="acts"><button class="btn" data-nu-ssave>Save</button></div></div>
-      <p class="t-note warn">Cutting weight for a fight? Plan it with your coach. Crash diets and dehydration hurt your performance and can be dangerous. These targets are a guide, not medical advice.</p>`;
+      <p class="t-note">Use the suggestion, or tick "Set my own targets" and type any numbers you want. A guide, not medical advice.</p>`;
   }
   const suggestHtml = (sg, p) => !sg ? '<p class="t-note">Fill in the details above and your targets appear here.</p>'
-    : `<p class="t-note">Maintenance is about <b>${energy(sg.maintenance)}</b> a day. Suggested target: <b>${energy(sg.kcal)}</b>, with ${sg.protein} g protein, ${sg.carbs} g carbs and ${sg.fat} g fat.${sg.capped ? ' The pace was limited so you don\'t go too low.' : ''}</p>`;
+    : `<p class="t-note">Maintenance is about <b>${energy(sg.maintenance)}</b> a day. Suggested target: <b>${energy(sg.kcal)}</b>, with ${sg.protein} g protein, ${sg.carbs} g carbs and ${sg.fat} g fat.</p>`;
 
   function paint(){
     const el = body(); if(!el || $('nutrition').hidden) return;
@@ -252,21 +255,47 @@
       S.searching = false; const r = $('nuResults'); if(r) r.innerHTML = (S.err ? errBox() : '') + resultsHtml();
     }, 350);
   }
+  // the ways to measure a food: its own serving, the whole pack, and the everyday portions (1 medium banana, 1 cup, a slice...), then grams and ounces
+  const UNIT_G = {label:'g', name:'Grams', grams:1, kind:'g'}, UNIT_OZ = {label:'oz', name:'Ounces', grams:28.3495, kind:'oz'};
+  function unitsFor(food, portions, current){
+    const out = [], seen = new Set(), add = u => {
+      if(!u || !(u.grams > 0)) return; const b = u.label === 'g' ? UNIT_G : u.label === 'oz' ? UNIT_OZ : {kind:'item', ...u};
+      if(!seen.has(b.label)){ seen.add(b.label); out.push(b); } };
+    add(food.serving); add(food.pack); [...(portions || [])].sort((a, b) => a.grams - b.grams).forEach(add); add(current);   // sizes from small to large
+    add(UNIT_G); add(UNIT_OZ);
+    return [...out.filter(u => u.kind === 'item'), ...out.filter(u => u.kind !== 'item')];
+  }
+  const PREFER = [/\bmedium\b/i, /\b(large|whole|regular|average|each)\b/i, /\b(egg|slice|piece|biscuit|bar|serving|pack)\b/i];
+  // where to start: one whole item (a medium banana, a large egg), never an arbitrary 100 g unless there is nothing else to measure by
+  function startUnit(units, food){
+    const items = units.filter(u => u.kind === 'item');
+    if(!items.length) return {unit:units.findIndex(u => u.kind === 'g'), qty:100};
+    const order = food && /\begg/i.test(food.name) ? [/\blarge\b/i, ...PREFER] : PREFER;
+    return {unit:units.indexOf(order.map(re => items.find(u => re.test(u.label))).find(Boolean) || items[0]), qty:1};
+  }
   async function choose(food){
-    const units = [], seen = new Set(), add = u => { if(u && u.grams > 0 && !seen.has(u.label)){ seen.add(u.label); units.push(u); } };
-    add(food.serving);
-    S.pick = {food, units: units.concat([{label:'g', grams:1}]), unit:0, qty: food.serving ? 1 : 100, entry:null};
-    if(!food.serving) S.pick.unit = 0; S.view = 'pick'; S.err = ''; paint(); window.scrollTo(0, 0);
-    if(food.source === 'usda' && food.id.startsWith('usda:')){   // everyday foods have their own serving sizes (1 medium banana...), fetched when one is chosen
+    const units = unitsFor(food, []), st = startUnit(units, food);
+    S.pick = {food, units, unit:st.unit, qty:st.qty, entry:null, touched:false}; S.view = 'pick'; S.err = ''; paint(); window.scrollTo(0, 0);
+    if(food.source === 'usda' && food.id.startsWith('usda:')){   // everyday foods have their own portions, fetched when one is chosen
       try {
         const j = await (await fetch('/api/foods?usda=' + food.id.slice(5))).json();
         if(S.pick && S.pick.food === food && j.servings && j.servings.length){
-          const keepG = S.pick.units.find(u => u.label === 'g'), have = new Set(S.pick.units.map(u => u.label));
-          const list = [...S.pick.units.filter(u => u !== keepG), ...j.servings.filter(u => !have.has(u.label)), keepG];
-          S.pick.units = list; if(!food.serving){ S.pick.unit = list.length - 1; } paint();
+          const cur = S.pick.units[S.pick.unit], list = unitsFor(food, j.servings);
+          if(S.pick.touched){ const k = list.findIndex(u => u.label === cur.label); S.pick.units = list; S.pick.unit = k >= 0 ? k : 0; }
+          else { const s2 = startUnit(list, food); S.pick.units = list; S.pick.unit = s2.unit; S.pick.qty = s2.qty; }
+          paint();
         }
       } catch(e){}
     }
+  }
+  function pickUnit(i){
+    const p = S.pick, old = p.units[p.unit], nu = p.units[i], grams = (num(p.qty) || 0) * old.grams; p.touched = true; p.unit = i;
+    p.qty = nu.kind === 'g' ? (Math.round(grams) || 100) : nu.kind === 'oz' ? (Math.round(grams / nu.grams * 2) / 2 || 1) : old.kind === 'item' ? p.qty : 1;   // moving to grams or ounces keeps the same amount of food
+    paint();
+  }
+  function stepQty(dir){
+    const p = S.pick, u = p.units[p.unit], step = u.kind === 'g' ? 10 : 0.5;
+    p.qty = Math.max(0, Math.round(((num(p.qty) || 0) + dir * step) * 100) / 100); p.touched = true; paint();
   }
 
   /* ---------- writing entries ---------- */
@@ -366,7 +395,11 @@
     if(d.nuFood){ const [from, i] = d.nuFood.split(':'), list = from === 'results' ? S.results : from === 'custom' ? (S.q.trim().length >= 2 ? S.custom.filter(f => (f.name + ' ' + f.brand).toLowerCase().includes(S.q.trim().toLowerCase())) : S.custom) : S.recent; if(list[+i]) choose(list[+i]); return; }
     if(d.nuEdit){ const en = S.entries.find(x => x.id === d.nuEdit); if(!en) return;
       if(en.source === 'quick'){ S.editing = en; go('quick'); return; }
-      S.pick = {food:foodFromEntry(en), units:[{label:en.unit_label || 'serving', grams:en.grams / en.amount}, {label:'g', grams:1}], unit:0, qty:en.amount, entry:en}; S.view = 'pick'; paint(); window.scrollTo(0, 0); return; }
+      const f0 = foodFromEntry(en), units = unitsFor(f0, [], {label:en.unit_label || 'serving', grams:en.grams / en.amount}), k = units.findIndex(u => u.label === (en.unit_label || 'serving'));
+      S.pick = {food:f0, units, unit:Math.max(0, k), qty:en.amount, entry:en, touched:true}; S.view = 'pick'; paint(); window.scrollTo(0, 0); return; }
+    if(d.nuUnit != null){ pickUnit(+d.nuUnit); return; }
+    if(d.nuStep){ stepQty(+d.nuStep); return; }
+    if(d.nuSet){ S.pick.touched = true; S.pick.qty = d.nuSet; paint(); return; }
     if('nuSave' in d) return saveEntry();
     if('nuDel' in d){ const en = S.pick ? S.pick.entry : S.editing; if(en && confirm('Delete "' + en.name + '"?')) deleteEntry(en.id); return; }
     if('nuQsave' in d) return saveQuick();
@@ -379,14 +412,12 @@
   root.addEventListener('input', e => {
     const t = e.target;
     if(t.id === 'nuSearch') return search(t.value);
-    if(t.id === 'nuQty'){ S.pick.qty = t.value; const u = S.pick.units[S.pick.unit]; $('nuTotals').innerHTML = totalsHtml(amounts(S.pick.food.per100, (num(t.value) || 0) * u.grams)); return; }
+    if(t.id === 'nuQty'){ S.pick.qty = t.value; S.pick.touched = true; const u = S.pick.units[S.pick.unit], g = (num(t.value) || 0) * u.grams; $('nuTotals').innerHTML = totalsHtml(amounts(S.pick.food.per100, g)); if($('nuGrams')) $('nuGrams').textContent = 'That is ' + Math.round(g) + ' g.'; return; }
     if(t.closest('#sSuggest, .nu-card') && /^s[A-Z]/.test(t.id || '') ){ if(t.id === 'sManual') $('sOwn').hidden = !t.checked; const p = readSettings(); S.draft = p; $('sSuggest').innerHTML = suggestHtml(suggest(p), p); }
   });
   root.addEventListener('change', e => {
     const t = e.target;
-    if(t.id === 'nuUnit'){ const old = S.pick.units[S.pick.unit], nu = S.pick.units[+t.value]; S.pick.unit = +t.value;
-      if(nu.label === 'g' && old.label !== 'g' && S.pick.qty <= 5) S.pick.qty = 100; else if(old.label === 'g' && nu.label !== 'g' && S.pick.qty >= 50) S.pick.qty = 1; paint(); }
-    else if(/^s[A-Z]/.test(t.id || '')){ if(t.id === 'sManual') $('sOwn').hidden = !t.checked; const p = readSettings(); S.draft = p; $('sSuggest').innerHTML = suggestHtml(suggest(p), p); }
+    if(/^s[A-Z]/.test(t.id || '')){ if(t.id === 'sManual') $('sOwn').hidden = !t.checked; const p = readSettings(); S.draft = p; $('sSuggest').innerHTML = suggestHtml(suggest(p), p); }
   });
   async function passwordAuth(create){
     S.email = ($('nuEmail').value || '').trim(); const pw = ($('nuPass') || {}).value || '';

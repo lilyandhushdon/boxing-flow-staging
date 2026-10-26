@@ -267,6 +267,7 @@ body:not(.has-menu) .menu-btn{display:none}
 .btn.small{padding:9px 16px;font-size:14px}
 .t-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .t-head h1{font-size:34px}
+.t-head>div:first-child{min-width:0}.t-head h1{overflow-wrap:anywhere}
 .streak{flex:none;text-align:center;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:8px 14px;min-width:78px}
 .streak b{display:block;font-family:var(--display);font-size:30px;line-height:1;color:var(--muted)}
 .streak span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -443,7 +444,13 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .nu-meals{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
 .nu-tools{margin:12px 0 4px}
 .nu-fname{margin:0;font-size:22px;overflow-wrap:anywhere}
-.nu-amt{display:grid;grid-template-columns:1fr 1.6fr;gap:12px}
+.nu-lab{margin:16px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nu-units{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.nu-units .chip[aria-checked="true"]{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.nu-qty{display:flex;align-items:center;gap:10px;margin-top:14px}
+.nu-qty input{width:100px;text-align:center;font-size:22px;font-weight:700;margin:0}
+.nu-step{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--gold);font-size:26px;line-height:1;cursor:pointer;flex:none}
+.nu-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .nu-three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .nu-three .c-label{margin-top:12px}
 .nu-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 6px;text-align:center}

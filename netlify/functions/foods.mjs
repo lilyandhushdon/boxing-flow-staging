@@ -9,13 +9,26 @@
 const USDA = 'https://api.nal.usda.gov/fdc/v1';
 const OFF_SEARCH = 'https://search.openfoodfacts.org/search';
 const OFF_PRODUCT = 'https://world.openfoodfacts.org/api/v2/product';
-const OFF_FIELDS = 'code,product_name,brands,nutriments,serving_size,serving_quantity,countries_tags';
+const OFF_FIELDS = 'code,product_name,brands,nutriments,serving_size,serving_quantity,quantity,countries_tags';
 const UA = 'BoxingFlow/1.0 (boxing training app; contact via the site)';
 
 const n = (v) => (v == null || v === '' || isNaN(+v) ? null : +v);
 const r1 = (v) => (v == null ? null : Math.max(0, Math.round(v * 10) / 10));   // never negative (USDA's carbs-by-difference can dip just below zero)
 const title = (s) => (s && s === s.toUpperCase() && /[A-Z]{3}/.test(s) ? s.toLowerCase().replace(/(^|[\s(\/-])([a-z])/g, (m, a, b) => a + b.toUpperCase()) : s);
 const tidy = (per100) => Object.fromEntries(Object.entries(per100).map(([k, v]) => [k, r1(v)]));
+// the ways to pick an amount read plainly: "1 medium (118 g)", not "1 medium (7" to 7-7/8" long) (118 g)"
+const tidyLabel = (s) => String(s).replace(/\s*\([^)]*["″][^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+// a whole pack as grams, from "500 g", "1 L", "330ml", "6 x 100 g" or "10 OZ (283 g)" (a millilitre counts as a gram)
+function packOf(q) {
+  if (!q) return null;
+  const s = String(q).toLowerCase().replace(/,/g, '.'), paren = s.match(/\((\d+(?:\.\d+)?)\s*g\)/);
+  let g = paren ? +paren[1] : null;
+  if (g == null) {
+    const m = s.match(/(?:(\d+)\s*[x×]\s*)?(\d+(?:\.\d+)?)\s*(kg|g|ml|cl|l|oz)\b/); if (!m) return null;
+    g = (m[1] ? +m[1] : 1) * +m[2] * { kg: 1000, g: 1, ml: 1, cl: 10, l: 1000, oz: 28.3495 }[m[3]];
+  }
+  return g >= 5 && g <= 5000 ? { label: `Whole pack (${Math.round(g)} g)`, grams: Math.round(g * 10) / 10 } : null;
+}
 
 async function getJson(url, ms = 8000) {
   const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(ms) });
@@ -53,11 +66,12 @@ function usdaItem(f) {
   if (per100.kcal == null && per100.protein == null && per100.carbs == null && per100.fat == null) return null;
   per100.kcal ??= Math.round((per100.protein || 0) * 4 + (per100.carbs || 0) * 4 + (per100.fat || 0) * 9);
   const branded = f.dataType === 'Branded', size = n(f.servingSize), unit = (f.servingSizeUnit || '').toLowerCase();
-  const house = f.householdServingFullText && !/^none$/i.test(f.householdServingFullText) ? title(f.householdServingFullText) : '1 serving';
+  const house = f.householdServingFullText && !/^none$/i.test(f.householdServingFullText) ? tidyLabel(title(f.householdServingFullText)) : '1 serving';
   return {
     id: 'usda:' + f.fdcId, source: 'usda', generic: !branded, name: title(f.description || ''), brand: branded ? title(f.brandName || f.brandOwner || '') : '',
     per100: tidy(per100),
     serving: branded && size && (unit === 'g' || unit === 'ml') ? { label: `${house} (${Math.round(size * 10) / 10} ${unit})`, grams: Math.round(size * 10) / 10 } : null,
+    pack: branded ? packOf(f.packageWeight) : null,
     nz: false,
   };
 }
@@ -78,7 +92,7 @@ async function usdaPortions(id) {
     const g = n(p.gramWeight); if (!g) continue;
     const unit = p.measureUnit?.name && p.measureUnit.name !== 'undetermined' ? p.measureUnit.name : '';
     const label = p.portionDescription && p.portionDescription !== 'Quantity not specified' ? p.portionDescription : `${p.amount || 1} ${unit} ${p.modifier || ''}`.replace(/\s+/g, ' ').trim();
-    if (label) out.push({ label: `${label} (${Math.round(g)} g)`, grams: g });
+    if (label) out.push({ label: `${tidyLabel(label)} (${Math.round(g)} g)`, grams: g });
   }
   if (j.servingSize && (j.servingSizeUnit || '').toLowerCase() === 'g') out.unshift({ label: `${j.householdServingFullText || '1 serving'} (${j.servingSize} g)`, grams: +j.servingSize });
   const seen = new Set();
@@ -97,6 +111,7 @@ function offItem(p) {
     id: 'off:' + p.code, source: 'off', generic: false, name: String(p.product_name).trim(), brand: brands.split(',')[0].trim(),
     per100: tidy(per100),
     serving: sg ? { label: `${p.serving_size || '1 serving'}`.replace(/\s+/g, ' ').trim(), grams: sg } : null,
+    pack: packOf(p.quantity),
     nz: (p.countries_tags || []).includes('en:new-zealand'),
   };
 }
