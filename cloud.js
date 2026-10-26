@@ -80,6 +80,8 @@
   // bring the account's copy to this device. A device that has never been linked to this account takes the account's version of anything the account has
   // (so a new phone's starter data can't overwrite the real thing); after that, the newer change wins. Nothing here deletes this device's data: whatever an update
   // replaces is kept in meta.backup first, and C.restoreBackup() puts it back.
+  // a starter camp (auto) is a placeholder: it must never win over a camp the person really set up, even if its timestamp is newer
+  const placeholder = (k, v) => { if(k !== 'bfCamp' || !v) return false; try { return !!JSON.parse(v).auto; } catch(e){ return false; } };
   async function pull(){
     if(!C.sb || !C.user || pulling) return false; pulling = true; let changed = false;
     try {
@@ -88,8 +90,9 @@
       applying = true;
       for(const r of data){
         remote.add(r.key); const lt = meta.ts[r.key] || 0, rt = Date.parse(r.updated_at);
-        if(first || rt > lt){
-          const mine = rawGet.call(localStorage, r.key), same = r.deleted ? mine === null : mine === r.value;
+        const mine0 = rawGet.call(localStorage, r.key);
+        if(first || rt > lt || (placeholder(r.key, mine0) && !placeholder(r.key, r.value))){
+          const mine = mine0, same = r.deleted ? mine === null : mine === r.value;
           if(!same){
             if(mine !== null && mine.length < 200000) meta.backup[r.key] = {v:mine, at:Date.now()};
             if(r.deleted) rawRemove.call(localStorage, r.key); else rawSet.call(localStorage, r.key, r.value); changed = true;

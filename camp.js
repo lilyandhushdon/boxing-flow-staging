@@ -7,6 +7,11 @@
   const C = window.bfCal, KEY = 'bfCamp';
   let camp = null; try{ camp = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
   const save = () => { try{ camp ? localStorage.setItem(KEY, JSON.stringify(camp)) : localStorage.removeItem(KEY); }catch(e){} };
+  // The fight date the person chose is saved on its own, as {fight, len}. The camp is built from it, so even if the camp itself were ever replaced (a starter camp from a
+  // device that had not synced yet, say), the date they set is still there and the camp is rebuilt from it. It syncs to the account like every other bf key.
+  const FIGHT_KEY = 'bfFightDate';
+  const readFight = () => { try { const v = JSON.parse(localStorage.getItem(FIGHT_KEY) || 'null'); return v && /^\d{4}-\d\d-\d\d$/.test(v.fight) ? v : null; } catch(e){ return null; } };
+  const writeFight = v => { try { v ? localStorage.setItem(FIGHT_KEY, JSON.stringify(v)) : localStorage.removeItem(FIGHT_KEY); } catch(e){} };
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const {dkey, fromKey, addDays} = C;
   const todayKey = () => dkey(new Date());
@@ -230,9 +235,10 @@
     else if(t.id === 'cApply'){
       ui.fight = ($('cFight') || {}).value || ui.fight || '';   // read the box itself: some phones announce a picked date with "change" and not "input"
       const fight = ui.fight || dkey(addDays(new Date(), ui.len * 7 - 1)), nu = build(ui.len, fight); nu.auto = !ui.fight;
+      writeFight(ui.fight ? {fight:ui.fight, len:ui.len} : null);   // what they typed last is the truth, wherever it was set before
       camp = carry(camp, nu); ui.changing = false; ui.open = null; save(); renderCamp();
     }
-    else if(t.id === 'cReset'){ if(confirm('Start over with a fresh 8-week camp from today? Your ticks and the tasks you added will be cleared.')){ camp = defaultCamp(); ui.changing = false; ui.open = null; save(); renderCamp(); } }
+    else if(t.id === 'cReset'){ if(confirm('Start over with a fresh 8-week camp from today? Your ticks and the tasks you added will be cleared.')){ camp = defaultCamp(); writeFight(null); ui.changing = false; ui.open = null; save(); renderCamp(); } }
     else if(d.ph){ ui.open.has(d.ph) ? ui.open.delete(d.ph) : ui.open.add(d.ph); renderCamp(); }
     else if(d.toggle){ toggle(d.toggle); renderCamp(); }
     else if(d.practise){ const f = find(d.practise); if(f.task && f.task.link) C.start({type:f.task.link.type, cfg:f.task.link.cfg}); }
@@ -253,8 +259,12 @@
   $('campBody').addEventListener('keydown', e => { if(e.target.id === 'inlIn'){ if(e.key === 'Enter'){ e.preventDefault(); commit(); } else if(e.key === 'Escape'){ ui.editing = ui.adding = null; renderCamp(); } } });
   ['input', 'change'].forEach(ev => $('campBody').addEventListener(ev, e => { if(e.target.id === 'cFight'){ ui.fight = e.target.value; $('cPrev').innerHTML = preview(); } }));
 
-  if(!camp || !camp.phases){ camp = defaultCamp(); save(); }
-  else if(!camp.v && !camp.auto && camp.start > todayKey() && camp.asked < camp.len){ const auto = camp.auto; camp = carry(camp, build(camp.len, camp.fight)); camp.auto = auto; save(); }
+  // A starter camp is not saved until the person does something with it, so just opening the app can never put a starter camp over a real one in their account.
+  if(!camp || !camp.phases) camp = defaultCamp();
+  const fd = readFight();
+  if(fd && fd.fight >= todayKey() && (camp.auto || camp.fight !== fd.fight)){ camp = carry(camp, build(fd.len || DEFAULT_LEN, fd.fight)); camp.auto = false; save(); }   // their date wins
+  else if(!fd && !camp.auto && camp.fight >= todayKey()) writeFight({fight:camp.fight, len:camp.len});   // a camp set before this setting existed
+  else if(!camp.v && !camp.auto && camp.start > todayKey() && camp.asked < camp.len){ camp = carry(camp, build(camp.len, camp.fight)); camp.auto = false; save(); }
   window.bfCamp = {get camp(){ return camp; }, showInfo:() => { ui.info = true; }, phaseOn, current, toggle:id => { toggle(id); }, counts, phaseTasks, taskDone, PHASES};
   if(!$('camp').hidden) renderCamp();
 })();
