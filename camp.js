@@ -69,26 +69,34 @@
     for(let i = 0; i < 4; i++) while(w[i] < 1){ const j = w.indexOf(Math.max(...w)); w[j]--; w[i]++; }   // every phase gets at least a week
     return w;
   }
-  const weeksAvailable = fightKey => Math.max(1, Math.floor((diffDays(todayKey(), fightKey) + 1) / 7));
+  // Counted in days. Today and the fight day both count, so a fight 12 days away is 13 days of camp. The camp starts today when the fight is closer than a full camp,
+  // and covers every day to the fight: nothing is left empty at the front. Only a fight further away than the chosen length starts later.
+  const daysTo = fightKey => diffDays(todayKey(), fightKey) + 1;
+  function plan(len, fightKey){
+    const asked = daysTo(fightKey), total = Math.max(1, Math.min(len * 7, asked)), start = dkey(addDays(fromKey(fightKey), -(total - 1)));
+    let days;
+    if(total >= 21){ const weeks = Math.floor(total / 7); days = allocate(weeks, len).map(w => w * 7); days[days.findIndex(x => x > 0)] += total - weeks * 7; }   // whole weeks, and the spare days go to the first phase
+    else { const fight = total <= 2 ? total : Math.min(7, Math.ceil(total / 2)), rest = total - fight, build = rest > 7 ? Math.round(rest * 0.4) : 0; days = [0, build, rest - build, fight]; }   // a short camp: peak, then the taper
+    return {total, start, days, asked};
+  }
   function build(len, fightKey){
-    const W = weeksAvailable(fightKey), weeks = Math.min(len, W), alloc = allocate(weeks, len);
-    const start = dkey(addDays(fromKey(fightKey), -(weeks * 7 - 1)));
+    const {total, start, days, asked} = plan(len, fightKey);
     let offset = 0; const phases = [];
     PHASES.forEach((p, i) => {
-      const w = alloc[i]; if(!w) return;
-      const content = CONTENT[i], n = content.tasks.length, k = Math.max(1, Math.min(n, Math.round(n * w / FULL[i])));
-      const chosen = content.tasks.slice(0, k), sprints = []; let left = w, so = 0, used = 0;
+      const d = days[i]; if(!d) return;
+      const content = CONTENT[i], n = content.tasks.length, k = Math.max(1, Math.min(n, Math.round(n * (d / 7) / FULL[i])));
+      const chosen = content.tasks.slice(0, k), sprints = []; let left = d, so = 0, used = 0;
       while(left > 0){
-        const sw = Math.min(2, left), si = sprints.length, sprintsLeft = Math.ceil(left / 2), take = Math.ceil((chosen.length - used) / sprintsLeft);
-        sprints.push({id:uid(), start:dkey(addDays(fromKey(start), (offset + so) * 7)), end:dkey(addDays(fromKey(start), (offset + so + sw) * 7 - 1)),
+        const sd = Math.min(14, left), si = sprints.length, sprintsLeft = Math.ceil(left / 14), take = Math.ceil((chosen.length - used) / sprintsLeft);
+        sprints.push({id:uid(), start:dkey(addDays(fromKey(start), offset + so)), end:dkey(addDays(fromKey(start), offset + so + sd - 1)),
           goal:content.goals[Math.min(si, content.goals.length - 1)], edited:false,
           tasks:chosen.slice(used, used + take).map(t => ({id:uid(), t:t.t, link:t.link, done:false, subs:t.subs.map(s => ({id:uid(), t:s, done:false}))}))});
-        used += take; so += sw; left -= sw;
+        used += take; so += sd; left -= sd;
       }
-      phases.push({id:p.id, name:p.name, color:p.color, weeks:w, start:sprints[0].start, end:sprints[sprints.length - 1].end, sprints});
-      offset += w;
+      phases.push({id:p.id, name:p.name, color:p.color, days:d, weeks:Math.max(1, Math.round(d / 7)), start:sprints[0].start, end:sprints[sprints.length - 1].end, sprints});
+      offset += d;
     });
-    return {id:uid(), len, weeks, fight:fightKey, start, phases, asked:W};
+    return {id:uid(), v:2, len, weeks:Math.ceil(total / 7), days:total, fight:fightKey, start, phases, asked};
   }
 
   // The camp people see first: 8 weeks from today, with no setup. Setting a fight date or another length rebuilds it, keeping their ticks, edited
@@ -146,11 +154,11 @@
   const minFight = () => dkey(addDays(new Date(), 1));
   function preview(){
     if(!ui.fight){ const end = dkey(addDays(new Date(), ui.len * 7 - 1)); return `<div class="c-prev"><b>${ui.len}-week camp</b><span>Starts today and ends on ${fmt(end)}. Add your fight date to fit the camp to it.</span></div>`; }
-    const W = weeksAvailable(ui.fight), weeks = Math.min(ui.len, W), alloc = allocate(weeks, ui.len), startKey = dkey(addDays(fromKey(ui.fight), -(weeks * 7 - 1)));
+    const pl = plan(ui.len, ui.fight), span = d => d % 7 === 0 ? d / 7 + 'w' : d + 'd';
     let note = '';
-    if(W < ui.len) note = `<p class="t-note warn">You have ${W} week${W===1?'':'s'}, so this is a ${weeks}-week camp with each phase shortened to fit.</p>`;
-    else if(W > ui.len) note = `<p class="t-note">The camp starts on ${fmt(startKey)}, ${diffDays(todayKey(), startKey)} days from now.</p>`;
-    return `<div class="c-prev"><b>${weeks}-week camp</b><span>${PHASES.map((p,i) => alloc[i] ? `<i style="--c:${p.color}"></i>${p.name} ${alloc[i]}w` : '').filter(Boolean).join(' · ')}</span></div>${note}`;
+    if(pl.asked < ui.len * 7) note = `<p class="t-note warn">The fight is ${pl.asked - 1} day${pl.asked === 2 ? '' : 's'} away. The camp starts today and every phase is fitted to the days you have.</p>`;
+    else if(pl.asked > ui.len * 7) note = `<p class="t-note">The camp starts on ${fmt(pl.start)}, ${diffDays(todayKey(), pl.start)} days from now.</p>`;
+    return `<div class="c-prev"><b>${pl.total < 28 ? pl.total + '-day' : Math.round(pl.total / 7) + '-week'} camp</b><span>${PHASES.map((p,i) => pl.days[i] ? `<i style="--c:${p.color}"></i>${p.name} ${span(pl.days[i])}` : '').filter(Boolean).join(' · ')}</span></div>${note}`;
   }
   function changeHtml(){
     return `<div class="c-change"><h2>Change your camp</h2>
@@ -194,15 +202,15 @@
     const cur = current(), fightIn = diffDays(todayKey(), camp.fight);
     const sub = cur.state === 'upcoming' ? `Your camp starts ${cur.days === 1 ? 'tomorrow' : `on ${fmt(camp.start)}, in ${cur.days} days`}.` : cur.state === 'finished' ? 'Your camp is finished.' : `Week ${cur.week} of ${camp.weeks} · ${cur.name} · fight on ${fmt(camp.fight)}`;
     if(ui.open === null) ui.open = new Set([phaseNow() || camp.phases[0].id]);
-    return `<div class="t-head"><div><div class="eyebrow">Training camp · ${camp.weeks} weeks</div><h1>${cur.state === 'active' ? esc(cur.name) + ' phase' : 'Your camp'}</h1><p class="sub" style="margin:4px 0 0">${sub}</p></div>
+    return `<div class="t-head"><div><div class="eyebrow">Training camp · ${camp.days && camp.days < 28 ? camp.days + ' days' : camp.weeks + ' weeks'}</div><h1>${cur.state === 'active' ? esc(cur.name) + ' phase' : 'Your camp'}</h1><p class="sub" style="margin:4px 0 0">${sub}</p></div>
       ${fightIn >= 0 ? `<div class="streak on"><b>${fightIn}</b><span>days to fight</span></div>` : ''}</div>
       ${infoHtml()}
       ${camp.auto ? `<p class="t-note">This is your starter ${camp.weeks}-week camp, starting today. Change the length or add your fight date to fit it to your fight.</p>` : ''}
       ${ui.changing ? changeHtml() : '<div class="acts"><button class="btn small" data-change>Change length or fight date</button></div>'}
-      ${camp.asked < camp.len ? `<p class="t-note warn">Shortened to ${camp.weeks} weeks to fit the time you had, with each phase trimmed to match.</p>` : ''}
+      ${!camp.auto && (camp.days ? camp.days < camp.len * 7 : camp.asked < camp.len) ? `<p class="t-note warn">Fitted to the ${camp.days ? camp.days + ' days' : camp.weeks + ' weeks'} you had to the fight, with each phase trimmed to match.</p>` : ''}
       <div class="ph-list">${camp.phases.map(p => { const c = counts(phaseTasks(p)), open = ui.open.has(p.id), cur2 = phaseNow() === p.id;
         return `<section class="ph ${open?'open':''}" style="--c:${p.color}"><button class="ph-head" data-ph="${p.id}" aria-expanded="${open}"><span class="dot"></span><b>${p.name}</b>
-          <span class="ph-w">${fmt(p.start)} to ${fmt(p.end)} · ${p.weeks} wk</span>${cur2 ? '<em>you are here</em>' : ''}<span class="ph-n">${c.done}/${c.total}</span><svg class="icon chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+          <span class="ph-w">${fmt(p.start)} to ${fmt(p.end)} · ${p.days && p.days < 14 ? p.days + ' day' + (p.days === 1 ? '' : 's') : p.weeks + ' wk'}</span>${cur2 ? '<em>you are here</em>' : ''}<span class="ph-n">${c.done}/${c.total}</span><svg class="icon chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
           ${open ? `<div class="ph-body">${p.sprints.map((s,i) => sprintHtml(p, s, i)).join('')}</div>` : ''}</section>`; }).join('')}</div>
       <div class="acts"><button class="btn ghost" id="cReset">Start over</button></div>
       <p class="iq-note">A general plan to work from, not a replacement for your coach.</p>`;
@@ -246,6 +254,7 @@
   ['input', 'change'].forEach(ev => $('campBody').addEventListener(ev, e => { if(e.target.id === 'cFight'){ ui.fight = e.target.value; $('cPrev').innerHTML = preview(); } }));
 
   if(!camp || !camp.phases){ camp = defaultCamp(); save(); }
+  else if(!camp.v && !camp.auto && camp.start > todayKey() && camp.asked < camp.len){ const auto = camp.auto; camp = carry(camp, build(camp.len, camp.fight)); camp.auto = auto; save(); }
   window.bfCamp = {get camp(){ return camp; }, showInfo:() => { ui.info = true; }, phaseOn, current, toggle:id => { toggle(id); }, counts, phaseTasks, taskDone, PHASES};
   if(!$('camp').hidden) renderCamp();
 })();
