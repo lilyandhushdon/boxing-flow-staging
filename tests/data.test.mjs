@@ -100,6 +100,20 @@ test('Recovery sessions: every session adds up to the minutes it is named for', 
   }
 });
 
+test('Runs: every run adds up to the minutes it is named for, and its steps have words to say', () => {
+  const { RUNS, RUN_EFFORT, runSteps, runSeconds } = load('run.js', ['RUNS', 'RUN_EFFORT', 'runSteps', 'runSeconds']);
+  assert.ok(RUNS.length >= 5 && new Set(RUNS.map((r) => r.id)).size === RUNS.length);
+  for (const r of RUNS) {
+    assert.ok(RUN_EFFORT[r.effort], `${r.name}: unknown effort`);
+    assert.equal(r.warm + r.main + r.cool, r.mins * 60, `${r.name}: the parts add up to ${(r.warm + r.main + r.cool) / 60} min, not ${r.mins}`);
+    assert.equal(runSeconds(r), r.mins * 60);
+    const steps = runSteps(r, 'zone 2, 112 to 130 beats a minute');
+    assert.deepEqual([steps[0].phase, steps.at(-1).phase], ['warm', 'cool']);
+    assert.ok(steps.every((s) => s.sec > 0 && s.name && s.cue && s.say), `${r.name}: a step is missing its words`);
+    assert.ok(steps.filter((s) => s.phase === 'main').some((s) => s.say.includes('112 to 130')), `${r.name}: the heart rate range should be spoken`);
+  }
+});
+
 test('Film study fighters: every fight is a real-looking video from an official channel', () => {
   const w = {}; vm.runInNewContext(fs.readFileSync(path.join(root, 'fighters.js'), 'utf8'), { window: w });
   const list = w.FILM_FIGHTERS, official = new Set(['Top Rank Boxing', 'DAZN Boxing', 'Matchroom Boxing', 'Premier Boxing Champions', 'Golden Boy Boxing', 'Sky Sports Boxing', 'Ring Magazine', 'BOXXER']);

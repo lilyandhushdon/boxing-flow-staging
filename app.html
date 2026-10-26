@@ -811,6 +811,7 @@ button.fs-t{cursor:pointer}
   <button class="m-sub" data-go="plyo">Plyometrics</button>
   <button class="m-sub" data-go="shoulder">Shoulder conditioning</button>
   <button class="m-sub" data-go="treadmill">Treadmill intervals</button>
+  <button class="m-sub" data-go="run">Run</button>
   <button class="m-sub" data-go="recovery">Recovery</button>
   <button class="m-group" data-go="calendar">Training calendar</button>
   <button class="m-group" data-go="camp">Training camp</button>
@@ -922,6 +923,12 @@ button.fs-t{cursor:pointer}
       <strong>Recovery</strong>
       <p>Cold shower, massage gun, foam roller, stretching and mobility. A voice and a timer take you through each move, and each session lists what it does for a boxer.</p>
       <span class="go">Pick a session &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="run">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M8 21l3-18M16 21l-3-18M12 7v2M12 12v2M12 17v2"/></svg></span>
+      <strong>Run</strong>
+      <p>Green zone runs to build your engine: recovery jog, easy runs, a long run, and a yellow zone tempo run. Outside or on a treadmill, with a voice keeping your effort right.</p>
+      <span class="go">Pick a run &rarr;</span>
     </button>
   </div>
 </section>
@@ -1405,6 +1412,7 @@ button.fs-t{cursor:pointer}
 <script src="shoulder.js"></script>
 <script src="treadmill.js"></script>
 <script src="recovery.js"></script>
+<script src="run.js"></script>
 <script src="mind.js"></script>
 <script>
 const ICONS = {
@@ -1671,7 +1679,7 @@ const FINISH = ['Last ten seconds. Empty the tank!', 'Ten seconds left. Everythi
 const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
-const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0, out:0, oopt:0, plyo:0, popt:0, shd:0, shopt:0, srest:0, tm:0, rec:0};
+const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0, out:0, oopt:0, plyo:0, popt:0, shd:0, shopt:0, srest:0, tm:0, rec:0, run:0};
 let mode = 'coach';   // 'coach' (the 3D coach), 'basic' (set exercises, no coach), 'scenario' (a coached game plan against one style), 'output' (the coach calls combinations to a punch target), 'plyo' (bodyweight plyometric intervals), 'shoulder' (the shoulder conditioning drill) or 'timer' (rounds and rest only)
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
@@ -1742,6 +1750,36 @@ function renderTreadmillSetup(){
   $('summary').innerHTML = `<b>${ws.name}</b> · ${ws.mins} min · ${TM_GRADIENT}% gradient`;
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
+// runs: pick one; the screen shows how hard it should feel (with heart rate zones when they are set up in the profile) and the three parts
+function runHr(w){
+  const zs = window.bfHR && window.bfHR.zones && window.bfHR.zones(); if(!zs) return '';
+  const hz = RUN_EFFORT[w.effort].hr, lo = zs[hz[0] - 1], hi = zs[hz[hz.length - 1] - 1];
+  return `zone ${hz[0]}${hz.length > 1 ? ' to ' + hz[hz.length - 1] : ''}, ${lo.lo} to ${hi.hi} beats a minute`;
+}
+const runBrief = w => [
+  ['What it is', w.how],
+  ['How hard it should feel', RUN_EFFORT[w.effort].feel + (runHr(w) ? ` Your heart rate: ${runHr(w)}.` : ' Set up your heart rate zones in your profile and your target beats a minute shows here.')],
+  ['The run', `<b>Warm-up:</b> ${restLabel(w.warm)}<br><b>Run:</b> ${restLabel(w.main)}, with a voice check-in every 5 minutes<br><b>Cool-down:</b> ${restLabel(w.cool)}`],
+  ['Outside or on a treadmill', 'Outside, any route you can run at a steady pace. On a treadmill, set the gradient to 1% so it feels like the road, and hold one steady speed.'],
+  ['Stay safe', 'Stop if you feel dizzy, sharp pain or chest pain. Drink water, and build up slowly if you are new to running. This is a guide, not medical advice.']
+];
+function renderRunSetup(){
+  const w = RUNS[state.run];
+  document.querySelector('#plainSetup [data-back]').textContent = '← Strength & conditioning';
+  $('pTitle').textContent = 'Run';
+  $('pSub').textContent = 'Steady, zone-based runs to build your engine. The hard red zone intervals are in Treadmill intervals.';
+  $('presetBlock').hidden = false; $('presetH').textContent = 'Choose your run';
+  $('presetSub').textContent = 'Green zone is easy and conversational. Yellow zone is comfortably hard.';
+  $('presetList').innerHTML = RUNS.map((r,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.run===i}">
+      <span class="badge">${svg('timer')}</span>
+      <span><strong>${r.name}</strong><span>${r.effort} zone · ${r.blurb}</span></span>
+    </button>`).join('');
+  $('scenBrief').hidden = false; $('scenBrief').innerHTML = runBrief(w).map(([t,p])=>`<div><h3>${t}</h3><p>${p}</p></div>`).join('');
+  ['pLenH','pLenSub','pRoundList','restBlock'].forEach(id => { $(id).hidden = true; });
+  $('summary').innerHTML = `<b>${w.name}</b> · ${w.effort} zone · ${w.mins} min`;
+  $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
+}
 // recovery: pick a session. Each lists what it does for a boxer, how to do it, and the moves with their times
 const recBrief = ws => [
   ['What it does for a boxer', '<ul>' + ws.benefits.map(b => `<li>${b}</li>`).join('') + '</ul>'],
@@ -1769,6 +1807,7 @@ function renderRecoverySetup(){
 function renderPlain(){
   if(mode==='treadmill') return renderTreadmillSetup();
   if(mode==='recovery') return renderRecoverySetup();
+  if(mode==='run') return renderRunSetup();
   ['pLenH','pLenSub','pRoundList'].forEach(id => { $(id).hidden = false; });
   const basic = mode==='basic', scen = mode==='scenario', outp = mode==='output', plyo = mode==='plyo', shld = mode==='shoulder', listy = basic||scen||outp||plyo||shld;
   const opts = scen ? SCEN_OPTS : outp ? OUT_OPTS : plyo ? PLYO_OPTS : shld ? (SHOULDER[state.shd].opts||SHOULDER_OPTS) : OPTIONS, oi = scen ? state.sopt : outp ? state.oopt : plyo ? state.popt : shld ? Math.min(state.shopt, (SHOULDER[state.shd].opts||SHOULDER_OPTS).length-1) : state.opt, o = opts[oi];
@@ -1811,7 +1850,7 @@ function renderPlain(){
     : `<b>${listy ? lists[pi].name : 'Round timer'}</b> · ${o.r} × ${o.m} min${o.r>1?(shld && SHOULDER[pi].breakSec ? ` · ${SHOULDER[pi].breakSec} sec breaks` : ` · ${restLabel(REST_OPTS[state[rk]])} rest`):''}`;
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
-$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'scen',output:'out',plyo:'plyo',shoulder:'shd',treadmill:'tm',recovery:'rec'}[mode]||'preset']=+b.dataset.i; if(mode==='shoulder') state.shopt=0; renderPlain(); } });
+$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'scen',output:'out',plyo:'plyo',shoulder:'shd',treadmill:'tm',recovery:'rec',run:'run'}[mode]||'preset']=+b.dataset.i; if(mode==='shoulder') state.shopt=0; renderPlain(); } });
 $('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'sopt',output:'oopt',plyo:'popt',shoulder:'shopt'}[mode]||'opt']=+b.dataset.i; renderPlain(); } });
 $('restList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='shoulder'?'srest':'rest']=+b.dataset.i; renderPlain(); } });
 
@@ -1913,7 +1952,7 @@ function buildTreadmill(){
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
 }
 // recovery sessions (recovery.js). Each move is a "round" so the pips follow the moves; a move done on both sides is the left side, a short switch, then the right side.
-const SEQ = () => mode==='treadmill' || mode==='recovery';   // both are a list of timed intervals rather than rounds of boxing
+const SEQ = () => mode==='treadmill' || mode==='recovery' || mode==='run';   // both are a list of timed intervals rather than rounds of boxing
 function recColor(n){ return /^cold/i.test(n) ? '#6ec1ff' : /^warm/i.test(n) ? '#ffb36e' : '#7fd1a8'; }
 function buildRecovery(){
   const ws = RECOVERY[state.rec];
@@ -1939,6 +1978,24 @@ function recShow(s, left, counting, frac){
   $('rLabel').textContent = `Move ${s.round} of ${rounds}`;
   $('rCaption').textContent = s.kind==='switch' ? 'Switch sides' : s.side ? `${s.side} side` : 'Slow and steady';
   $('rNextLabel').textContent = 'Move left'; $('rNextVal').textContent = fmt(Math.max(0, s.rsec - roundElapsed()));
+  return frac;
+}
+// runs (run.js): three rounds, the warm-up, the run and the cool-down. The run is cut into 5-minute blocks, so the voice can check in without changing the screen.
+function buildRun(){
+  const w = RUNS[state.run], eff = RUN_EFFORT[w.effort], list = runSteps(w, runHr(w)), roundOf = {warm:1, main:2, cool:3}, rsecOf = {warm:w.warm, main:w.main, cool:w.cool};
+  rounds = 3; roundSec = Math.max(w.warm, w.main, w.cool);
+  steps = [{type:'ready',round:1,name:'Get ready',cue:`${w.name}. ${eff.feel}`,dur:15,color:READY_C}];
+  list.forEach(x => steps.push({type:'work', mini:false, kind:x.phase, loadStart:x.start, round:roundOf[x.phase], rsec:rsecOf[x.phase], dur:x.sec, color:x.phase==='main' ? eff.color : '#7fc8ea', name:x.name, cue:x.cue, say:x.say}));
+  $('wTitle').textContent = w.name;
+  $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
+}
+function runShow(s, left, counting, frac){
+  if(s.type==='ready'){ $('rLabel').textContent = counting ? 'Warm-up' : 'Starting'; $('rNextLabel').textContent = 'Run starts in'; return frac; }
+  const w = RUNS[state.run], toGo = steps.slice(idx+1).reduce((n,x) => n + x.dur, 0) + left;
+  $('rTime').textContent = fmt(left); frac = left/s.dur;
+  $('rLabel').textContent = s.kind==='warm' ? 'Warm-up' : s.kind==='cool' ? 'Cool-down' : 'Run';
+  $('rCaption').textContent = s.kind==='main' ? `${w.effort} zone` : 'Easy';
+  $('rNextLabel').textContent = 'Run left'; $('rNextVal').textContent = fmt(toGo);
   return frac;
 }
 // the treadmill screen: the big number is the time left in this on or off, with the load and rep above it and the speed to run under it
@@ -2678,6 +2735,7 @@ function render(){
   const sec=Math.max(0,Math.ceil(left)); $('rNextVal').textContent = sec>60 ? fmt(sec) : `${sec} second${sec===1?'':'s'}`;
   if(mode==='treadmill') frac = tmShow(s, left, cd!==null, frac);
   else if(mode==='recovery') frac = recShow(s, left, cd!==null, frac);
+  else if(mode==='run') frac = runShow(s, left, cd!==null, frac);
   $('ringProg').style.strokeDashoffset = C*(1-frac);
   $('nowName').textContent=s.shown||s.name; $('nowCue').textContent=s.cue;
   $('nowBar').style.width = (el/s.dur*100)+'%';
@@ -2705,7 +2763,7 @@ function renderList(force){
   const list=$('upList'), keep=list.scrollTop, cur=steps[idx];
   const next=steps.slice(idx+1);
   list.innerHTML = next.length ? next.map((n,i)=>{
-    const k=idx+1+i, tag = mode==='recovery' ? '' : mode==='treadmill' ? (n.loadStart ? `<span class="tag">Load ${n.load}${n.passes>1 ? ' · set '+n.pass : ''}</span>` : '') : n.type==='work' && n.round!==cur.round ? `<span class="tag">Round ${n.round}</span>` : '';
+    const k=idx+1+i, tag = mode==='recovery' || mode==='run' ? '' : mode==='treadmill' ? (n.loadStart ? `<span class="tag">Load ${n.load}${n.passes>1 ? ' · set '+n.pass : ''}</span>` : '') : n.type==='work' && n.round!==cur.round ? `<span class="tag">Round ${n.round}</span>` : '';
     const grip = n.type==='work' && mode!=='plyo' && mode!=='shoulder' && !SEQ() ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
     return `<li class="item ${n.type}${k===movedK?' just-moved':''}" data-k="${k}" style="--c:${n.color}">
       <div class="item-main"><div class="num">${String(i+1).padStart(2,'0')}${i===0?' · Next':''}</div>
@@ -2713,7 +2771,7 @@ function renderList(force){
   }).join('') : '<li class="item"><div class="item-main"><div class="num">Last one</div><strong>Final bell</strong><div class="dur">Finish strong</div></div></li>';
   list.scrollTop=keep; movedK=-1;
   const left=next.filter(x=>x.type==='work' && !x.mini).length;
-  const word = mode==='recovery' ? 'move' : mode==='treadmill' ? 'interval' : mode==='basic' ? 'exercise' : mode==='scenario' ? 'focus' : mode==='output' ? 'round' : mode==='plyo'||mode==='shoulder' ? 'exercise' : 'drill';
+  const word = mode==='run' ? 'block' : mode==='recovery' ? 'move' : mode==='treadmill' ? 'interval' : mode==='basic' ? 'exercise' : mode==='scenario' ? 'focus' : mode==='output' ? 'round' : mode==='plyo'||mode==='shoulder' ? 'exercise' : 'drill';
   const wordPl = word==='focus' ? 'focus areas' : word+'s';
   $('upCount').textContent = left ? `${left} ${left>1?wordPl:word} to go` : '';
   if(!$('listNote').textContent) $('listNote').textContent = mode==='plyo' || SEQ() ? '' : DEFAULT_NOTE;
@@ -2825,7 +2883,7 @@ function bgSync(){
 const bgArt = [{src:new URL('logo-512.png',location.href).href, sizes:'512x512', type:'image/png'}];
 function bgInfo(){
   const s = bgAudio && steps[idx]; if(!s || !navigator.mediaSession || !window.MediaMetadata) return;
-  navigator.mediaSession.metadata = new MediaMetadata({title:s.name, artist: mode==='recovery' ? `Move ${s.round} of ${rounds} · ${$('wTitle').textContent}` : mode==='treadmill' ? `Load ${s.load} · ${$('wTitle').textContent}` : `Round ${s.round} of ${rounds} · ${$('wTitle').textContent}`, album:'Boxing Flow', artwork:bgArt});
+  navigator.mediaSession.metadata = new MediaMetadata({title:s.name, artist: mode==='run' ? $('wTitle').textContent : mode==='recovery' ? `Move ${s.round} of ${rounds} · ${$('wTitle').textContent}` : mode==='treadmill' ? `Load ${s.load} · ${$('wTitle').textContent}` : `Round ${s.round} of ${rounds} · ${$('wTitle').textContent}`, album:'Boxing Flow', artwork:bgArt});
   bgPos();
 }
 let bgKey = '', bgUrl = '';
@@ -3122,7 +3180,7 @@ function start(){
   if(coach) setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
   else { Coach.pause(true); window.bfWork=false; iaPrompt(false); }   // no coach: make sure he is put away
   bgInit();   // inside the tap, so the phone lets the audio start
-  coach ? build() : mode==='plyo' ? buildPlyo() : mode==='shoulder' ? buildShoulder() : mode==='treadmill' ? buildTreadmill() : mode==='recovery' ? buildRecovery() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  coach ? build() : mode==='plyo' ? buildPlyo() : mode==='shoulder' ? buildShoulder() : mode==='treadmill' ? buildTreadmill() : mode==='recovery' ? buildRecovery() : mode==='run' ? buildRun() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
@@ -3139,6 +3197,7 @@ function finish(){
     + (mode==='output' ? `<div>${(rounds*(work[0]?.total||0)).toLocaleString()}<span>Punches called</span></div>` : '');
   if(mode==='treadmill'){ const real=steps.filter(x=>x.type!=='ready'); $('doneStats').innerHTML=`<div>${new Set(real.map(x=>x.round)).size}<span>Loads</span></div><div>${Math.round(real.reduce((n,x)=>n+x.dur,0)/60)}<span>Minutes</span></div><div>${real.filter(x=>x.kind==='on').length}<span>Fast intervals</span></div>`; }
   if(mode==='recovery'){ const real=steps.filter(x=>x.type!=='ready'); $('doneStats').innerHTML=`<div>${rounds}<span>Moves</span></div><div>${Math.max(1,Math.round(real.reduce((n,x)=>n+x.dur,0)/60))}<span>Minutes</span></div>`; }
+  if(mode==='run'){ const w=RUNS[state.run]; $('doneStats').innerHTML=`<div>${w.mins}<span>Minutes</span></div><div>${w.effort}<span>Zone</span></div>`; }
   boxFor('doneSave', sid); boxFor('gfSave', sid);
   const sc = mode==='scenario' && SCENARIOS[state.scen];
   $('doneReview').hidden = !sc;
@@ -3180,13 +3239,13 @@ renderSetup();
 setPlaying(false);
 /* ---------- links into the app ----------
    app.html?go=scenario&scen=2&sopt=0   or   app.html#scenario?scen=2&sopt=0      (the plan, the landing page and the calendar all use these)
-   go: modes, strength, mind, breath, reframe, calendar, coach, basic, timer, scenario, output, plyo, shoulder, treadmill, recovery, iq
+   go: modes, strength, mind, breath, reframe, calendar, coach, basic, timer, scenario, output, plyo, shoulder, treadmill, recovery, run, iq
    choices: focus=jab,speed  opt  preset  scen  sopt  out  oopt  plyo  popt  shd  shopt  (numbers pick the entry in that list) */
-const PARAM_LISTS = {opt:()=>OPTIONS, preset:()=>BASIC, scen:()=>SCENARIOS, sopt:()=>SCEN_OPTS, out:()=>OUTPUT, oopt:()=>OUT_OPTS, plyo:()=>PLYO, popt:()=>PLYO_OPTS, shd:()=>SHOULDER, shopt:()=>SHOULDER[state.shd].opts||SHOULDER_OPTS, tm:()=>TREADMILL, rec:()=>RECOVERY};
+const PARAM_LISTS = {opt:()=>OPTIONS, preset:()=>BASIC, scen:()=>SCENARIOS, sopt:()=>SCEN_OPTS, out:()=>OUTPUT, oopt:()=>OUT_OPTS, plyo:()=>PLYO, popt:()=>PLYO_OPTS, shd:()=>SHOULDER, shopt:()=>SHOULDER[state.shd].opts||SHOULDER_OPTS, tm:()=>TREADMILL, rec:()=>RECOVERY, run:()=>RUNS};
 function applyParams(p){
   const f=(p.get('focus')||'').split(',').filter(id=>FOCUS.some(x=>x.id===id));
   if(f.length) state.focus=new Set(f);
-  ['shd','opt','preset','scen','sopt','out','oopt','plyo','popt','shopt','tm','rec'].forEach(k=>{ if(p.has(k)){ const n=+p.get(k); if(Number.isInteger(n) && n>=0 && n<PARAM_LISTS[k]().length) state[k]=n; } });
+  ['shd','opt','preset','scen','sopt','out','oopt','plyo','popt','shopt','tm','rec','run'].forEach(k=>{ if(p.has(k)){ const n=+p.get(k); if(Number.isInteger(n) && n>=0 && n<PARAM_LISTS[k]().length) state[k]=n; } });
 }
 function route(){
   const sp=new URLSearchParams(location.search), [hname,hq]=location.hash.slice(1).split('?'), p=new URLSearchParams(hq||'');
@@ -3195,7 +3254,7 @@ function route(){
   const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), weight:()=>show('weight'), profile:()=>show('profile'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
   if(sections[name]) return sections[name]();
   applyParams(p);
-  if(['coach','basic','timer','scenario','output','plyo','shoulder','treadmill','recovery','iq'].includes(name)) pickMode(name);
+  if(['coach','basic','timer','scenario','output','plyo','shoulder','treadmill','recovery','run','iq'].includes(name)) pickMode(name);
 }
 route(); addEventListener('hashchange',route);
 
