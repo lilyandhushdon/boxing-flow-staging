@@ -247,6 +247,7 @@
     if(b && 'campTask' in b.dataset){ window.bfCamp.toggle(b.dataset.campTask); renderToday(); return; }
     if(b && 'campInfo' in b.dataset){ window.bfCamp.showInfo(); show('camp'); return; }
     if((b && 'campOpen' in b.dataset) || (!b && e.target.closest('[data-w="camp"]'))){ show('camp'); return; }   // the widget itself opens How do you want to train?
+    if(!b && e.target.closest('[data-w="nutri"]')){ show('nutrition'); return; }   // the whole nutrition card opens nutrition, like its Open link
     if(!b){ if(mini) C.openDay(todayK(), 'month'); return; }
     const d = b.dataset;
     if(d.startPlan){ const ev = C.plan.find(x => x.id === d.startPlan); if(ev) C.start(ev); }

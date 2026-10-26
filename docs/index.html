@@ -388,6 +388,15 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <li><b>Nutrition link:</b> one weight, not two. Nutrition's settings take the weight from this log, and a weight typed there is added to it. When the log's weight has moved 0.5 kg or more from the weight the calorie targets were worked out at, the nutrition screen offers "Update my targets" (never automatically, and not if the targets were set by hand).</li>
 </ul>
 
+<h3 id="f-signin">Sign-in gate</h3>
+<p><b>Code:</b> <code>gate.js</code> (loads after <code>cloud.js</code> and <code>nutrition.js</code>). Proof of concept: the app needs an account.</p>
+<ul>
+<li>Until someone is signed in, a sign-in screen covers the whole app: email and password with <b>Sign in</b> and <b>Create account</b>, or an email sign-in link. Everything else is hidden behind it.</li>
+<li>Someone who has signed in on this device before is let in at once while the sign-in service answers (the marker <code>gateOk</code> is not a <code>bf</code> key, so it is not synced), so a missing connection at the gym does not lock them out. The screen appears if the service says they are signed out, and after Sign out (menu, under the sync line).</li>
+<li>Owner mode on the computer (section 8) signs in by itself, so the gate never shows there. Tests skip it with <code>window.BF_NO_GATE</code>, and one test checks it.</li>
+<li>It is a door, not the lock: the lock on the data is the database rules. New accounts only work when sign-ups are on in the Supabase project (<code>enable_signup</code> in <code>supabase/config.toml</code>, currently off) and sign-up emails are limited on the free plan, so until sign-ups are opened the screen says new accounts are switched off. How the app is paid for is still open.</li>
+</ul>
+
 <h3 id="f-profile">Profile</h3>
 <p><b>Code:</b> <code>profile.js</code>. <b>Data:</b> <code>bfProfile</code> (saved on the device and synced like everything else). Opens from the menu or <code>?go=profile</code>.</p>
 <ul>
@@ -747,7 +756,8 @@ node check-embeds.mjs               # are all film study videos still embeddable
 <h2>15. Change log</h2>
 <table>
 <tr><th>Date</th><th>Commit</th><th>What changed</th></tr>
-<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Fight date no longer reverts: it is saved on its own and synced (<code>bfFightDate</code>), the camp is rebuilt from it, a starter camp is never saved just by opening the app, and a starter camp never replaces a real one in the sync.</td></tr>
+<tr><td>26 Oct 2026</td><td><i>this commit</i></td><td>Sign-in gate (<code>gate.js</code>): the app needs an account, with sign in, create account and an emailed link, plus Sign out in the menu. The whole nutrition card on the dashboard opens nutrition.</td></tr>
+<tr><td>26 Oct 2026</td><td><code>9a99c9a</code></td><td>Fight date no longer reverts: it is saved on its own and synced (<code>bfFightDate</code>), the camp is rebuilt from it, a starter camp is never saved just by opening the app, and a starter camp never replaces a real one in the sync.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>7776669</code></td><td>Training camp: setting a fight date starts the camp today and covers every day to the fight, instead of waiting for the next whole week. A camp already waiting to start is rebuilt to start today.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>6aeab7c</code></td><td>Runs (<code>run.js</code>): green zone recovery, easy and long runs and a yellow zone tempo run, with a voice and heart rate zone targets.</td></tr>
 <tr><td>26 Oct 2026</td><td><code>6b847af</code></td><td>Barcode scanning now works on iPhone, Windows and Firefox as well (bundled ZXing reader), not only Chrome on Android.</td></tr>

@@ -281,7 +281,13 @@ body:not(.has-menu) .menu-btn{display:none}
 body.dragging,body.dragging *{cursor:grabbing!important}
 .t-hint{color:var(--muted);font-size:13px;margin:14px 0 0;text-align:center}
 .t-hint button{background:none;border:0;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;padding:0}
-.tw.mini{cursor:pointer}
+.tw.mini,.tw[data-w="nutri"]{cursor:pointer}
+html.gate-wait body>*:not(#gate),html.gated body>*:not(#gate){display:none!important}
+#gate{position:fixed;inset:0;z-index:300;background:var(--bg);overflow:auto;display:grid;place-items:center;padding:24px 16px}
+#gate[hidden]{display:none}
+.gate-box{width:100%;max-width:420px}
+.gate-box h1{margin:8px 0 6px}
+.gate-logo{width:56px;height:56px;border-radius:50%;border:6px solid var(--gold);border-right-color:transparent;transform:rotate(-30deg)}
 .cal-sub{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
 .cal-sub:first-of-type{margin-top:6px}
 .mc-top{display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-size:20px;font-weight:700}
@@ -789,6 +795,8 @@ button.fs-t{cursor:pointer}
 @media (prefers-reduced-motion:reduce){#gymView{transition:none}.g-hud,.g-left,.g-now,.g-list{transition:none}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script>/* the sign-in gate (gate.js): keep the app out of sight until we know whether someone is signed in. Someone who has signed in here before is not kept waiting. */
+if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.documentElement.classList.add('gate-wait'); setTimeout(function(){ document.documentElement.classList.remove('gate-wait'); }, 8000); } } catch(e){} }</script>
 </head>
 <body class="has-menu">
 <div class="topbar"><div class="topbar-in">
@@ -3282,6 +3290,7 @@ menuEl.addEventListener('click',e=>{
 <script src="hr.js"></script>
 <script src="weight.js"></script>
 <script src="nutrition.js"></script>
+<script src="gate.js"></script>
 <script src="fighters.js"></script>
 <script src="film.js"></script>
 <script src="home.js"></script>

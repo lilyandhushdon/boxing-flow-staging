@@ -42,6 +42,13 @@ test('the dashboard shows every widget, the fight countdown, and the live channe
   await expectNoErrors(errors);
 });
 
+test('tapping the nutrition card on the dashboard opens nutrition', async ({ page }) => {
+  const errors = await open(page, '/app.html');
+  await page.locator('[data-w="nutri"] h2').click();
+  await expect.poll(() => visibleScreens(page)).toEqual(['nutrition']);
+  await expectNoErrors(errors);
+});
+
 test('the training camp starts by itself, can be changed, and remembers ticks', async ({ page }) => {
   const errors = await open(page, '/app.html?go=camp');
   await expect(page.locator('#campBody')).toContainText('starter 8-week camp');
@@ -151,6 +158,18 @@ test('a gym session can be planned with your own details, repeats, and counts wh
   await expect(page.locator('.cs.is-done')).toHaveCount(1);
   const log = await page.evaluate(() => JSON.parse(localStorage.getItem('bfLog') || '[]'));
   expect(log.filter((e) => e.type === 'gym' && e.minutes === 90)).toHaveLength(1);   // it counts as a session
+  await expectNoErrors(errors);
+});
+
+test('the app asks for a sign-in first, and the sign-in link request goes out', async ({ page }) => {
+  const errors = await open(page, '/app.html', { gate: true });
+  await expect(page.locator('#gate')).toBeVisible();
+  await expect(page.locator('#gate')).toContainText('Sign in');
+  await expect(page.locator('#todayBody')).toBeHidden();   // nothing of the app is usable behind it
+  await page.locator('[data-g-mode]').click();
+  await page.locator('#gEmail').fill('boxer@example.com'); await page.locator('#gateForm button[type="submit"]').click();
+  await expect(page.locator('#gate')).toContainText('Check your inbox for boxer@example.com');
+  expect(await page.evaluate(() => window.__otpEmail)).toBe('boxer@example.com');
   await expectNoErrors(errors);
 });
 

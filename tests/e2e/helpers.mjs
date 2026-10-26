@@ -24,9 +24,10 @@ window.supabase = {createClient: () => ({
 // the automated WebKit build has no Web Audio (real iPhones do), so the engine gets a harmless stand-in there
 const AUDIO_STUB = 'if(!window.AudioContext && !window.webkitAudioContext){ const any = () => new Proxy(function(){}, {get:(t, k) => k === "currentTime" ? 0 : k === "state" ? "running" : k === "sampleRate" ? 44100 : any(), apply:() => any(), construct:() => any(), set:() => true}); window.AudioContext = function(){ return any(); }; }';
 
-export async function standIns(page) {
+export async function standIns(page, { gate = false } = {}) {
   const errors = [];
   await page.addInitScript(AUDIO_STUB);
+  if (!gate) await page.addInitScript('window.BF_NO_GATE = true;');   // the sign-in gate has its own test; everywhere else the app is opened signed in
   page.on('pageerror', (e) => errors.push(e.message));
   await page.route(/^https?:\/\/(?!localhost)/, (route) => {
     const url = route.request().url();
@@ -37,8 +38,8 @@ export async function standIns(page) {
   return errors;
 }
 
-export async function open(page, path) {
-  const errors = await standIns(page);
+export async function open(page, path, opts) {
+  const errors = await standIns(page, opts);
   await page.goto(path);
   await page.waitForLoadState('domcontentloaded');
   return errors;

@@ -147,12 +147,13 @@
     else if(C.status === 'syncing') h = 'Saving to your account…';
     else if(C.status === 'error' || C.status === 'offline') h = (C.status === 'offline' ? 'Offline.' : 'Couldn\'t save to your account' + (C.error ? ' (' + esc(C.error) + ')' : '') + '.') + ' Your changes are kept on this device and sent when it works. <button class="linkbtn" data-sync="now">Try again</button>';
     else h = 'Saved to your account' + (C.owner ? ' (owner mode)' : '') + (C.last ? ' · ' + clock(C.last) : '') + ' <button class="linkbtn" data-sync="now">Sync now</button>';
+    if(C.user && !C.owner) h += ' <button class="linkbtn" data-sync="out">Sign out</button>';
     if(hasBackup()) h += '<br><button class="linkbtn" data-sync="restore">Undo the last update from your account</button>';
     el.innerHTML = h;
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-sync]'); if(!b) return; const a = b.dataset.sync;
-    if(a === 'now') syncNow(); else if(a === 'restore'){ if(confirm('Put back what this device had before the last update from your account?')) C.restoreBackup(); }
+    if(a === 'now') syncNow(); else if(a === 'out'){ if(window.setMenu) window.setMenu(false); C.signOut(); } else if(a === 'restore'){ if(confirm('Put back what this device had before the last update from your account?')) C.restoreBackup(); }
     else if(a === 'signin' && window.show){ if(window.setMenu) window.setMenu(false); window.show('nutrition'); }
   });
   document.addEventListener('DOMContentLoaded', paintSyncLine);
