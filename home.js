@@ -30,13 +30,7 @@
   }
   const lastCfg = type => { for(let i = log.length - 1; i >= 0; i--) if(log[i].type === type) return log[i].cfg || {}; return null; };
   const lastDone = type => { for(let i = log.length - 1; i >= 0; i--) if(log[i].type === type) return log[i].ts; return 0; };
-  // "Good evening", or with a name in the profile: "Good evening, Hush"
-  const greeting = () => {
-    const now = new Date(), h = now.getHours(), part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening', plain = 'Good ' + part;
-    const full = ((window.bfProfile && window.bfProfile.data.name) || '').trim(), n = esc(full.split(/\s+/)[0] || '');
-    if(!n) return plain;
-    return plain + ', ' + n;   // "Good evening, Hush"
-  };
+  const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
   const when = k => { if(k === todayK()) return 'Today'; if(k === C.dkey(C.addDays(new Date(), -1))) return 'Yesterday'; return C.dayLabel(k); };
 
   /* ---------- starting things ---------- */
@@ -280,7 +274,6 @@
     else if('resetLayout' in d){ saved = []; try{ localStorage.removeItem(OKEY); }catch(err){} renderToday(); }
   });
   $('todayBody').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-w="minical"]')){ e.preventDefault(); C.openDay(todayK(), 'month'); } });
-  if(window.bfProfile) window.bfProfile.onChange(() => { if(!$('today').hidden) renderToday(); });   // a new name shows in the greeting
   if(window.bfNutri) window.bfNutri.onChange(() => { if(!$('today').hidden) renderToday(); });   // the widget follows the diary
   if(window.bfWeight) window.bfWeight.onChange(() => { if(!$('today').hidden) renderToday(); });   // and the weight badge and widget follow the weight log
   $('todayBody').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.id === 'wQuick'){ e.preventDefault(); document.querySelector('[data-weight-log]').click(); } });
