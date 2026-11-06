@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import { open, visibleScreens, expectNoErrors } from './helpers.mjs';
 
 const links = [
-  ['dashboard', 'today'], ['explore', 'home'], ['boxing', 'modes'], ['strength', 'sc'], ['mind', 'mind'], ['calendar', 'cal'], ['camp', 'camp'], ['film', 'film'],
+  ['dashboard', 'today'], ['explore', 'home'], ['boxing', 'modes'], ['strength', 'sc'], ['mind', 'mind'], ['calendar', 'cal'], ['build', 'build'], ['camp', 'camp'], ['film', 'film'],
   ['nutrition', 'nutrition'], ['weight', 'weight'], ['profile', 'profile'], ['hr', 'hr'], ['coach', 'setup'], ['basic', 'plainSetup'], ['timer', 'plainSetup'], ['scenario', 'plainSetup'], ['output', 'plainSetup'],
   ['plyo', 'plainSetup'], ['shoulder', 'plainSetup'], ['treadmill', 'plainSetup'], ['recovery', 'plainSetup'], ['iq', 'iq'], ['breath', 'breath'], ['reframe', 'reframe'],
 ];
@@ -27,12 +27,12 @@ test('the main screens do not scroll sideways on a phone', async ({ page }) => {
 
 test('the dashboard shows every widget, the fight countdown, and the live channel only on request', async ({ page }) => {
   const errors = await open(page, '/app.html');
-  for (const w of ['today', 'weight', 'camp', 'nutri', 'quick', 'live', 'film', 'minical', 'progress', 'suggest', 'explore']) await expect(page.locator(`[data-w="${w}"]`), `widget ${w}`).toBeVisible();
+  for (const w of ['today', 'weight', 'camp', 'quick', 'live', 'film', 'minical', 'progress', 'suggest', 'explore']) await expect(page.locator(`[data-w="${w}"]`), `widget ${w}`).toBeVisible();
   await expect(page.locator('#tHead .streak:not(.weightb)')).toContainText(/days? (of camp left|to fight)/i);
   await expect(page.locator('#tHead .weightb')).toBeVisible();   // the weight badge beside the countdown
   await expect(page.locator('[data-w="camp"]')).toContainText('Base');
   await expect(page.locator('[data-w="film"]')).toContainText('Fight to study');
-  await expect(page.locator('[data-w="nutri"]')).toContainText('Sign in to start');
+  await expect(page.locator('[data-w="weight"]')).toContainText('Sign in to start');   // weight and nutrition are one card
   await expect(page.locator('[data-w="live"] iframe')).toHaveCount(0);   // nothing streams until it is asked for
   await page.locator('[data-live-on]').click();
   await expect(page.locator('[data-w="live"] iframe')).toHaveCount(1);
@@ -42,9 +42,9 @@ test('the dashboard shows every widget, the fight countdown, and the live channe
   await expectNoErrors(errors);
 });
 
-test('tapping the nutrition card on the dashboard opens nutrition', async ({ page }) => {
+test('the nutrition part of the weight and nutrition card opens nutrition', async ({ page }) => {
   const errors = await open(page, '/app.html');
-  await page.locator('[data-w="nutri"] h2').click();
+  await page.locator('[data-w="weight"] [data-nutri-open]').first().click();
   await expect.poll(() => visibleScreens(page)).toEqual(['nutrition']);
   await expectNoErrors(errors);
 });

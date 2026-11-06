@@ -158,7 +158,7 @@ footer{border-top:1px solid var(--line);padding:20px 16px 40px;text-align:center
 <tr><th>Area</th><th>Features</th></tr>
 <tr><td>Dashboard</td><td>Draggable widgets: today's session, training camp, nutrition, quick coach workout (live preview), live boxing channel, film study, one calendar card (this week and this month), progress, suggestions, do-it-again, explore. Fight countdown badge.</td></tr>
 <tr><td>Boxing</td><td>Coach workout (3D coach), basic workouts, round timer, fight scenarios, output rounds, Boxing IQ quiz.</td></tr>
-<tr><td>Strength and conditioning</td><td>Plyometrics (bodyweight, lower body, upper body, medicine ball), shoulder conditioning, five treadmill interval workouts (Red Zone Running), and Recovery: guided cold shower, massage gun, foam roller, stretching and mobility sessions, each listing what it does for a boxer, with a timed, voiced move-by-move screen.</td></tr>
+<tr><td>Strength and conditioning</td><td>Plyometrics (bodyweight, lower body, upper body, medicine ball), shoulder conditioning, five treadmill interval workouts (Red Zone Running), and neck exercises (<code>neck.js</code>: a plate routine of weighted shrugs and plate-on-forehead sets, four-way neck work and no-equipment isometrics, timed with a voice). Recovery is its own section, separate from strength and conditioning, with a card on Explore, its own menu entry and its own calendar group: guided cold shower, massage gun, foam roller, stretching and mobility sessions, each listing what it does for a boxer, with a timed, voiced move-by-move screen.</td></tr>
 <tr><td>Mental skills</td><td>Box breathing, cognitive reframing, read-through skills.</td></tr>
 <tr><td>Planning</td><td>Training calendar (week and month, repeat, move, tick off, .ics export) and the training camp (phases and two-week focus blocks).</td></tr>
 <tr><td>Tracking</td><td>Nutrition diary with free food databases, heart rate monitor with zones, session log, streaks and weekly goal.</td></tr>
@@ -484,6 +484,9 @@ importmap + module   three.js and the 3D coach, loaded from jsDelivr</code></pre
 <h3>What is saved on the device</h3>
 <table>
 <tr><th>Key</th><th>Owner</th><th>Holds</th><th>Synced</th></tr>
+<tr><td><code>bfBuild</code></td><td>builder.js</td><td>The last workout built on the Build a workout screen: a list of blocks, each a way to train (<code>WAYS</code> id) with its choices. Each block plays as one round.</td><td>no</td></tr>
+<tr><td><code>bfOpp</code></td><td>prep.js</td><td>The opponent entered on the Fight prep screen: an optional name and a list of style traits that change the training targets.</td><td>no</td></tr>
+<tr><td><code>bfMusicKind</code></td><td>app.html</td><td>Which music rotation the timer plays: the usual music, or <code>christian</code> (the cross in the timer's top bar switches it).</td><td>no</td></tr>
 <tr><td><code>bfPlan</code></td><td>calendar.js</td><td>Planned sessions: id, date, time, type (a <code>WAYS</code> id), choices, <code>custom</code> (the label), <code>notes</code>, done, repeat.</td><td>yes</td></tr>
 <tr><td><code>bfLog</code></td><td>home.js</td><td>One entry per saved session (date, type, choices, <code>custom</code> label, <code>notes</code>, readable title, minutes). Last 500 kept.</td><td>yes</td></tr>
 <tr><td><code>bfGoal</code></td><td>home.js</td><td>Weekly session goal (1 to 7).</td><td>yes</td></tr>

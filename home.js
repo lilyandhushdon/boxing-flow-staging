@@ -6,12 +6,13 @@
    A log entry: { id, date 'YYYY-MM-DD', ts, type (a mode id), cfg (the choices, as the calendar saves them), label, minutes }. */
 (function(){
   const C = window.bfCal, LKEY = 'bfLog', GKEY = 'bfGoal', OKEY = 'bfWidgets';
-  const DEFAULT_ORDER = ['today','weight','camp','nutri','quick','live','film','minical','progress','suggest','recent','explore'];
+  const DEFAULT_ORDER = ['today','versus','weight','watercut','fightday','camp','quick','live','film','minical','progress','suggest','recent','explore'];
   let log = []; try{ log = JSON.parse(localStorage.getItem(LKEY) || '[]') || []; }catch(e){}
   let goal = 3; try{ goal = Math.min(7, Math.max(1, +localStorage.getItem(GKEY) || 3)); }catch(e){}
   let saved = []; try{ saved = JSON.parse(localStorage.getItem(OKEY) || '[]') || []; }catch(e){}
   const saveLog = () => { try{ localStorage.setItem(LKEY, JSON.stringify(log.slice(-500))); }catch(e){} };
   const todayK = () => C.dkey(new Date());
+  const WT_kg = v => (Math.round(v * 10) / 10).toFixed(1);
 
   window.logSession = e => { log.push(e); saveLog(); };
 
@@ -44,7 +45,7 @@
   function quickCoach(){ applyParams(C.params({type:'coach', cfg:quickCfg()})); pickMode('coach'); start(); }   // straight into the coach workout, no setup screen
 
   /* ---------- a suggestion that fits what they have and haven't done ---------- */
-  const AREA_MODES = {boxing:['coach','basic','timer','scenario','output','iq'], sc:['plyo','shoulder','treadmill','recovery','run'], mind:['breath','reframe']};
+  const AREA_MODES = {boxing:['coach','basic','timer','scenario','output','iq'], sc:['plyo','peak','shoulder','treadmill','abs','neck','flow','run'], rec:['recovery'], mind:['breath','reframe']};
   function suggestions(){
     const out = [], now = Date.now(), t = todayK(), planned = C.plan.some(e => e.date === t && e.type !== 'rest' && !e.done);
     const doneToday = daysWithSessions().has(t), s = streak();
@@ -54,7 +55,7 @@
     const counts = Object.fromEntries(Object.keys(AREA_MODES).map(a => [a, recent.filter(e => area(e.type) === a).length]));
     const order = Object.keys(AREA_MODES).sort((a,b) => counts[a] - counts[b] || Math.min(...AREA_MODES[a].map(lastDone)) - Math.min(...AREA_MODES[b].map(lastDone)));
     const a = order[0], type = [...AREA_MODES[a]].sort((x,y) => lastDone(x) - lastDone(y))[0];
-    const cfg = lastCfg(type) || C.defaults(type), ev = {type, cfg}, nice = {boxing:'boxing', sc:'strength and conditioning', mind:'mental skills'}[a];
+    const cfg = lastCfg(type) || C.defaults(type), ev = {type, cfg}, nice = {boxing:'boxing', sc:'strength and conditioning', rec:'recovery', mind:'mental skills'}[a];
     out.push({title: counts[a] === 0 && log.length ? `Nothing in ${nice} for two weeks` : 'Suggested for you', text: C.label(ev), type, cfg});
     return out.slice(0, 2);
   }
@@ -80,12 +81,22 @@
     const open = planned.filter(e => !e.done), ws = weekStats(), q = quickCfg();
     const qNames = (q.focus||[]).map(id => (FOCUS.find(f => f.id === id)||{}).name).filter(Boolean);
     const upcoming = C.plan.filter(e => e.date > t && e.type !== 'rest').sort((a,b) => (a.date + (a.time||'')).localeCompare(b.date + (b.time||'')))[0];
+    // everything finished today, struck through: planned sessions ticked off, and any logged session that was not planned
+    // one session = one id (sid), stamped on its calendar entry and its log entry when it is saved; the same id is the same session. Older entries with no id fall back to the plan link, then to the name.
+    const items = new Map(), spare = [];
+    planned.filter(e => e.done).forEach(e => { items.set(e.sid || e.id, C.label(e)); if(!e.sid) spare.push(C.label(e)); });
+    log.filter(e => e.date === t).forEach(e => {
+      const k = e.sid || e.planId; if(k){ if(!items.has(k)) items.set(k, e.label || 'Session'); return; }
+      const n = e.label || 'Session', at = spare.indexOf(n); if(at >= 0) spare.splice(at, 1); else items.set('log' + e.id, n);
+    });
+    const doneToday = [...items.values()]
+      .map(n => `<div class="t-item is-done"><div><strong>${esc(n)}</strong><span>Done</span></div><span class="t-tick">&#10003;</span></div>`).join('');
     const W = {};
 
     W.today = {cls:'hero', html:`<h2>Today</h2>` + (open.length
-      ? open.slice(0,2).map(e => `<div class="t-item"><div><strong>${esc(C.label(e))}</strong><span>${e.time ? C.timeL(e.time) : 'Planned for today'}</span></div><button class="btn small" data-start-plan="${e.id}">${e.type === 'gym' ? 'Log it' : 'Start'}</button></div>`).join('') + (open.length > 2 ? `<p class="t-note">+ ${open.length - 2} more today</p>` : '')
+      ? open.slice(0,2).map(e => `<div class="t-item"><div><strong>${esc(C.label(e))}</strong><span>${e.time ? C.timeL(e.time) : 'Planned for today'}</span></div><button class="btn small" data-start-plan="${e.id}">${e.type === 'gym' ? 'Log it' : 'Start'}</button></div>`).join('') + (open.length > 2 ? `<p class="t-note">+ ${open.length - 2} more today</p>` : '') + doneToday
       : planned.length
-        ? `<p class="t-big">Today's done. Nice work.</p>` + (upcoming ? `<p class="t-note">Next up: ${C.dayLabel(upcoming.date)}, ${esc(C.label(upcoming))}</p>` : `<p class="t-note">Plan your next session to keep the run going.</p>`)
+        ? `<p class="t-big">Today's done. Nice work.</p>` + doneToday + (upcoming ? `<p class="t-note">Next up: ${C.dayLabel(upcoming.date)}, ${esc(C.label(upcoming))}</p>` : `<p class="t-note">Plan your next session to keep the run going.</p>`)
         : `<p class="t-big">Nothing planned today.</p><p class="t-note">${upcoming ? `Next up: ${C.dayLabel(upcoming.date)}, ${esc(C.label(upcoming))}` : 'Pick a session, or plan your week.'}</p><div class="t-row"><button class="btn small ghost" data-plan-today>Plan a session</button></div>`)};
 
     // the training camp: where they are in it, the two-week goal, and the next open tasks, ticked off right here
@@ -101,6 +112,19 @@
         <div class="goal-bar"><i style="width:${pct}%"></i></div><p class="t-note">${c.done} of ${c.total} focus tasks done</p><p class="t-note"><button class="linkbtn" data-camp-info>What's this?</button></p>${cur.camp.auto ? `<p class="t-note">Starter ${cur.camp.weeks}-week camp. Open it to set your fight date or change the length.</p>` : ''}
         ${todo.map(t => `<div class="sb"><button class="ck" data-camp-task="${t.id}" aria-label="Mark done">&#10003;</button><span>${esc(t.t)}</span></div>`).join('') || '<p class="t-note">Everything in this two-week focus is done.</p>'}`};
     })();
+
+    // the versus card: you (blue corner) against the opponent (red corner), from the photos and name added in Fight prep. Only shown once something is added there.
+    const VS = window.bfVersus && window.bfVersus.get();
+    if(VS && VS.show && (VS.me || VS.opp || VS.oppName || VS.plan.length)){
+      const first = (((window.bfProfile && window.bfProfile.data.name) || '').trim().split(/\s+/)[0] || 'You'), B = window.bfCamp, cc = B && B.current();
+      const fd = cc && cc.state !== 'finished' && !cc.camp.auto ? Math.round((C.fromKey(cc.camp.fight) - C.fromKey(t)) / 86400000) : -1;
+      const side = (photo, name, cls, st) => `<div class="vs-side ${cls}"><div class="vs-ph">${photo ? `<img src="${photo}" alt="${esc(name)}" style="${st}">` : '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>'}</div><strong>${esc(name)}</strong></div>`;
+      W.versus = {cls:'vsw', html:`<div class="q-top"><h2>Next fight</h2><button class="linkbtn" data-prep-open>Fight prep &rsaquo;</button></div>
+        <div class="vs-row">${side(VS.me, first, 'blue', VS.meStyle)}<span class="vs-vs">VS</span>${side(VS.opp, VS.oppName || 'Opponent', 'red', VS.oppStyle)}</div>
+        ${VS.plan.length ? `<div class="vs-plan"><h3 class="cal-sub">Game plan</h3><ol>${VS.plan.map(p => `<li>${esc(p)}</li>`).join('')}</ol></div>` : ''}
+        ${VS.tips.length ? `<ul class="vs-tips">${VS.tips.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+        ${fd >= 0 ? `<p class="t-note vs-note">${fd === 0 ? 'Fight day' : `${fd} day${fd === 1 ? '' : 's'} to go`} · ${C.dayLabel(cc.camp.fight)}</p>` : ''}`};
+    }
 
     W.quick = {cls:'quick', html:`<p class="t-big">${esc(qNames.slice(0,3).join(', ') || 'Jab technique')}</p>
       <p class="t-note">${C.optL(OPTIONS[q.opt||0])}, with the 3D coach. Starts straight away.</p>
@@ -133,6 +157,35 @@
           <div class="t-row"><button class="btn small" data-nutri-add>Add food</button></div>`};
     }
 
+    // fight-day fuel: always on the dashboard, a short version of the plan for the hours between the scale and the fight
+    if(window.bfFightDay){
+      W.fightday = {cls:'watercutw', html:`<div class="q-top"><h2>Fight-day fuel</h2><button class="linkbtn" data-fightday-open>Full plan &rsaquo;</button></div>
+        <p class="t-note">Fluids first, then a 90 g carb meal, then a rest so your stomach is empty for the warm-up.</p>
+        <div class="wc-chips"><span>~3.75 L fluid</span><span>~242 g carbs</span><span>5 hours</span></div>
+        <div class="t-row"><button class="btn small" data-fightday-open>Open the plan</button></div>`};
+    }
+
+    // water cut: in fight week only. Today's step of the water loading plan, worked out from the latest weigh-in and the fight weight.
+    if(window.bfWaterCut){
+      const WC = window.bfWaterCut, st = WC.state();
+      if(WC.fightWeek(st)){
+        const head = '<div class="q-top"><h2>Water cut</h2><button class="linkbtn" data-watercut-open>Full plan &rsaquo;</button></div>';
+        if(!st.ready) W.watercut = {cls:'watercutw', html:`${head}<p class="t-big" style="font-size:20px">It is fight week</p><p class="t-note">Log your weight and set your fight weight to get your water plan.</p><div class="t-row"><button class="btn small" data-weight-open>Open Weight</button></div>`};
+        else if(st.w <= st.target + 0.05) W.watercut = {cls:'watercutw', html:`${head}<p class="t-big" style="font-size:20px">At fight weight</p><p class="t-note">No water cut needed. Stay hydrated and eat normally.</p>`};
+        else {
+          const r = WC.today(st);
+          W.watercut = {cls:'watercutw', html:`${head}<p class="t-note"><b>${r.title}</b> · ${r.tag}</p><div class="wc-big">${esc(r.water)}</div>
+            <div class="wc-chips"><span>Sodium: ${esc(r.sodium)}</span><span>Food: ${esc(r.food)}</span></div><p class="t-note">${esc(r.note)}</p>
+            <p class="t-note"><b>${WT_kg(st.cut)} kg</b> to cut (${WT_kg(st.pct)}%) · ${st.days === 0 ? 'weigh-in today' : st.days + ' day' + (st.days === 1 ? '' : 's') + ' to weigh-in'}</p>
+            ${st.over ? `<p class="wc-warn">Over the ${st.max}% limit. Talk to your coach.</p>` : ''}${WC.bathNote(st)}${WC.tracker(st)}`};
+        }
+      }
+    }
+
+    // weight and nutrition share one card (kept under the weight widget's place in the order)
+    const bodyParts = [W.weight, W.nutri].filter(Boolean); delete W.nutri;
+    if(bodyParts.length) W.weight = {cls:'weightw nutriw', html:bodyParts.map(p => `<div class="bn-part">${p.html}</div>`).join('')};
+
     // film study: a fight to watch (a new one each day, or tap Another), and the study they were last in
     const FB = window.bfFilm; filmPick = FB && FB.featured(filmOffset); const lastStudy = FB && FB.latest();
     if(filmPick) W.film = {cls:'filmw', html:`<div class="q-top"><h2>Film study</h2><button class="linkbtn" data-film-open>Open &rsaquo;</button></div>
@@ -158,7 +211,7 @@
     const recent = log.slice(-3).reverse();
     if(recent.length) W.recent = {cls:'', html:`<h2>Do it again</h2>${recent.map((e,i) => `<div class="t-item"><div><strong>${esc(e.label)}</strong><span>${when(e.date)} · ${e.minutes||'?'} min${e.notes ? ' · ' + esc(e.notes.length > 70 ? e.notes.slice(0, 70) + '…' : e.notes) : ''}</span></div><button class="btn small ghost" data-again="${log.length-1-i}">Again</button></div>`).join('')}`};
 
-    W.explore = {cls:'', html:`<h2>Explore</h2><div class="t-links"><button data-go-section="modes">Boxing${chev}</button><button data-go-section="sc">Strength &amp; conditioning${chev}</button><button data-go-section="mind">Mental skills${chev}</button><button data-go-section="cal">Training calendar${chev}</button></div>`};
+    W.explore = {cls:'', html:`<h2>Explore</h2><div class="t-links"><button data-go-section="modes">Boxing${chev}</button><button data-go-section="sc">Strength &amp; conditioning${chev}</button><button data-go-section="mind">Mental skills${chev}</button><button data-go-section="prep">Fight prep${chev}</button><button data-go-section="scoring">Scoring and judging${chev}</button><button data-go-section="build">Build a workout${chev}</button><button data-go-section="cal">Training calendar${chev}</button></div>`};
     return W;
   }
 
@@ -222,7 +275,8 @@
     const W = widgets(), s = streak();
     $('tHead').innerHTML = `<div><div class="eyebrow">${new Date().toLocaleDateString('en-NZ', {weekday:'long', day:'numeric', month:'long'})}</div><h1>${greeting()}</h1></div>
       <div class="t-badges">${weightBadge()}${countdown(s)}</div>`;
-    shown = [...saved.filter(id => W[id]), ...DEFAULT_ORDER.filter(id => W[id] && !saved.includes(id))];
+    shown = saved.filter(id => W[id]);
+    DEFAULT_ORDER.forEach((id, i) => { if(!W[id] || saved.includes(id)) return; const prev = DEFAULT_ORDER.slice(0, i).reverse().find(x => shown.includes(x)); shown.splice(prev ? shown.indexOf(prev) + 1 : 0, 0, id); });   // a widget that is new to a saved layout goes after the one before it, not at the very bottom
     DEFAULT_ORDER.forEach(id => {
       const el = els[id], w = W[id]; el.hidden = !w; if(!w) return;
       el.className = 'tw ' + w.cls;
@@ -252,12 +306,17 @@
     if(b && 'campTask' in b.dataset){ window.bfCamp.toggle(b.dataset.campTask); renderToday(); return; }
     if(b && 'campInfo' in b.dataset){ window.bfCamp.showInfo(); show('camp'); return; }
     if((b && 'campOpen' in b.dataset) || (!b && e.target.closest('[data-w="camp"]'))){ show('camp'); return; }   // the widget itself opens How do you want to train?
-    if(!b && e.target.closest('[data-w="nutri"]')){ show('nutrition'); return; }   // the whole nutrition card opens nutrition, like its Open link
+    if(!b && e.target.closest('[data-w="versus"]')){ show('prep'); return; }
     if(!b){ if(mini) C.openDay(todayK(), 'month'); return; }
     const d = b.dataset;
     if(d.startPlan){ const ev = C.plan.find(x => x.id === d.startPlan); if(ev) C.start(ev); }
     else if('weightOpen' in d) show('weight');
+    else if('watercutOpen' in d) show('watercut');
+    else if('fightdayOpen' in d) show('fightday');
+    else if(d.wcAdd) window.bfWaterCut.drink(d.wcAdd);   // the water tracker's buttons; the widget redraws when the log changes
+    else if('wcUndo' in d) window.bfWaterCut.undo();
     else if('campGo' in d) show('camp');
+    else if('prepOpen' in d) show('prep');
     else if('weightLog' in d){ const i = $('wQuick'); if(window.bfWeight.add(i.value)) renderToday(); else { i.classList.add('bad'); i.focus(); } }
     else if('nutriOpen' in d) show('nutrition');
     else if('nutriAdd' in d) window.bfNutri.addFood();
@@ -281,6 +340,7 @@
   $('todayBody').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-w="minical"]')){ e.preventDefault(); C.openDay(todayK(), 'month'); } });
   if(window.bfProfile) window.bfProfile.onChange(() => { if(!$('today').hidden) renderToday(); });   // a new name shows in the greeting
   if(window.bfNutri) window.bfNutri.onChange(() => { if(!$('today').hidden) renderToday(); });   // the widget follows the diary
+  if(window.bfWaterCut) window.bfWaterCut.onChange(() => { if(!$('today').hidden) renderToday(); });
   if(window.bfWeight) window.bfWeight.onChange(() => { if(!$('today').hidden) renderToday(); });   // and the weight badge and widget follow the weight log
   $('todayBody').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.id === 'wQuick'){ e.preventDefault(); document.querySelector('[data-weight-log]').click(); } });
   if(!$('today').hidden){ renderToday(); window.syncPreviews?.('today'); }

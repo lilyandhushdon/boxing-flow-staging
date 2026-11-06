@@ -136,6 +136,8 @@
   window.bfWeight = {
     get entries(){ return sorted(); }, get target(){ return data.target; },
     stats, plan, fightDate, add, kg, sign,
+    // set the fight weight and weigh-in date from another screen (the water cut); an empty date keeps using the camp's fight date
+    setTarget(v, date){ v = Math.round(+v * 10) / 10; if(!(v >= 30 && v <= 300)) return false; data.target = {kg:v, date:date || ''}; save(); return true; },
     onChange:fn => { listeners.add(fn); return () => listeners.delete(fn); },
     open(){ show('weight'); },
     // points for the dashboard's small chart: the last two weeks of weigh-ins

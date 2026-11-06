@@ -90,12 +90,34 @@ test('Treadmill intervals: every workout adds up to the minutes it is named for'
 
 test('Recovery sessions: every session adds up to the minutes it is named for', () => {
   const { RECOVERY, recSeconds } = load('recovery.js', ['RECOVERY', 'recSeconds']);
-  assert.equal(RECOVERY.length, 5);
+  assert.ok(RECOVERY.length >= 10);
   assert.equal(new Set(RECOVERY.map((w) => w.id)).size, RECOVERY.length, 'duplicate session ids');
   for (const w of RECOVERY) {
     assert.ok(text(w.name) && text(w.blurb) && text(w.ready) && text(w.safety), `${w.name} needs a name, a blurb, a start note and a safety note`);
     assert.ok(w.benefits.length >= 3 && w.tips.length >= 1, `${w.name} needs its benefits and tips`);
     assert.ok(Math.abs(recSeconds(w) / 60 - w.mins) < 0.75, `${w.name}: the moves add up to ${(recSeconds(w) / 60).toFixed(1)} min, not the ${w.mins} in its description`);
+    for (const m of w.moves) assert.ok(text(m.n) && text(m.c) && m.s >= 20, `${w.name}: a move needs a name, how to do it and at least 20 seconds`);
+  }
+});
+
+test('Abs workouts: every workout adds up to the minutes it is named for', () => {
+  const { recSeconds } = load('recovery.js', ['recSeconds']);
+  const { ABS } = load('abs.js', ['ABS']);
+  assert.ok(ABS.length >= 1 && new Set(ABS.map((w) => w.id)).size === ABS.length, 'duplicate workout ids');
+  for (const w of ABS) {
+    assert.ok(text(w.name) && text(w.blurb) && text(w.ready) && text(w.safety) && w.benefits.length >= 3 && w.tips.length >= 1, `${w.name} needs its words`);
+    assert.ok(Math.abs(recSeconds(w) / 60 - w.mins) < 0.75, `${w.name}: the moves add up to ${(recSeconds(w) / 60).toFixed(1)} min, not ${w.mins}`);
+    for (const m of w.moves) assert.ok(text(m.n) && text(m.c) && m.s >= 20, `${w.name}: a move needs a name, how to do it and at least 20 seconds`);
+  }
+});
+
+test('Neck workouts: every workout adds up to the minutes it is named for', () => {
+  const { recSeconds } = load('recovery.js', ['recSeconds']);
+  const { NECK } = load('neck.js', ['NECK']);
+  assert.ok(NECK.length >= 3 && new Set(NECK.map((w) => w.id)).size === NECK.length, 'duplicate workout ids');
+  for (const w of NECK) {
+    assert.ok(text(w.name) && text(w.blurb) && text(w.ready) && text(w.safety) && w.benefits.length >= 3 && w.tips.length >= 1, `${w.name} needs its words`);
+    assert.ok(Math.abs(recSeconds(w) / 60 - w.mins) < 0.75, `${w.name}: the moves add up to ${(recSeconds(w) / 60).toFixed(1)} min, not ${w.mins}`);
     for (const m of w.moves) assert.ok(text(m.n) && text(m.c) && m.s >= 20, `${w.name}: a move needs a name, how to do it and at least 20 seconds`);
   }
 });

@@ -34,15 +34,21 @@
     {id:'output', area:'boxing', name:'Output rounds', fields:()=>[{k:'out', l:'Target', o:OUTPUT.map(o=>`${o.name}, ${o.punches} punches`)}, {k:'oopt', l:'Rounds', o:OUT_OPTS.map(optL)}]},
     {id:'iq', area:'boxing', name:'Boxing IQ', fields:()=>[]},
     {id:'plyo', area:'sc', name:'Plyometrics', fields:()=>[{k:'plyo', l:'Workout', o:PLYO.map(w=>w.name)}, {k:'popt', l:'Rounds and timing', o:PLYO_OPTS.map(o=>`${o.r} rounds, ${o.w} sec on, ${o.rs} sec off`)}]},
+    {id:'peak', area:'sc', name:'Peak week intervals', fields:()=>[{k:'peak', l:'Work', o:PEAK.map(w=>w.name)}, {k:'kopt', l:'Timing', o:PEAK_OPTS.map(o=>`${o.ratio}, ${o.w} sec on, ${o.rs} sec off`)}]},
     {id:'shoulder', area:'sc', name:'Shoulder conditioning', fields:c=>[{k:'shd', l:'Workout', o:SHOULDER.map(w=>w.name)}, {k:'shopt', l:'Rounds', o:(SHOULDER[+c.shd||0].opts||SHOULDER_OPTS).map(optL)}]},
     {id:'treadmill', area:'sc', name:'Treadmill intervals', fields:()=>[{k:'tm', l:'Workout', o:TREADMILL.map(w=>`${w.name}, ${w.mins} min`)}]},
-    {id:'run', area:'sc', name:'Run', fields:()=>[{k:'run', l:'Run', o:RUNS.map(r=>`${r.name}, ${r.effort.toLowerCase()} zone`)}]},
-    {id:'recovery', area:'sc', name:'Recovery', fields:()=>[{k:'rec', l:'Session', o:RECOVERY.map(w=>`${w.name}, ${w.mins} min`)}]},
+    {id:'run', area:'sc', name:'Running', fields:()=>[{k:'run', l:'Run', o:RUNS.map(r=>`${r.name}, ${r.effort.toLowerCase()} zone`)}]},
+    {id:'abs', area:'sc', name:'Abdominals', fields:()=>[{k:'abs', l:'Workout', o:ABS.map(w=>`${w.name}, ${w.mins} min`)}]},
+    {id:'neck', area:'sc', name:'Neck exercises', fields:()=>[{k:'neck', l:'Workout', o:NECK.map(w=>`${w.name}, ${w.mins} min`)}]},
+    {id:'flow', area:'sc', name:'Flow', fields:()=>[{k:'flow', l:'Flow', o:FLOW.map(w=>`${w.name}, ${w.mins} min`)}]},
+    {id:'recovery', area:'rec', name:'Recovery', fields:()=>[{k:'rec', l:'Session', o:RECOVERY.map(w=>`${w.name}, ${w.mins} min`)}]},
     {id:'breath', area:'mind', name:'Box breathing', fields:()=>[]},
     {id:'reframe', area:'mind', name:'Cognitive reframing', fields:()=>[]},
+    {id:'mdrill', area:'mind', name:'Mental drill', fields:()=>[{k:'md', l:'Drill', o:DRILLS.map(d=>`${d.name}, ${Math.round(drillSeconds(d)/60)} min`)}]},
+    {id:'build', area:'sc', name:'Combined workout', hidden:true, fields:()=>[]},   // made by dropping one planned session on another
     {id:'rest', area:'rest', name:'Rest day', fields:()=>[]}
   ];
-  const AREAS = {boxing:'Boxing', sc:'Strength & conditioning', mind:'Mental skills', rest:'Rest'};
+  const AREAS = {boxing:'Boxing', sc:'Strength & conditioning', rec:'Recovery', mind:'Mental skills', rest:'Rest'};
   const way = id => WAYS.find(w => w.id === id);
   const at = (arr,i) => arr[+i||0] || arr[0];
   // a person's own label first, then what the session is: "Heavy bag, jab and double jab · Round timer · 3 rounds of 3 min"
@@ -57,19 +63,25 @@
       case 'scenario': return n + ' · ' + at(SCENARIOS, c.scen).name;
       case 'output': return n + ' · ' + at(OUTPUT, c.out).punches + ' punches';
       case 'plyo': return n + ' · ' + at(PLYO, c.plyo).name;
+      case 'peak': return n + ' · ' + at(PEAK, c.peak).name + ' · ' + at(PEAK_OPTS, c.kopt).ratio;
       case 'shoulder': return n + ' · ' + at(SHOULDER, c.shd).name;
       case 'treadmill': return n + ' · ' + at(TREADMILL, c.tm).name;
+      case 'abs': return n + ' · ' + at(ABS, c.abs).name;
+      case 'neck': return n + ' · ' + at(NECK, c.neck).name;
+      case 'flow': return n + ' · ' + at(FLOW, c.flow).name;
       case 'recovery': return n + ' · ' + at(RECOVERY, c.rec).name;
       case 'run': return n + ' · ' + at(RUNS, c.run).name;
+      case 'mdrill': return n + ' · ' + at(DRILLS, c.md).name;
+      case 'build': { const names = (c.blocks || []).map(b => (way(b.type) || {}).name).filter(Boolean); return n + ' · ' + names.slice(0, 3).join(' + ') + (names.length > 3 ? ` +${names.length - 3}` : ''); }
       case 'timer': return n + ' · ' + optL(at(OPTIONS, c.opt));
       default: return n;
     }
   }
   // the address that opens exactly this session in the app (the same form the landing page uses)
   function params(e){
-    const p = new URLSearchParams({go: e.type === 'gym' ? 'calendar' : e.type}), c = e.cfg || {};   // a gym session has nothing to open in the app, so its link goes to the calendar
+    const p = new URLSearchParams({go: e.type === 'gym' ? 'calendar' : e.type === 'mdrill' ? 'drill' : e.type}), c = e.cfg || {};   // a gym session has nothing to open in the app, so its link goes to the calendar
     if(c.focus && c.focus.length) p.set('focus', c.focus.join(','));
-    ['opt','preset','scen','sopt','out','oopt','plyo','popt','shd','shopt','tm','rec','run'].forEach(k => { if(c[k] != null) p.set(k, c[k]); });
+    ['opt','preset','scen','sopt','out','oopt','plyo','popt','peak','kopt','shd','shopt','tm','rec','abs','neck','flow','run','md'].forEach(k => { if(c[k] != null) p.set(k, c[k]); });
     return p;
   }
 
@@ -145,6 +157,7 @@
     });
     body.addEventListener('pointermove', e => {
       if(!sw || e.pointerId !== sw.id) return;
+      if(document.body.classList.contains('dragging')){ sw.c.classList.remove('swiping', 'swiped'); sw = null; return; }   // picked up (press and hold): that drag is for moving or merging, not for Delete
       const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
       if(!sw.on){
         if(Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.5){ sw.on = true; sw.c.classList.add('swiping'); try { sw.c.setPointerCapture(e.pointerId); } catch(x){} }
@@ -164,9 +177,29 @@
   })();
 
   // press and hold a session, then drop it on another day to move it
-  window.holdDrag($('calBody'), {item:'.cs', target:'[data-dropday]', onDrop:(item, day) => {
-    const id = item.querySelector('[data-open]')?.dataset.open, ev = plan.find(x => x.id === id), k = day.dataset.dropday;
-    if(!ev || !k || ev.date === k) return;
+  // drop a session on another session to merge them into one workout (a card is a target as well as a day)
+  const partsOf = e => e.type === 'build' ? ((e.cfg && e.cfg.blocks) || []) : [{type:e.type, cfg:JSON.parse(JSON.stringify(e.cfg || {}))}];
+  const mergeable = e => !e.done && (e.type === 'build' || (window.bfBuild && bfBuild.chainable(e.type)));
+  function mergeInto(a, b){   // a was dropped on b: b keeps its day, and the two become one combined workout
+    if(!mergeable(a) || !mergeable(b)){ $('calSub').textContent = 'Only sessions the timer runs, and that are not finished yet, can be merged into one workout.'; return; }
+    const early = a.time && b.time && a.time < b.time || (a.time && !b.time);
+    const parts = early ? [...partsOf(a), ...partsOf(b)] : [...partsOf(b), ...partsOf(a)];
+    b.type = 'build'; b.cfg = {blocks:parts}; b.time = [a.time, b.time].filter(Boolean).sort()[0] || '';
+    b.custom = [b.custom, a.custom].filter(Boolean).join(' + '); b.notes = [b.notes, a.notes].filter(Boolean).join('\n');
+    plan = plan.filter(x => x !== a); save(); cal.sel = b.date; renderCal();
+    $('calSub').textContent = `Merged into one workout of ${parts.length} parts. It counts as a single session.`;
+  }
+  window.holdDrag($('calBody'), {item:'.cs', target:'.cs,[data-dropday]', onDrop:(item, day) => {
+    const id = item.querySelector('[data-open]')?.dataset.open, ev = plan.find(x => x.id === id);
+    if(day.classList.contains('cs')){ const tid = day.querySelector('[data-open]')?.dataset.open, other = plan.find(x => x.id === tid); if(ev && other && ev !== other) mergeInto(ev, other); return; }
+    const k = day.dataset.dropday;
+    if(!ev || !k) return;
+    if(ev.date === k){   // dropped back on its own day: join the other session that day (if there is one to pick)
+      const others = byDay(k).filter(x => x !== ev && mergeable(x));
+      if(others.length === 1) mergeInto(ev, others[0]);
+      else if(others.length) $('calSub').textContent = 'Drop it right on the session you want it to join.';
+      return;
+    }
     ev.date = k; save(); cal.sel = k; renderCal();
     $('calSub').textContent = 'Moved to ' + dayName(k) + '.';
   }});
@@ -182,8 +215,8 @@
   let draft = null;
   function openAdd(k){
     draft = {id:null, date:k, time:'', type:null, cfg:{}, repeat:0};
-    openSheet(head('Add a session', dayName(k) + '. Pick a way to train.') + ['boxing','sc','mind','rest'].map(g =>
-      `<div class="grp">${AREAS[g]}</div>` + WAYS.filter(w => w.area===g).map(w => `<button class="pick" data-way="${w.id}">${w.name}</button>`).join('')).join(''));
+    openSheet(head('Add a session', dayName(k) + '. Pick a way to train.') + ['boxing','sc','rec','mind','rest'].map(g =>
+      `<div class="grp">${AREAS[g]}</div>` + WAYS.filter(w => w.area===g && !w.hidden).map(w => `<button class="pick" data-way="${w.id}">${w.name}</button>`).join('')).join(''));
   }
   function defaults(type){
     const c = {};
@@ -208,16 +241,19 @@
     const ev = plan.find(x => x.id === id); if(!ev) return;
     const w = way(ev.type) || {};
     openSheet(head(esc(label(ev)), `${dayName(ev.date)}${ev.time ? ' at ' + timeL(ev.time) : ''}`)
+      + (ev.type === 'build' ? `<p class="ev-notes"><b>Played in this order:</b><br>${((ev.cfg && ev.cfg.blocks) || []).map((b, i) => `${i + 1}. ${esc(label({type:b.type, cfg:b.cfg || {}}))}`).join('<br>')}</p>` : '')
       + (ev.notes ? `<p class="ev-notes">${esc(ev.notes)}</p>` : '')
+      + (mergeable(ev) ? byDay(ev.date).filter(x => x !== ev && mergeable(x)).map(x => `<div class="acts"><button class="btn ghost" data-merge="${ev.id}|${x.id}">Combine with ${esc(label(x))}</button></div>`).join('') : '')
       + `<div class="acts">${ev.type==='rest' ? '' : `<button class="btn" data-start="${ev.id}" ${ev.type==='gym' && ev.done ? 'disabled' : ''}>${ev.type==='gym' ? (ev.done ? 'Logged' : 'Log it as done') : 'Start this session'}</button>`}
          ${ev.type==='rest' ? '' : `<button class="btn ghost" data-toggle="${ev.id}">${ev.done ? 'Mark not done' : 'Mark done'}</button>`}
-         <button class="btn ghost" data-edit="${ev.id}">Edit</button></div>
+         ${ev.type === 'build' ? `<button class="btn ghost" data-split="${ev.id}">Split apart</button>` : `<button class="btn ghost" data-edit="${ev.id}">Edit</button>`}</div>
          <div class="acts"><button class="btn ghost danger" data-del="${ev.id}">Delete</button>${ev.series ? `<button class="btn ghost danger" data-delall="${ev.id}">Delete the whole series</button>` : ''}</div>`);
   }
   function startPlan(ev){
     if(ev.type === 'gym'){ closeSheet(); if(!ev.done){ sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); renderCal(); } return; }   // nothing to run: finishing it is logging it
+    if(ev.type === 'build'){ closeSheet(); planCtx.id = ev.id; if(window.bfBuild) bfBuild.run((ev.cfg && ev.cfg.blocks) || [], {single:true, oneRound:false}); return; }
     closeSheet(); planCtx.id = ev.id; applyParams(params(ev));
-    if(ev.type === 'breath') openBreath(); else if(ev.type === 'reframe') openReframe(); else pickMode(ev.type);
+    if(ev.type === 'breath') openBreath(); else if(ev.type === 'reframe') openReframe(); else if(ev.type === 'mdrill') openDrill((ev.cfg || {}).md); else pickMode(ev.type);
     state.label = ev.custom || ''; const sl = document.getElementById('sessLabel'); if(sl) sl.value = state.label;
   }
   sh.addEventListener('click', e => {
@@ -235,9 +271,14 @@
       }
       save(); cal.sel = draft.date; cal.anchor = fromKey(draft.date); closeSheet(); return renderCal();
     }
+    if(d.merge){ const [a, b] = d.merge.split('|').map(i => plan.find(x => x.id === i)); closeSheet(); if(a && b) mergeInto(a, b); return; }
     if(d.start){ const ev = plan.find(x => x.id === d.start); if(ev) startPlan(ev); return; }
     if(d.toggle){ const ev = plan.find(x => x.id === d.toggle); if(ev){ if(ev.type === 'gym' && !ev.done) sessionDone({type:'gym', planId:ev.id, minutes:gymMins(ev.cfg)}); else { ev.done = !ev.done; save(); } closeSheet(); renderCal(); } return; }
     if(d.edit){ const ev = plan.find(x => x.id === d.edit); if(ev){ draft = {id:ev.id, date:ev.date, time:ev.time||'', type:ev.type, cfg:JSON.parse(JSON.stringify(ev.cfg||{})), custom:ev.custom||'', notes:ev.notes||'', repeat:0}; openForm(); } return; }
+    if(d.split){ const ev = plan.find(x => x.id === d.split); if(ev && ev.type === 'build'){
+      const parts = (ev.cfg && ev.cfg.blocks) || []; plan = plan.filter(x => x !== ev);
+      parts.forEach((b, i) => plan.push({id:uid(), date:ev.date, time:i ? '' : ev.time, type:b.type, cfg:b.cfg || {}, custom:i ? '' : ev.custom, notes:'', done:false}));
+      save(); cal.sel = ev.date; $('calSub').textContent = 'Split into separate sessions.'; } closeSheet(); return renderCal(); }
     if(d.del){ plan = plan.filter(x => x.id !== d.del); save(); closeSheet(); return renderCal(); }
     if(d.delall){ const ev = plan.find(x => x.id === d.delall); if(ev){ plan = plan.filter(x => x.series !== ev.series); save(); } closeSheet(); return renderCal(); }
   });
@@ -254,19 +295,20 @@
   const cfgNow = type => ({
     coach: () => ({focus:[...state.focus], opt:state.opt}), basic: () => ({preset:state.preset, opt:state.opt}), timer: () => ({opt:state.opt}),
     scenario: () => ({scen:state.scen, sopt:state.sopt}), output: () => ({out:state.out, oopt:state.oopt}),
-    plyo: () => ({plyo:state.plyo, popt:state.popt}), shoulder: () => ({shd:state.shd, shopt:state.shopt}), treadmill: () => ({tm:state.tm}), recovery: () => ({rec:state.rec}), run: () => ({run:state.run})
+    plyo: () => ({plyo:state.plyo, popt:state.popt}), peak: () => ({peak:state.peak, kopt:state.kopt}), shoulder: () => ({shd:state.shd, shopt:state.shopt}), treadmill: () => ({tm:state.tm}), recovery: () => ({rec:state.rec}), abs: () => ({abs:state.abs}), neck: () => ({neck:state.neck}), flow: () => ({flow:state.flow}), run: () => ({run:state.run})
   }[type] || (() => ({})))();
   window.sessionDone = info => {
     const pid = (info && info.planId) || planCtx.id, custom = ((info && info.label) || '').trim(), notes = ((info && info.notes) || '').trim();
     let ev = plan.find(x => x.id === pid), type = (info && info.type) || mode, cfg;
     if(ev){ type = ev.type; cfg = ev.cfg; }
     else {
-      cfg = cfgNow(type);
+      cfg = (info && info.cfg) || cfgNow(type);
       // not started from the calendar: if this kind of session is planned for today and not done yet, this is it (the exact same choices first)
       const open = plan.filter(x => x.date === todayK() && x.type === type && !x.done); ev = open.find(x => JSON.stringify(x.cfg || {}) === JSON.stringify(cfg)) || open[0];
     }
-    if(ev){ ev.done = true; if(custom) ev.custom = custom; if(notes) ev.notes = notes; save(); }
-    window.logSession?.({id:uid(), date:todayK(), ts:Date.now(), type, cfg, custom, notes, label:label({type, cfg, custom}), minutes:(info && info.minutes) || 0});
+    if(ev){ ev.done = true; if(info && info.sid) ev.sid = info.sid; if(custom) ev.custom = custom; if(notes) ev.notes = notes; save(); }
+    else if(info && info.addCal && way(type)){ ev = {id:uid(), sid:info.sid, date:todayK(), time:'', type, cfg, custom, notes, done:true}; plan.push(ev); save(); }   // not planned: the save box can put it on the calendar as done
+    window.logSession?.({id:uid(), sid:(info && info.sid) || undefined, date:todayK(), ts:Date.now(), planId:ev ? ev.id : undefined, type, cfg, custom, notes, label:label({type, cfg, custom}), minutes:(info && info.minutes) || 0});
     if(planCtx.id === pid) planCtx.id = null;
     window.renderToday?.();   // the dashboard is up to date the moment a session ends, not only when it is next opened
   };

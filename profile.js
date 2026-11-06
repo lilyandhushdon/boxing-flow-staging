@@ -65,6 +65,9 @@
         <p class="t-note">Leave max empty to estimate it from your age. If you know it from a hard test or a race, type it in: it is more accurate. Measure your resting rate when you wake, before you get up.</p>
         <div id="pfZones">${zonesHtml()}</div>
         <p class="t-note"><button class="linkbtn" data-section="hr">Connect a heart rate strap</button></p></div>
+      <div class="nu-card"><h2 class="nu-fname">Calories burned</h2>
+        <label class="nu-check"><input type="checkbox" id="pfBurn" ${data.burnOn ? 'checked' : ''}> Estimate the calories I burn in workouts</label>
+        <p class="t-note">Shows on the done screen and is saved with each session. Without a heart rate strap it is a rough guide, worked out from the kind of workout, how long it lasted and your weight from the weight log, and it can be out by a fifth or more. Connect a heart rate strap and, with your sex and age filled in above, it uses your heart rate instead, which is much closer to the real thing. Not medical advice.</p></div>
       <div class="nu-card"><h2 class="nu-fname">Training by zone</h2>
         <p class="t-note">Zone 1 and 2 build your engine and help you recover: most of your roadwork. Zone 3 is sparring pace. Zone 4 and 5 are hard rounds and all-out bursts: keep them short and keep them to the days that need them. Spending most of your time in zones 1 to 3, and a smaller part in 4 and 5, is how most boxers build fight fitness.</p></div>
       <p class="iq-note">Your profile stays in your account and on your device. Zones are a guide, not medical advice.</p>`;
@@ -78,7 +81,7 @@
     pfH: () => set({heightCm:intIn('pfH', 100, 230)}), pfStance: () => set({stance:$('pfStance').value}), pfClass: () => set({weightClass:$('pfClass').value.trim()}),
     pfGym: () => set({gym:$('pfGym').value.trim()}), pfCoach: () => set({coach:$('pfCoach').value.trim()}), pfBio: () => set({bio:$('pfBio').value.trim()}),
     pfW: () => set({wins:intIn('pfW', 0, 999)}), pfL: () => set({losses:intIn('pfL', 0, 999)}), pfD: () => set({draws:intIn('pfD', 0, 999)}),
-    pfMax: () => set({maxHr:intIn('pfMax', 120, 230)}), pfRest: () => set({restHr:intIn('pfRest', 30, 120)})
+    pfBurn: () => set({burnOn:$('pfBurn').checked || null}), pfMax: () => set({maxHr:intIn('pfMax', 120, 230)}), pfRest: () => set({restHr:intIn('pfRest', 30, 120)})
   };
   const onEdit = e => { const f = wr[e.target.id]; if(!f) return; f(); paintLive(); };
   $('profile').addEventListener('input', onEdit); $('profile').addEventListener('change', onEdit);

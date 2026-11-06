@@ -64,6 +64,13 @@
     const {data, error} = await S.sb.from('food_entries').select('*').eq('day', day).order('created_at'); if(error) throw error;
     if(day === S.day) S.entries = data; return data;
   }
+  // the week: each day's totals from Monday to Sunday, so over on one day and under on another shows up against the week's budget
+  async function loadWeek(){
+    const start = S.wkStart, end = C.dkey(C.addDays(C.fromKey(start), 6));
+    const {data, error} = await S.sb.from('food_entries').select('day,kcal,protein,carbs,fat').gte('day', start).lte('day', end); if(error) throw error;
+    if(start !== S.wkStart) return;
+    S.wk = {}; for(const e of data || []){ const d = S.wk[e.day] || (S.wk[e.day] = {kcal:0, protein:0, carbs:0, fat:0}); d.kcal += +e.kcal || 0; d.protein += +e.protein || 0; d.carbs += +e.carbs || 0; d.fat += +e.fat || 0; }
+  }
   async function loadFoods(){   // what to offer before anything is typed: recent foods and the person's own
     const [r, c] = await Promise.all([S.sb.from('food_entries').select('name,brand,source,source_id,per100,amount,unit_label,grams,kcal,protein,carbs,fat').not('source', 'eq', 'quick').order('created_at', {ascending:false}).limit(80),
       S.sb.from('custom_foods').select('*').order('created_at', {ascending:false})]);
@@ -122,6 +129,32 @@
       await loadProfile(); updateCache(); emit();
     });
   }
+  function weekHtml(){
+    const tg = targets(), today = todayKey(), start = S.wkStart, days = Array.from({length:7}, (_, i) => C.dkey(C.addDays(C.fromKey(start), i)));
+    const end = C.fromKey(days[6]), st = C.fromKey(start), range = `${st.getDate()} ${C.MON[st.getMonth()]} – ${end.getDate()} ${C.MON[end.getMonth()]}`;
+    const eat = k => (S.wk && S.wk[k]) || {kcal:0, protein:0, carbs:0, fat:0}, loading = !S.wk;
+    const counted = days.filter(k => k <= today), total = sum(days.map(eat)), soFar = sum(counted.map(eat));
+    const unit = unitKJ() ? 'kJ' : 'kcal', num = k => energyNum(Math.abs(k)).toLocaleString();
+    let summary;
+    if(!tg) summary = `<div class="nu-left"><b>${num(total.kcal)}</b><span>${unit} eaten this week</span></div><p class="t-note"><button class="linkbtn" data-nu-view="settings">Set your daily targets</button> to compare the week with what you should have eaten.</p>`;
+    else {
+      const weekT = tg.kcal * 7, soFarT = tg.kcal * counted.length, diff = soFar.kcal - soFarT, left = weekT - total.kcal;
+      summary = `<div class="nu-wk3"><div><b>${num(weekT)}</b><span>${unit} planned for the week</span></div><div><b>${num(total.kcal)}</b><span>${unit} eaten so far</span></div><div class="${left < 0 ? 'over' : ''}"><b>${num(left)}</b><span>${unit} ${left < 0 ? 'over the week' : 'left for the week'}</span></div></div>
+        ${bar(total.kcal, weekT, left < 0 ? 'over' : '')}
+        ${counted.length ? `<p class="t-note">${counted.length === 7 ? 'The whole week' : `So far (${counted.length} day${counted.length > 1 ? 's' : ''})`}: you should have eaten <b>${energy(soFarT)}</b> and have eaten <b>${energy(soFar.kcal)}</b>, which is <b class="${diff > 0 ? 'nu-over' : ''}">${energy(Math.abs(diff))} ${diff > 0 ? 'over' : 'under'}</b>.</p>` : '<p class="t-note">This week has not started yet.</p>'}`;
+    }
+    const rows = days.map((k, i) => { const e = eat(k), future = k > today, d = tg ? e.kcal - tg.kcal : 0;
+      return `<button class="nu-wkrow ${k === today ? 'today' : ''}" data-nu-openday="${k}"><span class="wd"><b>${C.DOW[i]}</b><small>${C.fromKey(k).getDate()}</small></span>
+        <span class="wb">${bar(e.kcal, tg && tg.kcal, d > 0 ? 'over' : '')}</span>
+        <span class="wn"><b>${future && !e.kcal ? '–' : energyNum(e.kcal).toLocaleString()}</b>${tg && !future ? `<small class="${d > 0 ? 'nu-over' : ''}">${d > 0 ? '+' : '−'}${num(d)}</small>` : ''}</span></button>`; }).join('');
+    const mac = (l, v, m) => `<div class="nu-macro"><span>${l}</span>${bar(v, m, '')}<small>${r0(v)}${m ? ' / ' + m * 7 : ''} g</small></div>`;
+    return `${head('Weekly overview', 'data-nu-view="day"')}
+      <div class="nu-day"><button class="nu-nav" data-nu-wk="-1" aria-label="Previous week">&lsaquo;</button><b>${range}</b><button class="nu-nav" data-nu-wk="1" aria-label="Next week">&rsaquo;</button></div>${errBox()}
+      <div class="nu-card nu-sum">${loading ? '<p class="t-note">Loading…</p>' : summary}</div>
+      <div class="nu-card">${rows}</div>
+      ${loading ? '' : `<div class="nu-card"><h2 class="hr-h" style="margin-top:0">Macros for the week</h2><div class="nu-macros">${mac('Protein', total.protein, tg && tg.protein)}${mac('Carbs', total.carbs, tg && tg.carbs)}${mac('Fat', total.fat, tg && tg.fat)}</div></div>`}
+      <p class="iq-note">Days you went over and days you came in under balance out across the week. Tap a day to see or change what you ate. Not medical advice.</p>`;
+  }
   function dayHtml(){
     const t = sum(S.entries), tg = targets(), left = tg ? tg.kcal - t.kcal : 0;
     const macro = (label, v, max, cls) => `<div class="nu-macro"><span>${label}</span>${bar(v, max, cls)}<small>${r0(v)}${max ? ' / ' + max : ''} g</small></div>`;
@@ -136,7 +169,7 @@
         return `<section class="nu-meal"><div class="nu-mh"><h2>${label}</h2><span>${es.length ? energy(mt.kcal) : ''}</span></div>
           ${es.map(e => `<button class="nu-row" data-nu-edit="${e.id}"><span><strong>${esc(e.name)}</strong><small>${esc([e.brand, e.source === 'quick' ? 'Quick add' : amtLabel(e)].filter(Boolean).join(' · '))}</small></span><b>${energy(e.kcal)}</b></button>`).join('')}
           <button class="add" data-nu-add="${id}">+ Add food</button></section>`; }).join('')}
-      <div class="acts nu-foot"><button class="btn ghost small" data-nu-copy>Copy ${dayLabel(C.dkey(C.addDays(C.fromKey(S.day), -1))).toLowerCase()}'s meals here</button><button class="btn ghost small" data-nu-view="settings">Targets and settings</button><button class="btn ghost small" data-section="weight">Weight</button></div>
+      <div class="acts nu-foot"><button class="btn small" data-nu-week>Weekly overview</button><button class="btn ghost small" data-nu-copy>Copy ${dayLabel(C.dkey(C.addDays(C.fromKey(S.day), -1))).toLowerCase()}'s meals here</button><button class="btn ghost small" data-nu-view="settings">Targets and settings</button><button class="btn ghost small" data-section="weight">Weight</button></div>
       <p class="iq-note">${window.bfCloud && window.bfCloud.owner ? 'Signed in automatically on this computer (owner mode)' : `Signed in as ${esc(S.user.email)} · <button class="linkbtn" data-nu-out>Sign out</button>`}<br>${syncText()}</p>
       <p class="iq-note">Food data: USDA FoodData Central and Open Food Facts. Nutrition values are a guide, and packaged-food data is entered by the public, so check labels. Not medical advice.</p>`;
   }
@@ -230,7 +263,7 @@
     let html;
     if(!S.ready) html = `${head('Nutrition')}<p class="t-note">Loading…</p>${errBox()}`;
     else if(!S.user) html = signInHtml();
-    else html = ({day:dayHtml, add:addHtml, pick:S.pick ? pickHtml : dayHtml, quick:quickHtml, create:createHtml, settings:settingsHtml}[S.view] || dayHtml)();
+    else html = ({day:dayHtml, week:weekHtml, add:addHtml, pick:S.pick ? pickHtml : dayHtml, quick:quickHtml, create:createHtml, settings:settingsHtml}[S.view] || dayHtml)();
     el.innerHTML = html;
     if(hadFocus || (S.view === 'add' && S.focusSearch)){ const s = el.querySelector('#nuSearch'); if(s){ s.focus(); s.setSelectionRange(s.value.length, s.value.length); } S.focusSearch = false; }
   }
@@ -408,6 +441,9 @@
     if('nuSignup' in d) return passwordAuth(true);
     if('nuRetarget' in d) return retarget();
     if(d.nuView){ S.pick = null; S.editing = null; if(d.nuView === 'add') S.focusSearch = true; if(d.nuView === 'settings') S.draft = null; go(d.nuView); return; }
+    if('nuWeek' in d){ S.wkStart = C.dkey(C.weekStart(C.fromKey(S.day))); S.wk = null; go('week'); loadWeek().then(() => paint()).catch(fail); return; }
+    if(d.nuWk){ S.wkStart = C.dkey(C.addDays(C.fromKey(S.wkStart), 7 * +d.nuWk)); S.wk = null; paint(); loadWeek().then(() => paint()).catch(fail); return; }
+    if(d.nuOpenday){ S.day = d.nuOpenday; S.entries = []; go('day'); loadDay(S.day).then(() => { updateCache(); paint(); }).catch(fail); return; }
     if(d.nuDay){ S.day = C.dkey(C.addDays(C.fromKey(S.day), +d.nuDay)); S.entries = []; paint(); loadDay(S.day).then(() => { updateCache(); paint(); }).catch(fail); return; }
     if(d.nuAdd){ S.meal = d.nuAdd; S.q = ''; S.results = null; S.note = ''; S.focusSearch = true; go('add'); return; }
     if(d.nuMeal){ S.meal = d.nuMeal; paint(); return; }

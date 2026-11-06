@@ -87,8 +87,8 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .head-actions{display:flex;gap:8px;align-items:center}
 .iconbtn{background:var(--surface);border:0;border-radius:10px;width:40px;height:40px;display:grid;place-items:center}
 .iconbtn[aria-pressed="false"] .icon{stroke:var(--muted)}
-#musicBtn[aria-pressed="true"],#crowdBtn[aria-pressed="true"]{background:var(--gold)}
-#musicBtn[aria-pressed="true"] .icon,#crowdBtn[aria-pressed="true"] .icon{stroke:var(--gold-ink)}
+#musicBtn[aria-pressed="true"],#crowdBtn[aria-pressed="true"],#musicKindBtn[aria-pressed="true"]{background:var(--gold)}
+#musicBtn[aria-pressed="true"] .icon,#crowdBtn[aria-pressed="true"] .icon,#musicKindBtn[aria-pressed="true"] .icon{stroke:var(--gold-ink)}
 .timer-head{flex-wrap:wrap}
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted)}
 .chip[aria-pressed="true"]{color:var(--gold-ink);background:var(--gold);border-color:var(--gold)}
@@ -119,7 +119,7 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
    own square edge, and the glow around a round box shows up as a gold square. So nothing here uses box-shadow. The glow is a gradient painted inside a
    layer as big as the whole ring, with the gold rim line in it, and the soft edge inside the circle is a gradient too. */
 .countdown::before,.fighting::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle closest-side,transparent 72%,rgba(245,201,90,.95) 73.4%,rgba(245,201,90,.9) 74.2%,rgba(245,201,90,.38) 76%,rgba(245,201,90,.14) 82%,transparent 90%)}
+  background:radial-gradient(circle closest-side,transparent 72%,color-mix(in srgb,var(--gold) 95%,transparent) 73.4%,color-mix(in srgb,var(--gold) 90%,transparent) 74.2%,color-mix(in srgb,var(--gold) 38%,transparent) 76%,color-mix(in srgb,var(--gold) 14%,transparent) 82%,transparent 90%)}
 .countdown .face.front{background:radial-gradient(circle closest-side,#1b2631 62%,#3e4038 100%)}
 .countdown .face.back{display:none}
 .countdown .r-time{font-size:clamp(100px,30vw,150px);color:var(--c);margin:0;text-shadow:0 0 30px color-mix(in srgb,var(--c) 55%,transparent)}
@@ -245,15 +245,52 @@ hr{border:0;border-top:1px solid var(--line);margin:28px 0}
 .menu.open{transform:none;visibility:visible;transition:transform .25s}
 .menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .menu-head strong{font-family:var(--display);font-size:22px;letter-spacing:.02em}
-.menu button,.menu a{font:inherit;color:inherit;text-align:left;text-decoration:none;background:none;border:0;border-radius:10px;padding:10px 12px;display:block;width:100%;cursor:pointer}
+.menu button,.menu a{font:inherit;color:var(--gold);text-align:left;text-decoration:none;background:none;border:0;border-radius:10px;padding:10px 12px;display:block;width:100%;cursor:pointer}
 .menu button:hover,.menu a:hover,.menu button:focus-visible,.menu a:focus-visible{background:var(--surface-2);outline:none}
 .menu .m-group{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:14px;padding-bottom:4px}
-.menu .m-sub{padding-left:22px;color:var(--fg)}
+.menu .m-sub{padding-left:22px}
+.menu .m-item{padding:7px 12px 7px 38px;font-size:14px}
+/* versus: you in the blue corner, the opponent in the red; the same pair on the dashboard card and in Fight prep */
+.vs-pick,.vs-row{display:grid;gap:12px;margin:12px 0}
+.vs-pick{grid-template-columns:1fr 1fr}
+.vs-row{grid-template-columns:1fr auto 1fr;align-items:center}
+.blue{--cc:#4f8ff7}.red{--cc:#e5484d}
+.vs-slot,.vs-side{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;text-align:center}
+.vs-ph{width:100%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:3px solid var(--cc);background:var(--surface-2);display:grid;place-items:center}
+.vs-ph img{width:100%;height:100%;object-fit:cover}
+.vs-ph.adj{touch-action:none;cursor:grab}
+.vs-zoom{width:100%;accent-color:var(--gold)}
+.vs-slot .t-note{font-size:12px;margin:0}
+.vs-ph svg{width:46%;fill:none;stroke:var(--muted);stroke-width:1.5}
+.vs-slot strong,.vs-side strong{font-family:var(--display);font-size:16px;letter-spacing:.04em;text-transform:uppercase;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.vs-vs{font-family:var(--display);font-weight:700;font-size:30px;color:var(--gold);letter-spacing:.06em}
+.vs-note{text-align:center}
+.vs-plan{margin-top:14px}.vs-plan ol{margin:6px 0 0;padding-left:22px;font-weight:600}.vs-plan li{margin:4px 0}
+.vs-tips{margin:10px 0 0;padding-left:20px;font-size:.85rem;opacity:.75}.vs-tips li{margin:3px 0}
+#prepPlan{width:100%;box-sizing:border-box;margin-top:6px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:inherit;font:inherit;resize:vertical}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin:14px 0}
+.swatch{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);color:var(--fg);font:inherit;font-size:14px;cursor:pointer}
+.swatch i{width:34px;height:34px;border-radius:50%;background:var(--sw)}
+.swatch[aria-checked="true"]{border-color:var(--gold)}
+.swatch-custom{display:flex;align-items:center;gap:12px}
+.swatch-custom input{width:56px;height:38px;padding:2px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.menu .m-row{display:flex;align-items:stretch}
+.menu .m-row.m-lvl0{margin-top:14px}
+.menu .m-row .m-group{margin-top:0}
+.menu .m-row>:first-child{flex:1;min-width:0}
+.menu .m-tog{flex:none;width:44px;padding:0;display:grid;place-items:center;color:var(--gold)}
+.menu .m-tog .icon{width:18px;height:18px;transition:transform .2s}
+.menu .m-tog[aria-expanded="true"] .icon{transform:rotate(180deg)}
+.menu .m-kids[hidden]{display:none}
 .menu .m-close{width:40px;height:40px;padding:0;display:grid;place-items:center;flex:none}
 .menu hr{border:0;border-top:1px solid var(--line);margin:14px 0 6px;width:100%}
 /* the menu button sits above the page, so the pages start a little lower; the timer screen has no menu, so a workout is never left by accident */
 .has-menu .wrap{padding-top:68px}
-body:not(.from-hub) :is(#setup,#plainSetup,#iq,#breath,#reframe,#skill)>.brand{display:none}
+body:not(.from-hub) :is(#setup,#plainSetup,#iq,#breath,#reframe,#skill,#mdrill)>.brand{display:none}
+.md-phase{font-size:28px;font-weight:700;margin:14px 0 4px}
+.md-time{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--gold)}
+.md-cue{font-size:19px;line-height:1.5;min-height:7em;margin:10px 0 18px}
 .topbar{position:fixed;z-index:60;top:calc(10px + env(safe-area-inset-top,0px));left:0;right:0;pointer-events:none}
 .topbar-in{max-width:900px;margin:0 auto;padding-inline:16px;display:flex;justify-content:space-between;align-items:center}
 .topbar button{pointer-events:auto}
@@ -265,6 +302,51 @@ body:not(.has-menu) .home-btn{display:none}
 body:not(.has-menu) .menu-btn{display:none}
 /* the Dashboard screen (the Today widget on it is today's session) */
 .btn.small{padding:9px 16px;font-size:14px}
+/* build a workout: a list of blocks to chain, and the buttons that add one */
+.move-fig{max-width:300px;margin:6px auto 4px}
+.move-fig svg{width:100%;display:block}
+.fg-floor{stroke:var(--line);stroke-width:2}
+.fg-wall{stroke:var(--line);stroke-width:3}
+.fg-body,.fg-near,.fg-far{fill:none;stroke:var(--c,#f5c95a);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.fg-far{opacity:.45}
+.fg-head{fill:var(--c,#f5c95a)}
+.sc-wrap{overflow-x:auto;margin:10px 0}
+.sc-tbl{width:100%;border-collapse:collapse;font-size:14px;text-align:center}
+.sc-tbl th,.sc-tbl td{padding:7px 6px;border-bottom:1px solid var(--line)}
+.sc-tbl thead th{color:var(--muted,#9aa);font-weight:600}
+.sc-tbl tbody th{text-align:left;font-weight:600;white-space:nowrap}
+.sc-tbl tbody th span{display:block;font-size:11px;font-weight:400;color:var(--muted,#9aa)}
+.sc-tbl td.red{color:#ff6b5e}.sc-tbl td.blue{color:#6fb3ff}
+.sc-bout h2 em{font-size:13px;font-weight:400;font-style:normal;color:var(--muted,#9aa)}
+.sc-vid{position:relative;padding-top:56.25%;margin-top:12px}
+.sc-vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px}
+.prep-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.prep-top strong{display:block}
+.prep-top span{display:block;font-size:13px;color:var(--muted,#9aa)}
+.prep-row{display:block;width:100%;margin-top:6px;padding:8px 0;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.prep-row:active{opacity:.7}
+.prep-h{display:flex;justify-content:space-between;font-size:15px;margin-bottom:4px}
+.prep-h b.gap{color:#ff6b5e}
+.prep-h b.ok{color:#7fd1a8}
+.prep-plan{margin-top:10px}
+.bw-block{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.bw-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;font-size:17px}
+.bw-head em{font-style:normal;font-weight:500;font-size:14px;color:var(--muted,#9aa)}
+.bw-head span{display:flex;gap:6px}
+.bw-head button{width:34px;height:34px;border:0;border-radius:8px;background:var(--surface-2);color:var(--fg);font-size:16px;display:grid;place-items:center}
+.bw-head button:disabled{opacity:.3}
+.bw-head .icon{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.bw-block label{display:block;font-size:13px;font-weight:600;color:var(--muted,#9aa);margin-top:10px}
+.bw-block select{display:block;width:100%;margin-top:4px;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);color:var(--fg);font-size:15px}
+.bw-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.bw-chips button{border:1.5px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+.bw-chips button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}
+.bw-grp{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:18px 0 8px}
+.bw-picks{display:flex;flex-wrap:wrap;gap:8px}
+.bw-picks button{border:1.5px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:999px;padding:9px 14px;font-size:15px;font-weight:600}
+.bw-picks button:hover{border-color:var(--gold)}
+.bw-empty{color:var(--muted,#9aa);margin:6px 0 4px}
+.bw-go{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:22px}
 .t-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
 .t-head h1{font-size:34px}
 .t-head>div:first-child{min-width:0}.t-head h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -279,9 +361,12 @@ body:not(.has-menu) .menu-btn{display:none}
 .drag-lift{position:relative;z-index:50;box-shadow:0 14px 34px rgba(0,0,0,.55);opacity:.96;transition:none!important}
 .drop-target{outline:2px dashed var(--gold);outline-offset:2px}
 body.dragging,body.dragging *{cursor:grabbing!important}
+body.dragging .cs-wrap{overflow:visible;background:transparent}   /* a picked-up session floats free of its card: no red Delete behind it, and the drop outline shows */
+body.dragging .cs-del{display:none}
 .t-hint{color:var(--muted);font-size:13px;margin:14px 0 0;text-align:center}
 .t-hint button{background:none;border:0;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;padding:0}
-.tw.mini,.tw[data-w="nutri"]{cursor:pointer}
+.tw.mini{cursor:pointer}
+.bn-part+.bn-part{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
 html.gate-wait body>*:not(#gate),html.gated body>*:not(#gate){display:none!important}
 #gate{position:fixed;inset:0;z-index:300;background:var(--bg);overflow:auto;display:grid;place-items:center;padding:24px 16px}
 #gate[hidden]{display:none}
@@ -324,6 +409,7 @@ html.gate-wait body>*:not(#gate),html.gated body>*:not(#gate){display:none!impor
 .t-note{color:var(--muted);font-size:14px;margin:0}
 .t-row{display:flex;gap:10px;flex-wrap:wrap}
 .t-item{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.t-item.is-done strong{text-decoration:line-through;color:var(--muted)}.t-item .t-tick{color:var(--gold);font-weight:700}
 .t-item strong{display:block;font-size:15px;line-height:1.25}.t-item span{color:var(--muted);font-size:13px}
 .wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .wk-d{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface-2);border:1.5px solid transparent;border-radius:10px;padding:7px 0 8px}
@@ -410,6 +496,37 @@ html.gate-wait body>*:not(#gate),html.gated body>*:not(#gate){display:none!impor
 .wt-quick{display:flex;gap:8px;margin-top:8px}
 .wt-quick input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--fg);padding:9px 12px;font:inherit;font-size:16px}
 .wt-quick input.bad{border-color:#ff7f6e}
+.tw.watercutw{border-color:color-mix(in srgb,#4fd1b5 45%,var(--line))}
+.wc-big{font-family:var(--display);font-size:32px;line-height:1.1;color:#4fd1b5;margin:6px 0 2px}
+.wc-seg{display:flex;gap:6px;margin:6px 0 12px}
+.wc-seg button{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--muted);padding:9px 6px;font:inherit;font-size:14px;font-weight:600}
+.wc-seg button.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.wc-day{--c:var(--line);margin-top:10px;padding:12px;border:1px solid var(--c);border-radius:14px;background:var(--bg)}
+.wc-day.wc-load{--c:#4fd1b5}.wc-day.wc-peak{--c:var(--gold)}.wc-day.wc-cut,.wc-day.wc-weighin{--c:#ff7f6e}
+.wc-day.fd-done{opacity:.55}
+.wc-day.now{box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 60%,transparent)}
+.wc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.wc-top strong{display:block;font-size:16px}.wc-top small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.wc-tag{flex:none;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--c);color:var(--c)}
+.wc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 8px}
+.wc-grid span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.wc-grid b{display:block;font-size:14px;margin-top:2px}
+.wc-note{margin:14px 0 0;padding:10px 12px;background:var(--surface-2);border:1px solid #4fd1b5;border-radius:12px;font-size:14px}
+.wc-warn{margin:10px 0 0;padding:10px 12px;border:1px solid #ff7f6e;border-radius:12px;color:#ff9c8c;font-size:14px}
+.wc-how{margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:14px}.wc-how li{margin:6px 0}.wc-how b{color:var(--fg)}
+.wc-track{margin-top:6px}
+.wc-drunk b{font-family:var(--display);font-size:34px;color:#4fd1b5;line-height:1}.wc-drunk span{color:var(--muted);font-size:14px;margin-left:8px}
+.wc-bottles{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 8px}
+.wc-bottle{position:relative;display:block;width:30px;height:62px;margin-top:8px;border:2px solid #4fd1b5;border-radius:8px 8px 9px 9px;background:linear-gradient(to top,#4fd1b5 var(--f),transparent var(--f));transition:background .3s}
+.wc-bottle::before{content:"";position:absolute;left:50%;top:-9px;width:12px;height:8px;margin-left:-6px;border:2px solid #4fd1b5;border-bottom:0;border-radius:3px 3px 0 0;background:var(--bg)}
+.wc-bottle.over{border-color:#ff7f6e;background:linear-gradient(to top,#ff7f6e var(--f),transparent var(--f))}.wc-bottle.over::before{border-color:#ff7f6e}
+.wc-add{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}.wc-add .linkbtn:disabled{opacity:.4}
+.wc-bad{color:#ff9c8c}
+.wc-parts{margin:8px 0 6px;padding:0;list-style:none}.wc-parts li{padding:6px 0;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}.wc-parts b{display:block;color:var(--fg);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.wc-swaps{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.wc-swaps div{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.wc-swaps span{display:block;font-size:13px;font-weight:600}.wc-swaps b{display:block;font-size:12px;color:var(--gold);font-weight:600}.wc-swaps small{color:var(--muted);font-size:12px}
+.wc-chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.wc-chips span{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 /* saving a finished session */
 .savebox{margin:18px auto 6px;max-width:460px;text-align:left}
 .savebox:empty{display:none}
@@ -431,6 +548,17 @@ html.gate-wait body>*:not(#gate),html.gated body>*:not(#gate){display:none!impor
 .nu-ok{color:var(--fg);margin-top:12px}
 .nu-day{display:flex;align-items:center;justify-content:center;gap:16px;margin:12px 0 0}
 .nu-day b{min-width:110px;text-align:center;font-size:18px}
+.nu-wk3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;margin-bottom:12px}
+.nu-wk3 b{display:block;font-size:22px}
+.nu-wk3 span{display:block;font-size:12px;color:var(--muted,#9aa)}
+.nu-wk3 .over b,.nu-over{color:#ff6b5e}
+.nu-wkrow{display:grid;grid-template-columns:44px 1fr 86px;align-items:center;gap:10px;width:100%;padding:9px 4px;background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);text-align:left}
+.nu-wkrow:last-child{border-bottom:0}
+.nu-wkrow.today .wd b{color:var(--gold)}
+.nu-wkrow .wd b{display:block;font-size:15px}
+.nu-wkrow .wd small,.nu-wkrow .wn small{display:block;font-size:12px;color:var(--muted,#9aa)}
+.nu-wkrow .wn{text-align:right}
+.nu-wkrow .wn small.nu-over{color:#ff6b5e}
 .nu-nav{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--gold);font-size:24px;line-height:1}
 .nu-sum{text-align:center}
 .nu-left b{display:block;font-family:var(--display);font-size:46px;line-height:1;color:var(--gold)}
@@ -848,11 +976,13 @@ button.fs-t{cursor:pointer}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script>/* the sign-in gate (gate.js): keep the app out of sight until we know whether someone is signed in. Someone who has signed in here before is not kept waiting. */
-if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.documentElement.classList.add('gate-wait'); setTimeout(function(){ document.documentElement.classList.remove('gate-wait'); }, 8000); } } catch(e){} }</script>
+if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.documentElement.classList.add('gate-wait'); setTimeout(function(){ document.documentElement.classList.remove('gate-wait'); }, 8000); } } catch(e){} }
+/* the accent colour someone picked in Settings (bfAccent), put on before anything is drawn so there is no flash of gold */
+try { var ac0 = JSON.parse(localStorage.getItem('bfAccent') || 'null'); if(ac0 && ac0.c){ document.documentElement.style.setProperty('--gold', ac0.c); document.documentElement.style.setProperty('--gold-ink', ac0.i); } } catch(e){}</script>
 </head>
 <body class="has-menu">
 <div class="topbar"><div class="topbar-in">
-<button class="home-btn" id="homeBtn" aria-label="Boxing Flow: back to your dashboard"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="#2f3e4e" stroke-width="4"/><path d="M16 3a13 13 0 1 1-12.4 9" fill="none" stroke="#f5c95a" stroke-width="4" stroke-linecap="round"/></svg><span>Boxing Flow</span></button>
+<button class="home-btn" id="homeBtn" aria-label="Boxing Flow: back to your dashboard"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="#2f3e4e" stroke-width="4"/><path d="M16 3a13 13 0 1 1-12.4 9" fill="none" style="stroke:var(--gold)" stroke-width="4" stroke-linecap="round"/></svg><span>Boxing Flow</span></button>
 <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </div></div>
 <div class="menu-scrim" id="menuScrim"></div>
@@ -869,22 +999,30 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
   <button class="m-sub" data-go="iq">Boxing IQ</button>
   <button class="m-group" data-go="strength">Strength &amp; conditioning</button>
   <button class="m-sub" data-go="plyo">Plyometrics</button>
+  <button class="m-sub" data-go="peak">Peak week intervals</button>
   <button class="m-sub" data-go="shoulder">Shoulder conditioning</button>
   <button class="m-sub" data-go="treadmill">Treadmill intervals</button>
-  <button class="m-sub" data-go="run">Run</button>
-  <button class="m-sub" data-go="recovery">Recovery</button>
+  <button class="m-sub" data-go="run">Running</button>
+  <button class="m-sub" data-go="abs">Abdominals</button>
+  <button class="m-sub" data-go="neck">Neck exercises</button>
+  <button class="m-sub" data-go="flow">Flow</button>
+  <button class="m-group" data-go="recovery">Recovery</button>
+  <button class="m-group" data-go="mind">Mental skills</button>
+  <button class="m-group" data-go="prep">Fight prep</button>
+  <button class="m-group" data-go="scoring">Scoring and judging</button>
+  <button class="m-group" data-go="build">Build a workout</button>
   <button class="m-group" data-go="calendar">Training calendar</button>
   <button class="m-group" data-go="camp">Training camp</button>
   <button class="m-group" data-go="weight">Weight</button>
+  <button class="m-group" data-go="watercut">Water cut</button>
+  <button class="m-group" data-go="fightday">Fight-day fuel</button>
   <button class="m-group" data-go="profile">Profile</button>
   <button class="m-group" data-go="nutrition">Nutrition</button>
   <button class="m-group" data-go="film">Film study</button>
   <button class="m-group" data-go="hr">Heart rate</button>
-  <button class="m-group" data-go="mind">Mental skills</button>
-  <button class="m-sub" data-go="breath">Box breathing</button>
-  <button class="m-sub" data-go="reframe">Cognitive reframing</button>
   <div class="m-sync" id="syncLine" aria-live="polite"></div>
   <hr>
+  <button data-go="settings">Settings</button>
   <a href="index.html">Boxing Flow website</a>
 </nav>
 
@@ -909,6 +1047,12 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
       <strong>Strength &amp; conditioning</strong>
       <p>Explosive and conditioning work to build the power, speed and fitness behind your boxing.</p>
       <span class="go">Open strength &amp; conditioning &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="recovery">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-3.5 2-6 5-10z"/></svg></span>
+      <strong>Recovery</strong>
+      <p>Cold shower, massage gun, foam roller, stretching and mobility. Look after your body so you can train hard again.</p>
+      <span class="go">Pick a session &rarr;</span>
     </button>
     <button class="mode-card" data-section="mind">
       <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
@@ -966,6 +1110,12 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
       <p>Explosive bodyweight work, plus medicine ball power for boxers. Work and rest intervals with a coach calling each move.</p>
       <span class="go">Pick a workout &rarr;</span>
     </button>
+    <button class="mode-card" data-mode="peak">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M3 17l5-9 4 6 3-4 6 7"/></svg></span>
+      <strong>Peak week intervals</strong>
+      <p>Sharp bursts with an easy recovery: 1:1, 2:1, 3:1, 1:2 and more. Speed and power up, heart rate kept in the green.</p>
+      <span class="go">Pick a ratio &rarr;</span>
+    </button>
     <button class="mode-card" data-mode="shoulder">
       <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9h3M17 9h3M7 9a5 5 0 0 1 10 0M12 9v11M8 14l4-2 4 2"/></svg></span>
       <strong>Shoulder conditioning</strong>
@@ -978,19 +1128,57 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
       <p>Five advanced running workouts from Red Zone Running: Norwegian, Brianstorm, Crying Lightning, Sharpshooter and Apples &amp; Pairs. A voice calls every on and off and the speed to run.</p>
       <span class="go">Pick a workout &rarr;</span>
     </button>
-    <button class="mode-card" data-mode="recovery">
-      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-3.5 2-6 5-10z"/></svg></span>
-      <strong>Recovery</strong>
-      <p>Cold shower, massage gun, foam roller, stretching and mobility. A voice and a timer take you through each move, and each session lists what it does for a boxer.</p>
-      <span class="go">Pick a session &rarr;</span>
+    <button class="mode-card" data-mode="abs">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="4" width="10" height="16" rx="3"/><path d="M12 4v16M7 9h10M7 14h10"/></svg></span>
+      <strong>Abdominals</strong>
+      <p>Follow-along core workouts, starting with eight exercises of 30 reps each, counted one, two, one, two. A voice and a timer call every move.</p>
+      <span class="go">Pick a workout &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="flow">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M3 12c3-6 6-6 9 0s6 6 9 0"/></svg></span>
+      <strong>Flow</strong>
+      <p>Fun, easy movement to stay loose: dance, ballet barre, footwork to a beat and capoeira ginga. Keeps your heart rate in the green.</p>
+      <span class="go">Pick a flow &rarr;</span>
+    </button>
+    <button class="mode-card" data-mode="neck">
+      <span class="badge"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="6" r="3"/><path d="M9 10v4M15 10v4M5 21c0-4 3-7 7-7s7 3 7 7"/></svg></span>
+      <strong>Neck exercises</strong>
+      <p>Plate shrugs, plate on the forehead, four-way neck work and no-equipment holds. A voice and a timer call every set and rest.</p>
+      <span class="go">Pick a workout &rarr;</span>
     </button>
     <button class="mode-card" data-mode="run">
       <span class="badge"><svg class="icon" viewBox="0 0 24 24"><path d="M8 21l3-18M16 21l-3-18M12 7v2M12 12v2M12 17v2"/></svg></span>
-      <strong>Run</strong>
+      <strong>Running</strong>
       <p>Green zone runs to build your engine: recovery jog, easy runs, a long run, and a yellow zone tempo run. Outside or on a treadmill, with a voice keeping your effort right.</p>
       <span class="go">Pick a run &rarr;</span>
     </button>
   </div>
+</section>
+
+<!-- ============ BUILD A WORKOUT ============ -->
+<section id="build" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="home">&larr; Back</button></div>
+  <h1>Build a workout</h1>
+  <p class="sub">Build it one round at a time. Tap a workout to add a single round of it, then put the rounds in the order you want. They play one after another, so you can do a round of shadow boxing, some abdominals, a round of boxing and a recovery in one go.</p>
+  <div id="bwList"></div>
+  <div id="bwAdd"></div>
+  <div class="bw-go"><button class="btn" id="bwStart">Start workout</button><button class="btn ghost" id="bwClear">Clear all</button><span class="sub" id="bwSummary"></span></div>
+</section>
+
+<!-- ============ FIGHT PREP ============ -->
+<section id="prep" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="today">&larr; Dashboard</button></div>
+  <h1>Fight prep</h1>
+  <p class="sub">See where your training has gaps for a fight, and what to do about them. Tell it about the opponent and it adjusts.</p>
+  <div id="prepBody"></div>
+</section>
+
+<!-- ============ SCORING ============ -->
+<section id="scoring" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="today">&larr; Dashboard</button></div>
+  <h1>Scoring and judging</h1>
+  <p class="sub">How an amateur bout is scored, and how each judge scored real international fights.</p>
+  <div id="scoringBody"></div>
 </section>
 
 <!-- ============ MENTAL SKILLS ============ -->
@@ -1007,6 +1195,10 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
 <section id="reframe" class="wrap" hidden>
   <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
   <div id="rfBody"></div>
+</section>
+<section id="mdrill" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
+  <div id="mdBody"></div>
 </section>
 <section id="breath" class="wrap" hidden>
   <div class="brand"><button class="eyebrow back-link" data-section="mind">&larr; Mental skills</button></div>
@@ -1162,9 +1354,21 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
 
 <!-- ============ WEIGHT ============ -->
 <section id="weight" class="wrap" hidden><div id="weightBody"></div></section>
+<section id="watercut" class="wrap" hidden><div id="watercutBody"></div></section>
+<section id="fightday" class="wrap" hidden><div id="fightdayBody"></div></section>
 
 <!-- ============ PROFILE ============ -->
 <section id="profile" class="wrap" hidden><div id="profileBody"></div></section>
+<!-- ============ SETTINGS ============ -->
+<section id="settings" class="wrap" hidden>
+  <div class="brand"><button class="eyebrow back-link" data-section="today">&larr; Dashboard</button></div>
+  <h1>Settings</h1>
+  <h2>Accent colour</h2>
+  <p class="sub">The gold you see across the app. Pick another colour and every button, heading and highlight changes with it. It is saved on this device.</p>
+  <div class="swatches" id="swatches" role="radiogroup" aria-label="Accent colour"></div>
+  <label class="c-label swatch-custom">Or choose your own<input type="color" id="accentCustom" value="#f5c95a"></label>
+  <div class="iq-actions" style="margin-top:18px"><button class="btn ghost" id="accentReset">Back to gold</button></div>
+</section>
 
 <!-- ============ NUTRITION ============ -->
 <section id="nutrition" class="wrap" hidden><div id="nutriBody"></div></section>
@@ -1186,6 +1390,9 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
       </button>
       <button class="iconbtn" id="crowdBtn" aria-pressed="false" aria-label="Crowd noise" title="Crowd noise">
         <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.1a5 5 0 0 1 5 4.9"/></svg>
+      </button>
+      <button class="iconbtn" id="musicKindBtn" aria-pressed="false" aria-label="Switch to Christian music" title="Switch to Christian music">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v18M6 9h12"/></svg>
       </button>
       <button class="iconbtn" id="musicBtn" aria-pressed="false" aria-label="Play music" title="Play music">
         <svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
@@ -1379,6 +1586,7 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
 
       <div class="now" id="nowCard">
         <div class="eyebrow">Now</div>
+        <div class="move-fig" id="moveFig" hidden></div>
         <div class="now-name" id="nowName">Jab, Jab, Cross</div>
         <p class="now-cue" id="nowCue"></p>
         <p class="now-line" id="nowLine" hidden></p>
@@ -1469,11 +1677,17 @@ if(!window.BF_NO_GATE){ try { if(!localStorage.getItem('gateOk')){ document.docu
 <script src="scenarios.js"></script>
 <script src="output.js"></script>
 <script src="plyo.js"></script>
+<script src="peak.js"></script>
 <script src="shoulder.js"></script>
 <script src="treadmill.js"></script>
 <script src="recovery.js"></script>
+<script src="abs.js"></script>
+<script src="neck.js"></script>
+<script src="flow.js"></script>
+<script src="figures.js"></script>
 <script src="run.js"></script>
 <script src="mind.js"></script>
+<script src="mindwork.js"></script>
 <script>
 const ICONS = {
   target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
@@ -1686,6 +1900,18 @@ const SEG = 30, REST = 60, READY = 5;
 const BASIC = [
   {name:'Bag basics', exercises:['Jab','Jab, jab, cross','1-2','1-2-3','Lead hooks','Uppercuts','Body shots','Free punching']},
   {name:'Combinations', exercises:['1-2','1-1-2','1-2-3','1-2-3-2','Jab, cross, hook, uppercut','Body hook, head hook','1-2, slip, 2','Free combinations']},
+  {name:'Power', blurb:'Power is speed with a tensed last punch, not a separate slow, heavy punch. Throw fast, then tense and sit into the last shot of every burst.', exercises:[
+    ['Fast jabs, tense the last', 'Fire fast, loose jabs. On the last one of each burst, tense and snap it through.', 'Stay fast and loose. Only squeeze at the very end of the last punch.'],
+    ['1-2 bursts, tense the cross', 'Quick, light 1-2s. Finish each burst with a tensed cross, then reset and go again.', 'The speed shots set it up. The last punch carries the power.'],
+    ['Fast hooks, tense the last', 'Quick lead hooks. Tense on the last hook of each burst.', 'Rotate through the hips, and do not slow down to find power.'],
+    ['1-2-3, tense the hook', 'Throw the 1-2-3 fast. Tense and turn the hook over hard.', 'Speed, speed, then power on the final punch.'],
+    ['Flurry of straights, tense the last', 'Six or more fast straight punches, then tense for a hard final cross.', 'Do not stop between the flurry and the finisher.'],
+    ['Body shots, tense the last', 'Quick body shots. Tense on the last one and drive through the body.', 'Stay low, relaxed shoulders, and finish the last one with the legs.'],
+    ['Uppercuts, fast then tense', 'Fast uppercuts, then one tensed uppercut to finish.', 'Keep your elbows tight until the last punch.'],
+    ['Long combination, tense the finisher', 'Five or six punches fast, with the last punch tensed and heavy.', 'Add the power on to the speed. Never replace the speed with it.'],
+    ['Speed flurry, power finish', 'Non-stop speed for a few seconds, then a tensed final shot, and straight back to speed.', 'In an amateur round you cannot stop to load up. The last punch carries the power.'],
+    ['Free punching, speed with a power finish', 'Free punching. Every burst ends with one tensed punch.', 'Power is speed, plus a tensed last punch.']
+  ]},
   {name:'Speed and power', exercises:['Fast straights','Power cross','Speed jabs','Power hooks','Non-stop 1-2s','Power uppercuts','Flurry and out','Big shots only']},
   {name:'Defence', exercises:['Slip and counter','Bob and weave','Block and return','Pull back, cross','Parry the jab','Roll under, hook','Shoulder roll','Hands up, free defence']},
   {name:'Conditioning', exercises:['Non-stop punches','Squats','Burnout straights','High knees','Hooks and uppercuts','Burpees','Shadow boxing','Everything you’ve got']},
@@ -1714,8 +1940,8 @@ const exName = e => Array.isArray(e) ? e[0] : e, exCue = e => Array.isArray(e) ?
 const restLabel = s => s<60 ? `${s} sec` : s%60 ? `${s/60|0} min ${s%60} sec` : `${s/60} min`;
 const restWords = s => s===60 ? 'One minute' : s===90 ? 'A minute and a half' : s%60 ? `${s} seconds` : `${s/60} minutes`;
 // one colour per drill, cycled so neighbours never match; the ring takes the colour of the current drill
-const PALETTE = ['#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
-const READY_C = '#f5c95a', REST_C = '#7cc0ea';
+let PALETTE = [getComputedStyle(document.documentElement).getPropertyValue('--gold').trim() || '#f5c95a','#ff7f6e','#4fd1b5','#a58bff','#9fdc5b','#f68fc6'];
+let READY_C = PALETTE[0]; const REST_C = '#7cc0ea';
 
 // spoken encouragement, dropped in at random mid-drill and during rests
 const QUOTES = [
@@ -1739,7 +1965,7 @@ const FINISH = ['Last ten seconds. Empty the tank!', 'Ten seconds left. Everythi
 const bags = {};
 const draw = (key, arr) => { if(!bags[key] || !bags[key].length) bags[key] = shuffle(arr); return bags[key].pop(); };
 
-const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0, out:0, oopt:0, plyo:0, popt:0, shd:0, shopt:0, srest:0, tm:0, rec:0, run:0};
+const state = {focus:new Set(['jab','speed','power']), opt:0, preset:0, rest:1, scen:0, sopt:0, out:0, oopt:0, plyo:0, popt:0, shd:0, shopt:0, srest:0, tm:0, rec:0, abs:0, neck:0, flow:0, run:0, peak:0, kopt:2};
 let mode = 'coach';   // 'coach' (the 3D coach), 'basic' (set exercises, no coach), 'scenario' (a coached game plan against one style), 'output' (the coach calls combinations to a punch target), 'plyo' (bodyweight plyometric intervals), 'shoulder' (the shoulder conditioning drill) or 'timer' (rounds and rest only)
 const $ = id => document.getElementById(id);
 const svg = (k,cls='icon') => `<svg class="${cls}" viewBox="0 0 24 24">${ICONS[k]}</svg>`;
@@ -1826,7 +2052,7 @@ const runBrief = w => [
 function renderRunSetup(){
   const w = RUNS[state.run];
   document.querySelector('#plainSetup [data-back]').textContent = '← Strength & conditioning';
-  $('pTitle').textContent = 'Run';
+  $('pTitle').textContent = 'Running';
   $('pSub').textContent = 'Steady, zone-based runs to build your engine. The hard red zone intervals are in Treadmill intervals.';
   $('presetBlock').hidden = false; $('presetH').textContent = 'Choose your run';
   $('presetSub').textContent = 'Green zone is easy and conversational. Yellow zone is comfortably hard.';
@@ -1841,6 +2067,7 @@ function renderRunSetup(){
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
 // recovery: pick a session. Each lists what it does for a boxer, how to do it, and the moves with their times
+const recList = () => mode==='abs' ? ABS : mode==='neck' ? NECK : mode==='flow' ? FLOW : RECOVERY, recKey = () => mode==='abs' ? 'abs' : mode==='neck' ? 'neck' : mode==='flow' ? 'flow' : 'rec';   // abs (abs.js), neck (neck.js) and flow (flow.js) workouts share the recovery screens
 const recBrief = ws => [
   ['What it does for a boxer', '<ul>' + ws.benefits.map(b => `<li>${b}</li>`).join('') + '</ul>'],
   ['How to do it', ws.ready + ' ' + ws.tips.join(' ')],
@@ -1848,14 +2075,14 @@ const recBrief = ws => [
   ['Stay safe', ws.safety]
 ];
 function renderRecoverySetup(){
-  const ws = RECOVERY[state.rec];
-  document.querySelector('#plainSetup [data-back]').textContent = '← Strength & conditioning';
-  $('pTitle').textContent = 'Recovery';
-  $('pSub').textContent = 'Simple recovery sessions for after hard training or a rest day. A voice and a timer take you through every move.';
-  $('presetBlock').hidden = false; $('presetH').textContent = 'Choose your session';
+  const list = recList(), k = recKey(), abs = mode==='abs', neck = mode==='neck', flow = mode==='flow', work = abs || neck || flow, ws = list[state[k]];
+  document.querySelector('#plainSetup [data-back]').textContent = work ? '← Strength & conditioning' : '← Explore training';
+  $('pTitle').textContent = abs ? 'Abdominals' : neck ? 'Neck exercises' : flow ? 'Flow' : 'Recovery';
+  $('pSub').textContent = abs ? 'Follow-along core workouts. A voice and a timer take you through every move.' : flow ? 'Fun, easy movement from dance, ballet and capoeira, and footwork to a beat. Stay loose and keep your heart rate in the green. A voice and a timer take you through every move.' : neck ? 'Weighted and bodyweight neck work to help you take a punch. A voice and a timer take you through every set and rest.' : 'Simple recovery sessions for after hard training or a rest day. A voice and a timer take you through every move.';
+  $('presetBlock').hidden = false; $('presetH').textContent = work ? 'Choose your workout' : 'Choose your session';
   $('presetSub').textContent = 'Each one lists what it does for a boxer. Lengths are approximate.';
-  $('presetList').innerHTML = RECOVERY.map((w,i)=>`
-    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.rec===i}">
+  $('presetList').innerHTML = list.map((w,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${state[k]===i}">
       <span class="badge">${svg('timer')}</span>
       <span><strong>${w.name}</strong><span>${w.mins} min · ${w.blurb}</span></span>
     </button>`).join('');
@@ -1864,9 +2091,35 @@ function renderRecoverySetup(){
   $('summary').innerHTML = `<b>${ws.name}</b> · about ${ws.mins} min · ${ws.moves.length} moves`;
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
+// peak week intervals (peak.js): pick the kind of sharp work, then the on:off timing. The list of timings shows the ratio and how long the session runs.
+function renderPeakSetup(){
+  const ws = PEAK[state.peak], o = PEAK_OPTS[state.kopt], rest = REST_OPTS[state.rest];
+  document.querySelector('#plainSetup [data-back]').textContent = '← Strength & conditioning';
+  $('pTitle').textContent = 'Peak week intervals';
+  $('pSub').textContent = `Short, sharp bursts with an easy recovery after each, so speed and power stay high and your heart rate stays under ${PEAK_HR}. A voice calls every burst and every easy spell.`;
+  ['pLenH','pLenSub','pRoundList'].forEach(id => { $(id).hidden = false; });
+  $('presetBlock').hidden = false; $('presetH').textContent = 'Choose your work'; $('presetSub').textContent = 'What you throw in the sharp bursts. The easy spells are always bounce, shadow and breathing.';
+  $('presetList').innerHTML = PEAK.map((w,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.peak===i}">
+      <span class="badge">${svg('combo')}</span>
+      <span><strong>${w.name}</strong><span>${w.blurb}</span></span>
+    </button>`).join('');
+  $('pLenH').textContent = 'Choose the timing'; $('pLenSub').textContent = 'The ratio is on to off. Longer recoveries keep your heart rate lower.';
+  $('pRoundList').innerHTML = PEAK_OPTS.map((x,i)=>`
+    <button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.kopt===i}">
+      <span class="badge">${svg('timer')}</span>
+      <span><strong>${x.ratio} · ${x.w} sec on, ${x.rs} sec off</strong><span>${x.r} rounds of ${Math.round(peakSecs(x)/6)/10} min · about ${peakMins(x, rest)} min. ${x.note}</span></span>
+    </button>`).join('');
+  $('scenBrief').hidden = false; $('scenBrief').innerHTML = PEAK_BRIEF.map(([t,p])=>`<div><h3>${t}</h3><p>${p}</p></div>`).join('');
+  $('restBlock').hidden = false;
+  $('restList').innerHTML = REST_OPTS.map((s,i)=>`<button class="round-opt" role="radio" data-i="${i}" aria-checked="${state.rest===i}"><strong>${restLabel(s)}</strong></button>`).join('');
+  $('summary').innerHTML = `<b>${ws.name}</b> · ${o.ratio} · ${o.w} on, ${o.rs} off · ${o.r} rounds`;
+  $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
+}
 function renderPlain(){
+  if(mode==='peak') return renderPeakSetup();
   if(mode==='treadmill') return renderTreadmillSetup();
-  if(mode==='recovery') return renderRecoverySetup();
+  if(mode==='recovery' || mode==='abs' || mode==='neck' || mode==='flow') return renderRecoverySetup();
   if(mode==='run') return renderRunSetup();
   ['pLenH','pLenSub','pRoundList'].forEach(id => { $(id).hidden = false; });
   const basic = mode==='basic', scen = mode==='scenario', outp = mode==='output', plyo = mode==='plyo', shld = mode==='shoulder', listy = basic||scen||outp||plyo||shld;
@@ -1910,8 +2163,8 @@ function renderPlain(){
     : `<b>${listy ? lists[pi].name : 'Round timer'}</b> · ${o.r} × ${o.m} min${o.r>1?(shld && SHOULDER[pi].breakSec ? ` · ${SHOULDER[pi].breakSec} sec breaks` : ` · ${restLabel(REST_OPTS[state[rk]])} rest`):''}`;
   $('buildBtn').disabled = false; $('buildBtn').textContent = 'Start';
 }
-$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'scen',output:'out',plyo:'plyo',shoulder:'shd',treadmill:'tm',recovery:'rec',run:'run'}[mode]||'preset']=+b.dataset.i; if(mode==='shoulder') state.shopt=0; renderPlain(); } });
-$('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'sopt',output:'oopt',plyo:'popt',shoulder:'shopt'}[mode]||'opt']=+b.dataset.i; renderPlain(); } });
+$('presetList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'scen',output:'out',plyo:'plyo',peak:'peak',shoulder:'shd',treadmill:'tm',recovery:'rec',abs:'abs',neck:'neck',flow:'flow',run:'run'}[mode]||'preset']=+b.dataset.i; if(mode==='shoulder') state.shopt=0; renderPlain(); } });
+$('pRoundList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[{scenario:'sopt',output:'oopt',plyo:'popt',peak:'kopt',shoulder:'shopt'}[mode]||'opt']=+b.dataset.i; renderPlain(); } });
 $('restList').addEventListener('click',e=>{ const b=e.target.closest('.round-opt'); if(b){ state[mode==='shoulder'?'srest':'rest']=+b.dataset.i; renderPlain(); } });
 
 /* ---------- workout generation ---------- */
@@ -1953,6 +2206,24 @@ function buildPlyo(){
       if(i<ex.length-1) steps.push({type:'work',mini:true,round:r,name:'Rest',cue:`Shake it out. Next up: ${exName(ex[i+1])}.`,next:exName(ex[i+1]),tip:'',dur:o.rs,color:REST_C});
     });
     if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and shake out the legs. Round ${r+1} is next.`,dur:rest,color:REST_C});
+  }
+  $('wTitle').textContent = ws.name;
+  $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
+}
+// peak week intervals: a burst ("on") then an easy spell ("off"), cycle after cycle. The off spells are "mini" steps like a plyometrics rest, and the last cycle of a round has none:
+// the break between rounds takes its place. The sharp and easy moves carry on from one cycle to the next, so nothing repeats back to back.
+function buildPeak(){
+  const o=PEAK_OPTS[state.kopt], ws=PEAK[state.peak], rest=REST_OPTS[state.rest];
+  rounds=o.r; roundSec=peakSecs(o);
+  steps=[{type:'ready',round:1,name:'Get ready',cue:`Stay loose. Sharp bursts, then fully easy. Keep your heart rate under ${PEAK_HR}.`,dur:READY,color:READY_C}];
+  let a=0, b=0; const total=o.r*o.c, sharp=n=>ws.sharp[n%ws.sharp.length], easy=n=>ws.easy[n%ws.easy.length];
+  for(let r=1;r<=rounds;r++){
+    for(let c=0;c<o.c;c++,a++){
+      const sh=sharp(a), nx=sharp(a+1);
+      steps.push({type:'work',round:r,name:sh[0],cue:sh[1],tip:'',dur:o.w,color:'#ff7f6e',burst:true,first:c===0});
+      if(c<o.c-1){ const ez=easy(b++); steps.push({type:'work',mini:true,round:r,name:'Easy · '+ez[0],cue:ez[1],next:nx[0],tip:'',dur:o.rs,color:REST_C}); }
+    }
+    if(r<rounds) steps.push({type:'rest',round:r,name:'Rest',cue:`Breathe and let your heart rate settle. Round ${r+1} is next.`,dur:rest,color:REST_C});
   }
   $('wTitle').textContent = ws.name;
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
@@ -2012,17 +2283,18 @@ function buildTreadmill(){
   $('pips').innerHTML = Array.from({length:rounds},()=>'<div class="pip"><i></i></div>').join('');
 }
 // recovery sessions (recovery.js). Each move is a "round" so the pips follow the moves; a move done on both sides is the left side, a short switch, then the right side.
-const SEQ = () => mode==='treadmill' || mode==='recovery' || mode==='run';   // both are a list of timed intervals rather than rounds of boxing
+const isRec = () => mode==='recovery' || mode==='abs' || mode==='neck' || mode==='flow';
+const SEQ = () => mode==='treadmill' || isRec() || mode==='run';   // both are a list of timed intervals rather than rounds of boxing
 function recColor(n){ return /^cold/i.test(n) ? '#6ec1ff' : /^warm/i.test(n) ? '#ffb36e' : '#7fd1a8'; }
 function buildRecovery(){
-  const ws = RECOVERY[state.rec];
+  const ws = recList()[state[recKey()]];
   rounds = ws.moves.length; roundSec = Math.max(...ws.moves.map(m => m.both ? 2*m.s + REC_SWITCH : m.s));
   steps = [{type:'ready',round:1,name:'Get ready',cue:ws.ready,dur:15,color:READY_C}];
   ws.moves.forEach((m, i) => {
     const round = i+1, rsec = m.both ? 2*m.s + REC_SWITCH : m.s, nx = ws.moves[i+1], col = recColor(m.n);
-    const base = {round, rsec, color:col};
+    const base = {round, rsec, color:col, fig:window.bfFig ? bfFig.key(mode==='abs' ? 'abs' : ws.id, m.n) : ''};
     steps.push({...base, type:'work', mini:false, kind:'move', side:m.both ? 'left' : '', loadStart:true, dur:m.s, name:m.n + (m.both ? ' · left' : ''), cue:m.c,
-      say:`${i===0 ? 'First, ' : 'Next, '}${spoken(m.n)}${m.both ? ', left side' : ''}. ${spoken(m.c)} ${tmWordSec(m.s)}.`});
+      say: mode==='abs' ? (i===0 ? `Aim for ${ABS_REPS} repetitions on every exercise. First, ${spoken(m.n)}.` : `${spoken(m.n)}.`) : `${i===0 ? 'First, ' : 'Next, '}${spoken(m.n)}${m.both ? ', left side' : ''}. ${spoken(m.c)} ${tmWordSec(m.s)}.`});
     if(m.both){
       steps.push({...base, type:'work', mini:true, kind:'switch', side:'', dur:REC_SWITCH, color:REST_C, name:'Switch sides', cue:'Change over to the right side.', say:'Switch sides.'});
       steps.push({...base, type:'work', mini:false, kind:'move', side:'right', dur:m.s, name:m.n + ' · right', cue:m.c, say:'Right side.'});
@@ -2111,10 +2383,21 @@ const beep=()=>{tone(1040,0,.12);tone(1040,.16,.12)};
 // blends in: an equal-power volume crossfade (no dip in loudness), while the outgoing track's
 // bass is filtered away and the incoming track opens up from muffled to full.
 const TRACKS=[
-  {file:'music/no-turning-back.mp3',    title:'No Turning Back',    artist:'BearStockMusic'},
-  {file:'music/not-my-first-rodeo.mp3', title:'Not My First Rodeo', artist:'331music'},
-  {file:'music/gym-music.mp3',          title:'Gym Music',          artist:'Gr0za'}
+  {file:'music/no-turning-back.mp3',    title:'No Turning Back',    artist:'BearStockMusic', kind:'normal'},
+  {file:'music/not-my-first-rodeo.mp3', title:'Not My First Rodeo', artist:'331music', kind:'normal'},
+  {file:'music/gym-music.mp3',          title:'Gym Music',          artist:'Gr0za', kind:'normal'},
+  // public domain (CC0): free to use, and no credit is needed
+  {file:'music/the-rush.mp3',           title:'The Rush',           artist:'Public domain', kind:'normal'},
+  {file:'music/rhythm-factory.mp3',     title:'Rhythm Factory',     artist:'Public domain', kind:'normal'},
+  {file:'music/action-track.mp3',       title:'Action Track',       artist:'Public domain', kind:'normal'},
+  {file:'music/megasong.mp3',           title:'Megasong',           artist:'Public domain', kind:'normal'},
+  {file:'music/christian-acid-rock.mp3', title:'Tales of Christ',   artist:'Public domain', kind:'christian'},
+  {file:'music/hymn-it-again-sam.mp3',  title:'Hymn, Again',        artist:'Public domain', kind:'christian'},
+  {file:'music/hymn-orchestral-build.mp3', title:'Hymn, Orchestral', artist:'Public domain', kind:'christian'},
+  {file:'music/hymn-16-bit.mp3',        title:'Hymn, Original',     artist:'Public domain', kind:'christian'}
 ];
+// the cross in the timer's top bar switches the rotation between the usual music and Christian music; the choice is remembered
+let musicKind='normal'; try{ if(localStorage.getItem('bfMusicKind')==='christian') musicKind='christian'; }catch(e){}
 const MUSIC_VOL=.6, DUCK_VOL=.2, XF=8;
 const curve=dir=>{const c=new Float32Array(64);for(let i=0;i<64;i++){const x=i/63*Math.PI/2;c[i]=dir>0?Math.sin(x):Math.cos(x)}return c};
 const IN_CURVE=curve(1), OUT_CURVE=curve(-1);
@@ -2138,7 +2421,7 @@ let music=null;
 async function startMusic(){
   ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.();
   const out=ac.createGain(); out.gain.value=MUSIC_VOL; out.connect(ac.destination); out.connect(beatMeter());
-  const m=music={out, order:shuffle(TRACKS.map((_,i)=>i)), pos:0, deck:null, timer:0};
+  const m=music={out, order:shuffle(TRACKS.map((_,i)=>i).filter(i=>TRACKS[i].kind===musicKind)), pos:0, deck:null, timer:0};
   setMusicUI(true,'Loading music…');
   try{ await playNext(true); }
   catch(e){ if(music===m){ stopMusic(); $('musicNote').textContent='The music didn’t load. Tap the music note to try again.'; } }
@@ -2169,6 +2452,11 @@ async function playNext(first, xf=XF){
   m.timer=setTimeout(()=>playNext(false), Math.max(1,end-start-XF)*1000);   // start the next blend XF s before the end
   setMusicUI(true, `${TRACKS[i].title} · ${TRACKS[i].artist}`);
   loadTrack(m.order[m.pos % m.order.length]).catch(()=>{});                  // have the next track ready
+}
+function setMusicKind(k){
+  musicKind=k; try{ localStorage.setItem('bfMusicKind',k); }catch(e){}
+  const b=$('musicKindBtn'); b.setAttribute('aria-pressed',k==='christian'); const tt=k==='christian'?'Christian music is on. Tap for the usual music':'Switch to Christian music'; b.title=tt; b.setAttribute('aria-label',tt);
+  if(music){ stopMusic(); setTimeout(startMusic,900); }   // carry on with the new rotation
 }
 function nextTrack(){ if(music && music.deck){ clearTimeout(music.timer); playNext(false,3).catch(()=>{}); } }
 function stopMusic(){
@@ -2701,6 +2989,7 @@ function enter(i,silent){
     else if(mode==='scenario') say((first?`Round ${s.round}. ${s.intro} `:draw('scenenc',SCEN_ENC)+' ') + spoken(s.points[0]), first?1000:300);
     else if(mode==='basic') say(first ? `Round ${s.round}. ${spoken(s.name)}.` : `Next exercise. ${spoken(s.name)}.`, first?1000:300);
     else if(mode==='plyo') say(s.mini ? `Rest. Next up, ${spoken(s.next)}.` : (first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.cue), s.mini?300:first?1000:300);
+    else if(mode==='peak') say(s.mini ? `Easy. Next, ${spoken(s.next)}.` : (first||s.first ? `Round ${s.round}. ` : '') + 'Go. ' + spoken(s.name) + (s.dur>=25 ? '. ' + spoken(s.cue) : ''), s.mini?300:first?1000:200);
     else if(mode==='shoulder') say((first?`Round ${s.round}. `:'') + spoken(s.name) + '. ' + spoken(s.points[0]), first?1000:300);
     else if(SEQ()) say(s.say, s.loadStart?800:150);
     else if(mode==='output') say(`Round ${s.round}. ${s.total} punches. Here we go.`, 1000);
@@ -2761,6 +3050,7 @@ function roundElapsed(){
   let e=0; for(let i=idx-1;i>=0&&steps[i].type==='work'&&steps[i].round===steps[idx].round;i--) e+=steps[i].dur;
   return e+el;
 }
+let figShown='';
 function render(){
   const s=steps[idx], left=s.dur-el;
   let frac, time;
@@ -2794,10 +3084,11 @@ function render(){
   } else if(lastCount){ wrap.classList.remove('countdown'); lastCount=0; }
   const sec=Math.max(0,Math.ceil(left)); $('rNextVal').textContent = sec>60 ? fmt(sec) : `${sec} second${sec===1?'':'s'}`;
   if(mode==='treadmill') frac = tmShow(s, left, cd!==null, frac);
-  else if(mode==='recovery') frac = recShow(s, left, cd!==null, frac);
+  else if(isRec()) frac = recShow(s, left, cd!==null, frac);
   else if(mode==='run') frac = runShow(s, left, cd!==null, frac);
   $('ringProg').style.strokeDashoffset = C*(1-frac);
   $('nowName').textContent=s.shown||s.name; $('nowCue').textContent=s.cue;
+  const fk=s.fig||''; if(fk!==figShown){ figShown=fk; const mf=$('moveFig'); mf.innerHTML=fk ? bfFig.svg(fk) : ''; mf.hidden=!fk; }   // the picture of the move, for the stretches and abs
   $('nowBar').style.width = (el/s.dur*100)+'%';
   // round pips
   [...$('pips').children].forEach((p,i)=>{
@@ -2823,18 +3114,18 @@ function renderList(force){
   const list=$('upList'), keep=list.scrollTop, cur=steps[idx];
   const next=steps.slice(idx+1);
   list.innerHTML = next.length ? next.map((n,i)=>{
-    const k=idx+1+i, tag = mode==='recovery' || mode==='run' ? '' : mode==='treadmill' ? (n.loadStart ? `<span class="tag">Load ${n.load}${n.passes>1 ? ' · set '+n.pass : ''}</span>` : '') : n.type==='work' && n.round!==cur.round ? `<span class="tag">Round ${n.round}</span>` : '';
-    const grip = n.type==='work' && mode!=='plyo' && mode!=='shoulder' && !SEQ() ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
+    const k=idx+1+i, tag = isRec() || mode==='run' ? '' : mode==='treadmill' ? (n.loadStart ? `<span class="tag">Load ${n.load}${n.passes>1 ? ' · set '+n.pass : ''}</span>` : '') : n.type==='work' && n.round!==cur.round ? `<span class="tag">Round ${n.round}</span>` : '';
+    const grip = n.type==='work' && mode!=='plyo' && mode!=='peak' && mode!=='shoulder' && !SEQ() ? `<button class="grip" data-k="${k}" aria-label="Move ${n.name}. Use the up and down arrow keys.">${GRIP}</button>` : '';
     return `<li class="item ${n.type}${k===movedK?' just-moved':''}" data-k="${k}" style="--c:${n.color}">
       <div class="item-main"><div class="num">${String(i+1).padStart(2,'0')}${i===0?' · Next':''}</div>
       <strong>${n.name}</strong><div class="dur">${SEQ() ? restLabel(n.dur) : n.type==='rest'?restLabel(n.dur)+' rest':n.dur+' sec'}</div></div>${tag}${grip}</li>`;
   }).join('') : '<li class="item"><div class="item-main"><div class="num">Last one</div><strong>Final bell</strong><div class="dur">Finish strong</div></div></li>';
   list.scrollTop=keep; movedK=-1;
   const left=next.filter(x=>x.type==='work' && !x.mini).length;
-  const word = mode==='run' ? 'block' : mode==='recovery' ? 'move' : mode==='treadmill' ? 'interval' : mode==='basic' ? 'exercise' : mode==='scenario' ? 'focus' : mode==='output' ? 'round' : mode==='plyo'||mode==='shoulder' ? 'exercise' : 'drill';
+  const word = mode==='run' ? 'block' : isRec() ? 'move' : mode==='treadmill' ? 'interval' : mode==='basic' ? 'exercise' : mode==='scenario' ? 'focus' : mode==='output' ? 'round' : mode==='plyo'||mode==='shoulder' ? 'exercise' : mode==='peak' ? 'burst' : 'drill';
   const wordPl = word==='focus' ? 'focus areas' : word+'s';
   $('upCount').textContent = left ? `${left} ${left>1?wordPl:word} to go` : '';
-  if(!$('listNote').textContent) $('listNote').textContent = mode==='plyo' || SEQ() ? '' : DEFAULT_NOTE;
+  if(!$('listNote').textContent) $('listNote').textContent = mode==='plyo' || mode==='peak' || SEQ() ? '' : DEFAULT_NOTE;
 }
 // put the upcoming drills into a new order; rests and round lengths stay where they are
 function applyOrder(keys){
@@ -2943,7 +3234,7 @@ function bgSync(){
 const bgArt = [{src:new URL('logo-512.png',location.href).href, sizes:'512x512', type:'image/png'}];
 function bgInfo(){
   const s = bgAudio && steps[idx]; if(!s || !navigator.mediaSession || !window.MediaMetadata) return;
-  navigator.mediaSession.metadata = new MediaMetadata({title:s.name, artist: mode==='run' ? $('wTitle').textContent : mode==='recovery' ? `Move ${s.round} of ${rounds} · ${$('wTitle').textContent}` : mode==='treadmill' ? `Load ${s.load} · ${$('wTitle').textContent}` : `Round ${s.round} of ${rounds} · ${$('wTitle').textContent}`, album:'Boxing Flow', artwork:bgArt});
+  navigator.mediaSession.metadata = new MediaMetadata({title:s.name, artist: mode==='run' ? $('wTitle').textContent : isRec() ? `Move ${s.round} of ${rounds} · ${$('wTitle').textContent}` : mode==='treadmill' ? `Load ${s.load} · ${$('wTitle').textContent}` : `Round ${s.round} of ${rounds} · ${$('wTitle').textContent}`, album:'Boxing Flow', artwork:bgArt});
   bgPos();
 }
 let bgKey = '', bgUrl = '';
@@ -3001,8 +3292,9 @@ const planCtx = {id:null};   // the planned session being done right now, so fin
    (calendar.js), keeps the label and notes with it (they sync to the account like everything else), and refreshes the dashboard. */
 const pendingSaves = new Map(); let saveSeq = 0;
 function offerSave(info){
+  const ov = window.bfSaveOverride && window.bfSaveOverride(); if(ov) info = {...info, ...ov};   // a merged workout is one session, not its last part
   const id = 's' + (++saveSeq), planned = planCtx.id && window.bfCal ? bfCal.plan.find(x => x.id === planCtx.id) : null;
-  pendingSaves.set(id, {info:{...info, planId:planCtx.id}, saved:false, label:(planned && planned.custom) || state.label || '', notes:(planned && planned.notes) || ''});
+  pendingSaves.set(id, {info:{...info, planId:planCtx.id, sid:'S' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)}, saved:false, label:(planned && planned.custom) || state.label || '', notes:(planned && planned.notes) || ''});
   return id;
 }
 function saveBoxHtml(id){
@@ -3010,6 +3302,7 @@ function saveBoxHtml(id){
   if(s.saved) return '<p class="saved-note" role="status">&#10003; Saved' + (s.label ? ': ' + esc(s.label) : '') + '. It is in your log and calendar, and your dashboard is up to date.</p>';
   return '<label class="c-label">Label (optional)<input type="text" maxlength="60" autocomplete="off" data-save-label="' + id + '" value="' + esc(s.label) + '" placeholder="e.g. Heavy bag, jab and double jab"></label>'
     + '<label class="c-label">Notes (optional)<textarea rows="3" maxlength="1000" data-save-notes="' + id + '" placeholder="What went well? What do you want to work on next time?">' + esc(s.notes) + '</textarea></label>'
+    + (s.info.planId ? '' : '<label class="c-label" style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" data-save-cal="' + id + '"' + (s.cal !== false ? ' checked' : '') + ' style="width:auto"> Add to my calendar</label>')
     + '<div class="acts"><button class="btn" type="button" data-save-session="' + id + '">Save workout</button></div>';
 }
 function boxFor(elId, sid){ const el = $(elId); if(el){ el.dataset.saveBox = sid; el.innerHTML = saveBoxHtml(sid); } }
@@ -3018,26 +3311,32 @@ document.addEventListener('input', e => {
   const l = e.target.dataset && e.target.dataset.saveLabel, n = e.target.dataset && e.target.dataset.saveNotes;
   if(l && pendingSaves.get(l)) pendingSaves.get(l).label = e.target.value;
   if(n && pendingSaves.get(n)) pendingSaves.get(n).notes = e.target.value;
+  const c = e.target.dataset && e.target.dataset.saveCal; if(c && pendingSaves.get(c)) pendingSaves.get(c).cal = e.target.checked;
 });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-save-session]'); if(!b) return;
   const id = b.dataset.saveSession, s = pendingSaves.get(id); if(!s || s.saved) return;
   s.saved = true; s.label = (s.label || '').trim(); s.notes = (s.notes || '').trim();
-  window.sessionDone?.({...s.info, label:s.label, notes:s.notes});
+  window.sessionDone?.({...s.info, label:s.label, notes:s.notes, addCal:s.cal !== false});
   showSaveBoxes(id);
 });
-function show(id){ if(id!=='breath') breathStop(); document.body.classList.toggle('has-menu', id!=='timer');   // no menu during a workout
+function show(id){ if(id!=='breath') breathStop(); if(id!=='mdrill') window.drillStop?.(); document.body.classList.toggle('has-menu', id!=='timer');   // no menu during a workout
   syncPreviews(id);
-  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','mind','skill','reframe','breath','cal','camp','hr','film','nutrition','weight','profile','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
+  if(id!=='timer' && window.Coach3D && Coach3D.exitGym) Coach3D.exitGym(true); ['today','home','sc','build','prep','scoring','mind','skill','reframe','mdrill','breath','cal','camp','hr','film','nutrition','weight','watercut','fightday','profile','settings','modes','setup','plainSetup','timer','done','iq','iqQuiz'].forEach(s=>$(s).hidden=s!==id);
   if(id!=='today') window.liveStop?.();   // stop the live channel when leaving the dashboard
   if(id!=='film') window.filmLeave?.();   // stop the video when leaving film study
-  if(['today','home','modes','sc','mind','cal','camp','hr','film','nutrition','weight','profile'].includes(id)) planCtx.id=null;
+  if(['today','home','modes','sc','mind','cal','camp','hr','film','nutrition','weight','watercut','fightday','profile'].includes(id)) planCtx.id=null;
   if(id==='film') window.renderFilm?.();
   if(id==='nutrition') window.renderNutrition?.();
   if(id==='weight') window.renderWeight?.();
+  if(id==='watercut') window.renderWaterCut?.();
+  if(id==='fightday') window.renderFightDay?.();
   if(id==='profile') window.renderProfile?.();
   if(id==='hr') window.renderHR?.();   // back at a menu: no longer working on a planned session
   if(id==='cal') window.renderCal?.();
+  if(id==='build') window.renderBuild?.();
+  if(id==='prep') window.renderPrep?.();
+  if(id==='scoring') window.renderScoring?.();
   if(id==='camp') window.renderCamp?.();
   if(id==='today') window.renderToday?.(); $('buildbar').hidden=id!=='setup'&&id!=='plainSetup'; window.scrollTo(0,0); }
 const setupScreen = () => mode==='coach' ? 'setup' : 'plainSetup';
@@ -3051,7 +3350,7 @@ document.querySelectorAll('.mode-card[data-mode]').forEach(b=>b.onclick=()=>{ hu
 document.querySelectorAll('[data-section]').forEach(b=>b.onclick=()=>show(b.dataset.section));
 document.querySelector('.boxing-card').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); show('modes'); } });
 document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('home'));   // the coach card is a div (it holds the preview); its button's click bubbles up to it
-document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(mode==='plyo'||mode==='shoulder'||SEQ()?'sc':'modes'));
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(mode==='recovery'?'home':mode==='plyo'||mode==='peak'||mode==='shoulder'||SEQ()?'sc':'modes'));   // recovery is its own section, so it goes back to Explore
 
 /* ---------- mental skills: box breathing, reframing, and short read-throughs ---------- */
 function renderMind(){
@@ -3063,11 +3362,13 @@ $('mindList').addEventListener('click',e=>{
   const m=MIND.find(x=>x.id===b.dataset.id); hubClick=true; m.kind==='breath' ? openBreath() : m.kind==='reframe' ? openReframe() : openSkill(m);
 });
 function openSkill(m){
-  enterVia();
+  enterVia(); const di = DRILLS.findIndex(d => d.id===m.id && !d.ring), ri = DRILLS.findIndex(d => d.id===m.id && d.ring);
   $('skillBody').innerHTML = `<h1>${m.name}</h1><p class="sub">${m.intro}</p>
     <div class="read"><h2>Why it works</h2><p>${m.why}</p><h2>How to do it</h2><ol>${m.steps.map(s=>`<li>${s}</li>`).join('')}</ol><h2>Try it</h2><p>${m.tryIt}</p></div>
-    ${m.cta==='breath' ? '<div class="iq-actions" style="margin-top:22px"><button class="btn" id="skillCta">Practise box breathing</button></div>' : ''}`;
-  if(m.cta==='breath') $('skillCta').onclick=openBreath;
+    <div class="iq-actions" style="margin-top:22px">${di>=0 ? `<button class="btn" id="skillDrill">Start the ${Math.round(drillSeconds(DRILLS[di])/60)}-minute drill</button>` : ''}${ri>=0 ? `<button class="btn ghost" id="skillRing">Shadow boxing, ${Math.round(drillSeconds(DRILLS[ri])/60)} min</button>` : ''}${m.cta ? `<button class="btn ghost" id="skillCta">${m.cta==='breath' ? 'Practise box breathing' : 'Practise reframing'}</button>` : ''}</div>`;
+  if(di>=0) $('skillDrill').onclick = () => openDrill(di);
+  if(ri>=0) $('skillRing').onclick = () => openDrill(ri);
+  if(m.cta) $('skillCta').onclick = m.cta==='breath' ? openBreath : openReframe;
   show('skill');
 }
 
@@ -3081,7 +3382,8 @@ function renderReframe(){
       <p class="sub">Reframing is changing how you see a situation so it helps you instead of hurting you. The situation stays the same, but what it means to you changes: “I’m nervous” becomes “I’m ready.” It isn’t pretending everything is fine. It’s choosing the true and useful way to look at it.</p>
       <div class="read"><h2>How to reframe</h2><ol>${REFRAME_STEPS.map(s=>`<li>${s}</li>`).join('')}</ol>
       <h2>Practise it</h2><p>You’ll see a thought a fighter might have in a real moment. Think of a more helpful way to see it first, then check it against the reframe.</p></div>
-      <div class="iq-actions" style="margin-top:22px"><button class="btn" id="rfStart">Start practising</button></div>`;
+      <div class="iq-actions" style="margin-top:22px"><button class="btn" id="rfStart">Start practising</button><button class="btn ghost" id="rfDrill">Timed drill, ${Math.round(drillSeconds(DRILLS[DRILLS.findIndex(d=>d.id==="reframe")])/60)} min</button></div>`;
+    $('rfDrill').onclick=()=>openDrill(DRILLS.findIndex(d=>d.id==='reframe'));
     $('rfStart').onclick=()=>{ rf.items=shuffle(REFRAMES); rf.i=0; rf.shown=false; renderReframe(); };
     return;
   }
@@ -3240,7 +3542,7 @@ function start(){
   if(coach) setTimeout(()=>{ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); loadCrowd().catch(()=>{}); }catch(e){} },8000);
   else { Coach.pause(true); window.bfWork=false; iaPrompt(false); }   // no coach: make sure he is put away
   bgInit();   // inside the tap, so the phone lets the audio start
-  coach ? build() : mode==='plyo' ? buildPlyo() : mode==='shoulder' ? buildShoulder() : mode==='treadmill' ? buildTreadmill() : mode==='recovery' ? buildRecovery() : mode==='run' ? buildRun() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
+  coach ? build() : mode==='plyo' ? buildPlyo() : mode==='peak' ? buildPeak() : mode==='shoulder' ? buildShoulder() : mode==='treadmill' ? buildTreadmill() : isRec() ? buildRecovery() : mode==='run' ? buildRun() : buildPlain(); listKey=''; lastPepIdx=-9; resetEffects(); enter(0,true); show('timer'); setPlaying(true); keepAwake();
   try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); ac.resume?.(); }catch(e){}
   say('Get ready.');   // spoken inside the tap so phones allow speech for the rest of the workout
   if(!music) startMusic();   // music starts with the workout; the music note still turns it off
@@ -3252,17 +3554,17 @@ function finish(){
   say('Workout complete. Great work.', 1400);
   stopMusic();
   const o={r:rounds, m:roundSec/60}, work=steps.filter(s=>s.type==='work');
-  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${Math.round(o.r*o.m)}<span>${mode==='plyo'||mode==='shoulder'?'Minutes trained':'Minutes boxed'}</span></div>`
-    + (mode==='timer' ? '' : `<div>${mode==='plyo' ? work.filter(s=>!s.mini).length : work.length}<span>${mode==='basic'||mode==='plyo'||mode==='shoulder'?'Exercises':mode==='scenario'?'Focus areas':mode==='output'?'Rounds of output':'Drills'}</span></div>`)
+  $('doneStats').innerHTML=`<div>${o.r}<span>Rounds</span></div><div>${Math.round(o.r*o.m)}<span>${mode==='plyo'||mode==='peak'||mode==='shoulder'?'Minutes trained':'Minutes boxed'}</span></div>`
+    + (mode==='timer' ? '' : `<div>${mode==='plyo'||mode==='peak' ? work.filter(s=>!s.mini).length : work.length}<span>${mode==='peak'?'Sharp bursts':mode==='basic'||mode==='plyo'||mode==='shoulder'?'Exercises':mode==='scenario'?'Focus areas':mode==='output'?'Rounds of output':'Drills'}</span></div>`)
     + (mode==='output' ? `<div>${(rounds*(work[0]?.total||0)).toLocaleString()}<span>Punches called</span></div>` : '');
   if(mode==='treadmill'){ const real=steps.filter(x=>x.type!=='ready'); $('doneStats').innerHTML=`<div>${new Set(real.map(x=>x.round)).size}<span>Loads</span></div><div>${Math.round(real.reduce((n,x)=>n+x.dur,0)/60)}<span>Minutes</span></div><div>${real.filter(x=>x.kind==='on').length}<span>Fast intervals</span></div>`; }
-  if(mode==='recovery'){ const real=steps.filter(x=>x.type!=='ready'); $('doneStats').innerHTML=`<div>${rounds}<span>Moves</span></div><div>${Math.max(1,Math.round(real.reduce((n,x)=>n+x.dur,0)/60))}<span>Minutes</span></div>`; }
+  if(isRec()){ const real=steps.filter(x=>x.type!=='ready'); $('doneStats').innerHTML=`<div>${rounds}<span>Moves</span></div><div>${Math.max(1,Math.round(real.reduce((n,x)=>n+x.dur,0)/60))}<span>Minutes</span></div>`; }
   if(mode==='run'){ const w=RUNS[state.run]; $('doneStats').innerHTML=`<div>${w.mins}<span>Minutes</span></div><div>${w.effort}<span>Zone</span></div>`; }
   boxFor('doneSave', sid); boxFor('gfSave', sid);
   const sc = mode==='scenario' && SCENARIOS[state.scen];
   $('doneReview').hidden = !sc;
   if(sc) $('doneReview').innerHTML = `<h3>${sc.name}</h3><p>${sc.mission}</p><h3>Key lesson</h3><p>${sc.lesson}</p><h3>Next time</h3><p>Run it again and pick one tip from this round to nail. Spend the whole round on that one thing.</p>`;
-  if(mode!=='coach'){ show('done'); return; }
+  if(mode!=='coach'){ if(crowd){ cheer(1, 5); setTimeout(stopCrowd, 6000); } show('done'); return; }   // big final roar, then the arena empties
   // the finale: every drill on the wall, crushed one by one, then the fighter is celebrated (needs the 3D coach)
   const seen=new Map(); work.forEach(s=>{ const d=seen.get(s.name); if(d) d.n++; else { let play=null; try{ play=s.moves?{keys:s.moves,pace:s.speed||1}:window.bfParseStep?.(s); }catch(e){} seen.set(s.name,{name:s.name,n:1,color:s.color,play}); } });
   const data={drills:[...seen.values()], stats:{rounds:o.r, minutes:o.r*o.m, drills:work.length}};
@@ -3288,6 +3590,8 @@ $('nextBtn').onclick=()=>{ if(idx<steps.length-1){ enter(idx+1); render(); } els
 $('prevBtn').onclick=()=>{ if(el>2||idx===0){ el=0; readyBeep=-1; callAt=0; if(steps[idx]?.calls){ steps[idx].shown=''; steps[idx].cue=`0 of ${steps[idx].total} punches`; } bgPos(); } else enter(idx-1); render(); };
 $('speedBtn').onclick=e=>{ speed=speed===1?10:1; e.currentTarget.setAttribute('aria-pressed',speed>1); };
 $('musicBtn').onclick=()=>{ music ? stopMusic() : startMusic(); };
+$('musicKindBtn').onclick=()=>setMusicKind(musicKind==='christian' ? 'normal' : 'christian');
+setMusicKind(musicKind);
 $('beatBtn').onclick=e=>{ e.stopPropagation(); setBeat(!beatOn); };
 $('trackBtn').onclick=nextTrack;
 $('crowdBtn').onclick=()=>{ crowd ? stopCrowd() : startCrowd(); };
@@ -3299,24 +3603,48 @@ renderSetup();
 setPlaying(false);
 /* ---------- links into the app ----------
    app.html?go=scenario&scen=2&sopt=0   or   app.html#scenario?scen=2&sopt=0      (the plan, the landing page and the calendar all use these)
-   go: modes, strength, mind, breath, reframe, calendar, coach, basic, timer, scenario, output, plyo, shoulder, treadmill, recovery, run, iq
+   go: modes, strength, mind, breath, reframe, calendar, coach, basic, timer, scenario, output, plyo, shoulder, treadmill, recovery, abs, run, iq
    choices: focus=jab,speed  opt  preset  scen  sopt  out  oopt  plyo  popt  shd  shopt  (numbers pick the entry in that list) */
-const PARAM_LISTS = {opt:()=>OPTIONS, preset:()=>BASIC, scen:()=>SCENARIOS, sopt:()=>SCEN_OPTS, out:()=>OUTPUT, oopt:()=>OUT_OPTS, plyo:()=>PLYO, popt:()=>PLYO_OPTS, shd:()=>SHOULDER, shopt:()=>SHOULDER[state.shd].opts||SHOULDER_OPTS, tm:()=>TREADMILL, rec:()=>RECOVERY, run:()=>RUNS};
+const PARAM_LISTS = {opt:()=>OPTIONS, preset:()=>BASIC, scen:()=>SCENARIOS, sopt:()=>SCEN_OPTS, out:()=>OUTPUT, oopt:()=>OUT_OPTS, plyo:()=>PLYO, popt:()=>PLYO_OPTS, peak:()=>PEAK, kopt:()=>PEAK_OPTS, shd:()=>SHOULDER, shopt:()=>SHOULDER[state.shd].opts||SHOULDER_OPTS, tm:()=>TREADMILL, rec:()=>RECOVERY, abs:()=>ABS, neck:()=>NECK, flow:()=>FLOW, run:()=>RUNS};
 function applyParams(p){
   const f=(p.get('focus')||'').split(',').filter(id=>FOCUS.some(x=>x.id===id));
   if(f.length) state.focus=new Set(f);
-  ['shd','opt','preset','scen','sopt','out','oopt','plyo','popt','shopt','tm','rec','run'].forEach(k=>{ if(p.has(k)){ const n=+p.get(k); if(Number.isInteger(n) && n>=0 && n<PARAM_LISTS[k]().length) state[k]=n; } });
+  ['shd','opt','preset','scen','sopt','out','oopt','plyo','popt','peak','kopt','shopt','tm','rec','abs','neck','flow','run'].forEach(k=>{ if(p.has(k)){ const n=+p.get(k); if(Number.isInteger(n) && n>=0 && n<PARAM_LISTS[k]().length) state[k]=n; } });
 }
 function route(){
   const sp=new URLSearchParams(location.search), [hname,hq]=location.hash.slice(1).split('?'), p=new URLSearchParams(hq||'');
   sp.forEach((v,k)=>{ if(k!=='go') p.set(k,v); });
   const name=sp.get('go')||hname; if(!name) return;
-  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), weight:()=>show('weight'), profile:()=>show('profile'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe};
+  const sections={today:()=>show('today'), dashboard:()=>show('today'), explore:()=>show('home'), modes:()=>show('modes'), boxing:()=>show('modes'), strength:()=>show('sc'), build:()=>show('build'), prep:()=>show('prep'), scoring:()=>show('scoring'), judging:()=>show('scoring'), mind:()=>show('mind'), calendar:()=>show('cal'), camp:()=>show('camp'), film:()=>show('film'), nutrition:()=>show('nutrition'), weight:()=>show('weight'), watercut:()=>show('watercut'), watercut2:()=>show('watercut'), fightday:()=>show('fightday'), fuel:()=>show('fightday'), profile:()=>show('profile'), settings:()=>show('settings'), hr:()=>show('hr'), heartrate:()=>show('hr'), breath:openBreath, reframe:openReframe, skill:()=>{ const m=MIND.find(x=>x.id===p.get('id')); m ? (m.kind==='breath' ? openBreath() : m.kind==='reframe' ? openReframe() : openSkill(m)) : show('mind'); }, drill:()=>openDrill(p.get('md'))};
   if(sections[name]) return sections[name]();
   applyParams(p);
-  if(['coach','basic','timer','scenario','output','plyo','shoulder','treadmill','recovery','run','iq'].includes(name)) pickMode(name);
+  if(['coach','basic','timer','scenario','output','plyo','peak','shoulder','treadmill','recovery','abs','neck','flow','run','iq'].includes(name)) pickMode(name);
 }
 route(); addEventListener('hashchange',route);
+
+/* ---------- settings: the accent colour (--gold and the text that sits on it, --gold-ink) ---------- */
+(function(){
+  const ACCENTS = [['Gold','#f5c95a'], ['Green','#4ade80'], ['Blue','#4f8ff7'], ['Red','#f26b6b'], ['Orange','#ff9a4d'], ['Purple','#b794f6'], ['Teal','#2dd4bf'], ['Pink','#f472b6']];
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const inkFor = h => { const [r, g, b] = rgb(h); return (.299 * r + .587 * g + .114 * b) > 120 ? '#' + rgb(h).map(v => Math.round(v * .12).toString(16).padStart(2, '0')).join('') : '#ffffff'; };   // dark tint of the colour on light accents, white on dark ones
+  let cur = ACCENTS[0][1];
+  try{ const s = JSON.parse(localStorage.getItem('bfAccent') || 'null'); if(s && /^#[0-9a-f]{6}$/i.test(s.c)) cur = s.c; }catch(e){}
+  function paint(){
+    $('swatches').innerHTML = ACCENTS.map(([n, c]) => `<button class="swatch" role="radio" data-c="${c}" aria-checked="${c === cur.toLowerCase()}" style="--sw:${c}"><i></i>${n}</button>`).join('');
+    $('accentCustom').value = cur;
+  }
+  function apply(c, save){
+    cur = c.toLowerCase(); const root = document.documentElement.style, ink = inkFor(cur);
+    root.setProperty('--gold', cur); root.setProperty('--gold-ink', ink);
+    PALETTE[0] = READY_C = cur;   // the "get ready" colour of the next workout
+    if(save) try{ localStorage.setItem('bfAccent', JSON.stringify({c:cur, i:ink})); }catch(e){}
+    paint();
+  }
+  $('swatches').onclick = e => { const b = e.target.closest('.swatch'); if(b) apply(b.dataset.c, true); };
+  $('accentCustom').oninput = e => apply(e.target.value, true);
+  $('accentReset').onclick = () => { try{ localStorage.removeItem('bfAccent'); }catch(e){} apply(ACCENTS[0][1], false); };
+  apply(cur, false);
+})();
 
 /* ---------- menu ---------- */
 $('homeBtn').onclick=()=>{ history.replaceState(null,'',location.pathname); show('today'); };
@@ -3327,6 +3655,30 @@ function setMenu(open){
   document.body.style.overflow = open ? 'hidden' : '';
   if(open) menuEl.querySelector('button[data-go]')?.focus(); else menuBtn.focus({preventScroll:true});
 }
+// every workout list is spelled out under its entry, so any one can be opened straight from the menu (go=name?key=index picks it)
+(function(){
+  const lists = {scenario:['scen', SCENARIOS], output:['out', OUTPUT], basic:['preset', BASIC], plyo:['plyo', PLYO], peak:['peak', PEAK], shoulder:['shd', SHOULDER], treadmill:['tm', TREADMILL], neck:['neck', NECK], flow:['flow', FLOW], run:['run', RUNS], recovery:['rec', RECOVERY]};
+  const row = (cls, go, name) => `<button class="${cls}" data-go="${go}">${esc(name)}</button>`;
+  Object.entries(lists).forEach(([go, [key, list]]) => {
+    const b = menuEl.querySelector(`[data-go="${go}"]`);
+    if(b) b.insertAdjacentHTML('afterend', list.map((w, i) => row(b.classList.contains('m-group') ? 'm-sub' : 'm-item', `${go}?${key}=${i}`, w.name)).join(''));
+  });
+  const m = menuEl.querySelector('[data-go="mind"]');
+  if(m) m.insertAdjacentHTML('afterend', MIND.map(s => row('m-sub', `skill?id=${s.id}`, s.name)).join(''));
+  // fold it up: a heading with entries under it gets an arrow beside it that opens and closes them (tapping the name still goes to its page)
+  const lvl = el => el.classList.contains('m-group') ? 0 : el.classList.contains('m-sub') ? 1 : el.classList.contains('m-item') ? 2 : -1;
+  [...menuEl.children].forEach(el => {
+    const L = lvl(el); if(L < 0) return;
+    const kids = []; for(let n = el.nextElementSibling; n && lvl(n) > L; n = n.nextElementSibling) kids.push(n);
+    if(!kids.length) return;
+    const row = document.createElement('div'), box = document.createElement('div'), tog = document.createElement('button');
+    row.className = 'm-row m-lvl' + L; box.className = 'm-kids'; box.hidden = true;
+    tog.className = 'm-tog'; tog.setAttribute('aria-expanded', 'false'); tog.setAttribute('aria-label', 'Show ' + el.textContent);
+    tog.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    tog.onclick = () => { const open = box.hidden; box.hidden = !open; tog.setAttribute('aria-expanded', open); };
+    el.before(row); row.append(el, tog); row.after(box); kids.forEach(k => box.append(k));
+  });
+})();
 menuBtn.onclick=()=>setMenu(true); $('menuClose').onclick=()=>setMenu(false); $('menuScrim').onclick=()=>setMenu(false);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && menuEl.classList.contains('open')) setMenu(false); });
 menuEl.addEventListener('click',e=>{
@@ -3337,15 +3689,21 @@ menuEl.addEventListener('click',e=>{
 </script>
 <script src="drag.js"></script>
 <script src="calendar.js"></script>
+<script src="builder.js"></script>
 <script src="camp.js"></script>
 <script src="profile.js"></script>
 <script src="hr.js"></script>
 <script src="weight.js"></script>
+<script src="watercut.js"></script>
+<script src="fightday.js"></script>
 <script src="nutrition.js"></script>
 <script src="gate.js"></script>
 <script src="fighters.js"></script>
 <script src="film.js"></script>
 <script src="home.js"></script>
+<script src="burn.js"></script>
+<script src="prep.js"></script>
+<script src="scoring.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
@@ -4855,6 +5213,7 @@ async function boot(avKey,opts={}){
   api.endFinale=()=>{
     if(!finaleOn) return;
     finaleOn=false; finaleT.forEach(clearTimeout); finaleT=[]; cancelAnimationFrame(confettiRaf);
+    window.bfFx?.quiet(0);                       // leaving early cancels the timer that would have emptied the arena
     const cv=document.getElementById('gfConfetti'); cv?.getContext('2d')?.clearRect(0,0,cv.width,cv.height);
     stopHype(); stopConfetti();
     if(fin){ fin.tiles.forEach(t=>{ t.material[5].map?.dispose(); G_rem(t); }); fin.sparks.forEach(p=>G_rem(p.m)); if(fin.walk) fin.walk.stop(); gym.showRoom2(false); fin=null; }
