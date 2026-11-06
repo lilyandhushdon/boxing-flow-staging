@@ -12,6 +12,12 @@
   [headers.values]
     Cache-Control = "no-store"
 
+# the service worker must always be re-checked so a new version of the app reaches installed phones
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
 # Everything in this folder is published, so anything that is not part of the website is answered with a 404 instead, even if a deploy uploads it:
 # the private settings file, the documentation, the tests, the database files, the function source and the CI settings.
 [[redirects]]
