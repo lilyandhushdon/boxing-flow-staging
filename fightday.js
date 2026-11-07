@@ -17,14 +17,16 @@
   const STEPS = [
     {id:'scale', a:0, b:null, h:'The weigh-in', t:'Clear the scale', cls:'wc-weighin', tag:'Go', carbs:'', na:'',
       n:'Step on the scale, clear your weight, then go straight to your gear bag. No solid food yet.'},
-    {id:'h1', a:15, b:75, h:'Hour 1', t:'Hydration first (Bottle 1)', cls:'wc-load', tag:'Liquid', carbs:'61 g', na:'2,062 mg',
+    {id:'h1', a:0, b:60, h:'Hour 1', t:'Hydration first (Bottle 1)', cls:'wc-load', tag:'Liquid', carbs:'61 g', na:'2,062 mg',
       n:'Take 500 mL straight away, then sip the rest steadily and finish the bottle by the end of the hour. Fluids go in first so your blood volume comes back before any food. Nothing solid, on an empty stomach.'},
-    {id:'h2', a:75, b:135, h:'Hour 2', t:'The 90 g fuel meal', cls:'wc-peak', tag:'Solid', carbs:'90 g', na:'',
+    {id:'h2', a:60, b:120, h:'Hour 2', t:'The 90 g fuel meal', cls:'wc-peak', tag:'Solid', carbs:'90 g', na:'',
       n:'Eat it at the start of the hour and chew every bite to mush. White bread only, no butter, fat, protein or lollies. No bottle this hour.'},
-    {id:'h3', a:135, b:195, h:'Hour 3', t:'Top-off hydration (Bottle 2)', cls:'wc-load', tag:'Liquid', carbs:'61 g', na:'1,672 to 2,062 mg',
+    {id:'h3', a:120, b:180, h:'Hour 3', t:'Top-off hydration (Bottle 2)', cls:'wc-load', tag:'Liquid', carbs:'61 g', na:'1,672 to 2,062 mg',
       n:'Sip it slowly and steadily over the full hour. Your stomach is still working on the toast, so do not chug.'},
     {id:'h4', a:195, b:255, h:'Hour 4', t:'Absorption rest', cls:'wc-cut', tag:'Nothing', carbs:'0 g', na:'',
       n:'No mix, no food, no lollies. Head to the venue and take a nap (set an alarm so you are up before the warm-up). Rest while your stomach empties. If your mouth is dry, single sips of plain water only.'},
+    {id:'wake', when:'After you wake from your nap', h:'End of Hour 4', t:'Musashi energy drink', cls:'wc-peak', tag:'Drink', carbs:'', na:'',
+      n:'Have your Musashi caffeinated energy drink once you wake up from the rest and nap.'},
     {id:'h5', a:255, b:285, h:'Hour 5', t:'The final push (half of Bottle 3)', cls:'wc-load', tag:'Liquid', carbs:'30 g', na:'',
       n:'Sip about 750 mL, half the bottle, over these 30 minutes. At the end, cap it and put it away. You are done taking in fuel.',
       warn:['Do not swap the rest of the bottle for a liquid gel. A gel is dense, concentrated sugar. Right before the warm-up it spikes your insulin, and with the warm-up on top you crash around 5:15 PM and walk in shaky, weak and empty.','A gel also freezes digestion and pulls water out of your blood into your gut to dilute the syrup. That leaves a heavy brick in your stomach when the body shots start, with cramping or vomiting.','You do not need the extra carbs. Your muscles are already full from Bottle 1, the toast meal and Bottle 2, and they cannot store more.']},
@@ -39,7 +41,7 @@
 
   const row = s => {
     const on = !!data.done[s.id];
-    return `<div class="wc-day ${s.cls}${on ? ' fd-done' : ''}"><div class="wc-top"><div><small>${esc(s.h)} · ${esc(s.b == null ? span(s.a) : span(s.a, s.b))}</small><strong>${esc(s.t)}</strong></div><span class="wc-tag">${esc(s.tag)}</span></div>
+    return `<div class="wc-day ${s.cls}${on ? ' fd-done' : ''}"><div class="wc-top"><div><small>${esc(s.h)} · ${esc(s.when || (s.b == null ? span(s.a) : span(s.a, s.b)))}</small><strong>${esc(s.t)}</strong></div><span class="wc-tag">${esc(s.tag)}</span></div>
       ${s.carbs || s.na ? `<div class="wc-grid"><div><span>Carbs</span><b>${esc(s.carbs || '0 g')}</b></div><div><span>Sodium</span><b>${esc(s.na || '--')}</b></div></div>` : ''}
       <p class="t-note">${esc(s.n)}</p>
       ${(s.warn || []).map(w => `<p class="wc-warn">${esc(w)}</p>`).join('')}
